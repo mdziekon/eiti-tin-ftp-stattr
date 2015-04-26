@@ -1,0 +1,135 @@
+from SCons.Script.SConscript import SConsEnvironment
+import fnmatch
+import glob
+import platform
+import os
+
+def RecursiveGlob(pathname, fileMatcher):
+    matches = []
+    for root, dirnames, filenames in os.walk(pathname):
+        for filename in fnmatch.filter(filenames, fileMatcher):
+            matches.append(File(os.path.join(root, filename)))
+
+    return matches
+
+#this is our catch-all Dev class
+#it keeps track of all the variables and common functions we need
+class Dev:
+    mymode = ''
+    debugcflags = ''
+    releasecflags = ''
+
+    #---
+    # sets up the sconscript file for a given sub-project
+    def Subproject(self, project):
+        SConscript(env.jDev.SPath(project), exports=['project'])
+
+    #sets up the build for a given project
+    def Buildit(self, localenv, project):
+        buildroot = '../build/' + env.jDev.mymode
+        builddir = buildroot + '/' + project
+        targetpath = builddir + '/' + project
+
+        #append the user's additional compile flags
+        #assume debugcflags and releasecflags are defined
+        if self.mymode == 'debug':
+            if (self.debugcxx):
+                localenv.Replace(CXX = self.debugcxx)
+            localenv.Append(CPPFLAGS=self.debugcppflags)
+            localenv.Append(LINKFLAGS=self.debuglinkflags)
+            localenv.Append(CPPPATH=self.debugcpppath)
+            localenv.Append(LIBPATH=self.debuglibpath)
+            localenv.Append(LIBS=self.debuglibs)
+        else:
+            if (self.releasecxx):
+                localenv.Replace(CXX = self.releasecxx)
+            localenv.Append(CPPFLAGS=self.releasecppflags)
+            localenv.Append(LINKFLAGS=self.releaselinkflags)
+            localenv.Append(CPPPATH=self.releasecpppath)
+            localenv.Append(LIBPATH=self.releaselibpath)
+            localenv.Append(LIBS=self.releaselibs)
+
+        #specify the build directory
+        #localenv.VariantDir(builddir, ".", duplicate=1)
+
+        srclst = RecursiveGlob('src', '*.cpp')
+
+        pgm = localenv.Program(
+            targetpath,
+            source = [ srclst ]
+        )
+        env.Alias('all', pgm)  #note: not localenv
+        env.Alias(project, pgm)
+
+    #---- PRIVATE ----
+
+    #---
+    # return the sconscript path to use
+    def SPath(self, project):
+        return project + '/sconscript'
+
+env = Environment()
+
+#put all .sconsign files in one place
+env.SConsignFile()
+
+#we can put variables right into the environment, however
+#we must watch out for name clashes.
+SConsEnvironment.jDev = Dev()
+
+#get the mode flag from the command line
+#default to 'release' if the user didn't specify
+env.jDev.mymode = ARGUMENTS.get('mode', 'release')   #holds current mode
+
+#check if the user has been naughty: only 'debug' or 'release' allowed
+if not (env.jDev.mymode in ['debug', 'release']):
+   print "Error: expected 'debug' or 'release', found: " + env.jDev.mymode
+   Exit(1)
+
+#tell the user what we're doing
+print '**** Compiling in ' + env.jDev.mymode + ' mode...'
+
+if (platform.system() == "Linux"):
+    # debug
+    env.jDev.debugcxx = 'clang++'
+    env.jDev.debugcppflags = '-Wall -std=c++11'
+    env.jDev.debuglinkflags = '-Wall'
+    env.jDev.debugcpppath = [ Dir('includes') ]
+    env.jDev.debuglibpath = []
+    env.jDev.debuglibs = []
+
+    # release
+    env.jDev.releasecxx = 'clang++'
+    env.jDev.releasecppflags = '-Wall -std=c++11'
+    env.jDev.releaselinkflags = '-Wall'
+    env.jDev.releasecpppath = [ Dir('includes') ]
+    env.jDev.releaselibpath = []
+    env.jDev.releaselibs = []
+
+elif (platform.system() == "Windows"):
+    # debug
+    env.jDev.debugcppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE" '
+    env.jDev.debuglinkflags = ''
+    env.jDev.debugcpppath = [ Dir('includes') ]
+    env.jDev.debuglibpath = []
+    env.jDev.debuglibs = []
+
+    # release
+    env.jDev.releasecppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE" '
+    env.jDev.releaselinkflags = ''
+    env.jDev.releasecpppath = [ Dir('includes') ]
+    env.jDev.releaselibpath = []
+    env.jDev.releaselibs = []
+
+else:
+    print platform.system() + " not supported"
+    Exit(1)
+
+#make sure the sconscripts can get to the variables
+#don't need to export anything but 'env'
+Export('env')
+
+#specify all of the sub-projects in the section
+env.jDev.Subproject('agent')
+env.jDev.Subproject('supervisor')
+env.jDev.Subproject('terminal')

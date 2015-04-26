@@ -1,0 +1,6 @@
+#get environment and project
+Import('env', 'project')
+localenv = env.Clone()
+
+#call back to jDev to build the project for us
+env.jDev.Buildit(localenv, project)
