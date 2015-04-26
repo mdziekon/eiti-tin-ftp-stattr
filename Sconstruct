@@ -79,7 +79,7 @@ SConsEnvironment.jDev = Dev()
 
 #get the mode flag from the command line
 #default to 'release' if the user didn't specify
-env.jDev.mymode = ARGUMENTS.get('mode', 'release')   #holds current mode
+env.jDev.mymode = ARGUMENTS.get('mode', 'debug')   #holds current mode
 
 #check if the user has been naughty: only 'debug' or 'release' allowed
 if not (env.jDev.mymode in ['debug', 'release']):
