@@ -1,0 +1,3 @@
+[submodule "common/cpp/includes/json"]
+	path = common/cpp/includes/json
+	url = git@github.com:nlohmann/json.git
