@@ -89,36 +89,77 @@ if not (env.jDev.mymode in ['debug', 'release']):
 #tell the user what we're doing
 print '**** Compiling in ' + env.jDev.mymode + ' mode...'
 
-if (platform.system() == "Linux" or platform.system() == "darwin"):
+if (platform.system() == "Linux"):
     # debug
     env.jDev.debugcxx = 'clang++'
     env.jDev.debugcppflags = '-Wall -std=c++11 -pthread'
     env.jDev.debuglinkflags = '-Wall -pthread'
-    env.jDev.debugcpppath = [ Dir('includes') ]
+    env.jDev.debugcpppath = [
+        Dir('common/cpp/includes'),
+        Dir('common/cpp/includes/websocketpp')
+    ]
     env.jDev.debuglibpath = []
-    env.jDev.debuglibs = []
+    env.jDev.debuglibs = [ 'boost_system' ]
 
     # release
     env.jDev.releasecxx = 'clang++'
     env.jDev.releasecppflags = '-Wall -std=c++11 -pthread'
     env.jDev.releaselinkflags = '-Wall -pthread'
-    env.jDev.releasecpppath = [ Dir('includes') ]
+    env.jDev.releasecpppath = [
+        Dir('common/cpp/includes'),
+        Dir('common/cpp/includes/websocketpp')
+    ]
     env.jDev.releaselibpath = []
-    env.jDev.releaselibs = []
+    env.jDev.releaselibs = [ 'boost_system' ]
+
+elif (platform.system() == "darwin"):
+    # debug
+    env.jDev.debugcxx = 'clang++'
+    env.jDev.debugcppflags = '-Wall -std=c++11 -pthread'
+    env.jDev.debuglinkflags = '-Wall -pthread'
+    env.jDev.debugcpppath = [
+        Dir('common/cpp/includes'),
+        Dir('common/cpp/includes/websocketpp')
+    ]
+    env.jDev.debuglibpath = []
+    env.jDev.debuglibs = [ 'boost_system' ]
+
+    # release
+    env.jDev.releasecxx = 'clang++'
+    env.jDev.releasecppflags = '-Wall -std=c++11 -pthread'
+    env.jDev.releaselinkflags = '-Wall -pthread'
+    env.jDev.releasecpppath = [
+        Dir('common/cpp/includes'),
+        Dir('common/cpp/includes/websocketpp')
+    ]
+    env.jDev.releaselibpath = []
+    env.jDev.releaselibs = [ 'boost_system' ]
 
 elif (platform.system() == "Windows"):
     # debug
     env.jDev.debugcppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE"  /D_WEBSOCKETPP_CPP11_FUNCTIONAL_  /D_WEBSOCKETPP_CPP11_MEMORY_'
     env.jDev.debuglinkflags = ''
-    env.jDev.debugcpppath = [ Dir('includes') ]
-    env.jDev.debuglibpath = []
+    env.jDev.debugcpppath = [
+        'C:\Boost',
+        Dir('common/cpp/includes'),
+        Dir('common/cpp/includes/websocketpp')
+    ]
+    env.jDev.debuglibpath = [
+        'C:\Boost\stage\lib'
+    ]
     env.jDev.debuglibs = []
 
     # release
     env.jDev.releasecppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE"  /D_WEBSOCKETPP_CPP11_FUNCTIONAL_  /D_WEBSOCKETPP_CPP11_MEMORY_'
     env.jDev.releaselinkflags = ''
-    env.jDev.releasecpppath = [ Dir('includes') ]
-    env.jDev.releaselibpath = []
+    env.jDev.releasecpppath = [
+        'C:\Boost',
+        Dir('common/cpp/includes'),
+        Dir('common/cpp/includes/websocketpp')
+    ]
+    env.jDev.releaselibpath = [
+        'C:\Boost\stage\lib'
+    ]
     env.jDev.releaselibs = []
 
 else:
