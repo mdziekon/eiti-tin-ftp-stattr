@@ -92,16 +92,16 @@ print '**** Compiling in ' + env.jDev.mymode + ' mode...'
 if (platform.system() == "Linux" or platform.system() == "darwin"):
     # debug
     env.jDev.debugcxx = 'clang++'
-    env.jDev.debugcppflags = '-Wall -std=c++11'
-    env.jDev.debuglinkflags = '-Wall'
+    env.jDev.debugcppflags = '-Wall -std=c++11 -pthread'
+    env.jDev.debuglinkflags = '-Wall -pthread'
     env.jDev.debugcpppath = [ Dir('includes') ]
     env.jDev.debuglibpath = []
     env.jDev.debuglibs = []
 
     # release
     env.jDev.releasecxx = 'clang++'
-    env.jDev.releasecppflags = '-Wall -std=c++11'
-    env.jDev.releaselinkflags = '-Wall'
+    env.jDev.releasecppflags = '-Wall -std=c++11 -pthread'
+    env.jDev.releaselinkflags = '-Wall -pthread'
     env.jDev.releasecpppath = [ Dir('includes') ]
     env.jDev.releaselibpath = []
     env.jDev.releaselibs = []
