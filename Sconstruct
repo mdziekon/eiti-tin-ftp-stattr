@@ -108,14 +108,14 @@ if (platform.system() == "Linux" or platform.system() == "darwin"):
 
 elif (platform.system() == "Windows"):
     # debug
-    env.jDev.debugcppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE" '
+    env.jDev.debugcppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE"  /D_WEBSOCKETPP_CPP11_FUNCTIONAL_  /D_WEBSOCKETPP_CPP11_MEMORY_'
     env.jDev.debuglinkflags = ''
     env.jDev.debugcpppath = [ Dir('includes') ]
     env.jDev.debuglibpath = []
     env.jDev.debuglibs = []
 
     # release
-    env.jDev.releasecppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE" '
+    env.jDev.releasecppflags = '/W3 /EHcs /D "WIN32" /D "_WIN32_WINNT#0x501" /D "_CONSOLE"  /D_WEBSOCKETPP_CPP11_FUNCTIONAL_  /D_WEBSOCKETPP_CPP11_MEMORY_'
     env.jDev.releaselinkflags = ''
     env.jDev.releasecpppath = [ Dir('includes') ]
     env.jDev.releaselibpath = []
