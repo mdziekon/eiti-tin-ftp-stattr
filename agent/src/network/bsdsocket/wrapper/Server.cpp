@@ -4,13 +4,9 @@
 #include <utility>
 #include <exception>
 
-#include "events/NewConnection.hpp"
-#include "events/Disconnection.hpp"
-#include "events/Message.hpp"
+#include "events/IncomingMessage.hpp"
+#include "events/OutcomingMessage.hpp"
 #include "events/Terminate.hpp"
-#include "events/OutputMessage.hpp"
-#include "events/OutputMultiMessage.hpp"
-#include "events/BroadcastMessage.hpp"
 
 using tin::network::bsdsocket::wrapper::Server;
 namespace events = tin::network::bsdsocket::wrapper::events;
@@ -71,13 +67,18 @@ unsigned int Server::attachMessageReceivedHandler(
     );
 }
 
-void Server::sendMessage(
+void Server::sendResponse(
     const std::string& message
 )
 {
     this->transmitterQueue.push(
-        EventPtr(new events::OutputMessage(message))
+        EventPtr(new events::OutcomingMessage(message))
     );
+}
+
+void Server::terminateConnection()
+{
+
 }
 
 
@@ -95,9 +96,9 @@ void Server::runMessageReceivedHandlers(
 void Server::listenerLoop()
 {}
 
-void Server::onMessageReceive()
+void Server::onMessageReceive(const std::string& message)
 {
     this->receiverQueue.push(
-        EventPtr(new events::Message(message))
+        EventPtr(new events::IncomingMessage(message))
     );
 }

@@ -21,15 +21,16 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper
         void terminate();
 
         unsigned int attachMessageReceivedHandler(
-            std::function<void(const unsigned int&, const std::string&)>& handler
+            std::function<void(const std::string&)>& handler
         );
         unsigned int attachMessageReceivedHandler(
-            std::function<void(const unsigned int&, const std::string&)>&& handler
+            std::function<void(const std::string&)>&& handler
         );
 
-        void sendMessage(
+        void sendResponse(
             const std::string& message
         );
+        void terminateConnection();
 
     private:
         unsigned int portNo;
@@ -53,7 +54,7 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper
 
         void listenerLoop();
 
-        void onMessageReceive();
+        void onMessageReceive(const std::string& message);
     };
 }}}}
 

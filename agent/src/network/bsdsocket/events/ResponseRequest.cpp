@@ -4,7 +4,10 @@
 
 using tin::network::bsdsocket::events::ResponseRequest;
 
-ResponseRequest::ResponseRequest():
+ResponseRequest::ResponseRequest(
+    const std::string& message
+):
+message(message)
 {}
 
 void ResponseRequest::accept(tin::network::bsdsocket::ManagerVisitor& visitor)

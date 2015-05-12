@@ -1,6 +1,8 @@
 #ifndef TIN_NETWORK_BSDSOCKET_WRAPPER_EVENTS_OUTCOMINGMESSAGE_HPP
 #define TIN_NETWORK_BSDSOCKET_WRAPPER_EVENTS_OUTCOMINGMESSAGE_HPP
 
+#include <string>
+
 #include "../Event.hpp"
 
 namespace tin { namespace network { namespace bsdsocket { namespace wrapper { namespace events

@@ -22,9 +22,9 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper
         ServerVisitor(tin::network::bsdsocket::wrapper::Server& server);
 
     public:
-        void visit(tin::network::websocket::wrapper::events::IncomingMessage& e);
-        void visit(tin::network::websocket::wrapper::events::OutcomingMessage& e);
-        void visit(tin::network::websocket::wrapper::events::Terminate& e);
+        void visit(tin::network::bsdsocket::wrapper::events::IncomingMessage& e);
+        void visit(tin::network::bsdsocket::wrapper::events::OutcomingMessage& e);
+        void visit(tin::network::bsdsocket::wrapper::events::Terminate& e);
     };
 }}}}
 

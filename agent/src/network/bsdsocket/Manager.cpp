@@ -20,9 +20,9 @@ controllerQueue(controllerQueue)
 {
     this->server.run();
 
-    this->server.attachMessageReceivedHandler([this](const unsigned int& idx, const std::string& msg) {
+    this->server.attachMessageReceivedHandler([this](const std::string& msg) {
         this->incomingQueue.push(
-            EventPtr(new events::MessageReceived(idx, msg))
+            EventPtr(new events::MessageReceived(msg))
         );
     });
 }
