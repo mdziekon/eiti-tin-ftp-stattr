@@ -126,6 +126,7 @@ void Client::onMessageRequest(
     hp = gethostbyname(ip.c_str());
     if (hp == (struct hostent *) 0)
     {
+        return;
         // Throw unknown host error
     }
     memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
@@ -136,11 +137,13 @@ void Client::onMessageRequest(
     // Connect to server with created socket
     if (connect(this->socketHandle, (struct sockaddr *) &server, sizeof server) == -1)
     {
+        return;
         // Throw connection error
     }
 
     if (write(this->socketHandle, message.c_str(), message.length()) == -1)
     {
+        return;
         // Throw write error
     }
 
@@ -161,6 +164,7 @@ void Client::onMessageRequest(
         //        try to read in chunks
         if ((rval = read(this->socketHandle, buf, readBufSize)) == -1)
         {
+            return;
             // Throw message read error
         }
         if (rval == 0)
