@@ -15,12 +15,12 @@ server(server)
 
 void ServerVisitor::visit(events::IncomingMessage& e)
 {
-    // Handle incoming message
+    this->server.runMessageReceivedHandlers(e.message);
 }
 
 void ServerVisitor::visit(events::OutcomingMessage& e)
 {
-    // Send response message
+    this->server.onResponseRequest(e.message);
 }
 
 void ServerVisitor::visit(events::Terminate& e)

@@ -1,6 +1,9 @@
 #ifndef TIN_NETWORK_BSDSOCKET_WRAPPER_SERVER_HPP
 #define TIN_NETWORK_BSDSOCKET_WRAPPER_SERVER_HPP
 
+#include <mutex>
+#include <condition_variable>
+
 #include "typedefs.hpp"
 
 #include "ServerHelperThread.hpp"
@@ -35,6 +38,14 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper
     private:
         unsigned int portNo;
 
+        int socketHandle;
+        int connectionHandle;
+        bool connectionActionAwaiting = false;
+
+        std::mutex connectionMtx;
+        std::unique_lock<std::mutex> connectionLock;
+        std::condition_variable connectionLockCnd;
+
         tin::network::bsdsocket::wrapper::ServerQueue receiverQueue;
         tin::network::bsdsocket::wrapper::ServerQueue transmitterQueue;
 
@@ -53,8 +64,10 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper
         void runMessageReceivedHandlers(const std::string& message);
 
         void listenerLoop();
+        void unlockConnection();
 
         void onMessageReceive(const std::string& message);
+        void onResponseRequest(const std::string& message);
     };
 }}}}
 

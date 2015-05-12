@@ -18,6 +18,11 @@ void ManagerVisitor::visit(events::Terminate& evt)
 
 void ManagerVisitor::visit(events::MessageReceived& evt)
 {
+    std::cout << "[Agent] Received message: " << evt.message << std::endl;
+    std::cout << "[Agent] Sending response: " << "test" << std::endl;
+
+    this->manager.server.sendResponse("test");
+
     // this->manager.controllerQueue.push(
     //     tin::controllers::main::EventPtr(
     //     )
