@@ -23,11 +23,11 @@ void tin::controllers::main::MainVisitor::visit(events::Terminate &event)
 
 void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 {
-    auto ptr = std::shared_ptr<json>(new json(json::parse("{ \"testMessage\": \"testResponse\" }")));
-
     this->controller.networkManagerQueue.push(
         tin::network::bsdsocket::EventPtr(
-            new bsdsocketEvents::ResponseRequest(ptr)
+            new bsdsocketEvents::ResponseRequest(
+                tin::utils::json::makeSharedInstance("{ \"testMessage\": \"testResponse\" }")
+            )
         )
     );
 }

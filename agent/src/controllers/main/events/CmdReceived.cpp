@@ -4,7 +4,7 @@
 
 using tin::controllers::main::events::CmdReceived;
 
-CmdReceived::CmdReceived(const std::shared_ptr<json>& jsonPtr):
+CmdReceived::CmdReceived(const tin::utils::json::ptr& jsonPtr):
 jsonPtr(jsonPtr)
 {}
 

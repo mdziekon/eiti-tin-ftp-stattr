@@ -7,7 +7,7 @@ using tin::network::bsdsocket::events::MessageRequest;
 MessageRequest::MessageRequest(
     const std::string& ip,
     const unsigned int& port,
-    const std::shared_ptr<json>& jsonPtr,
+    const tin::utils::json::ptr& jsonPtr,
     const bool& waitForResponse
 ):
 ip(ip),

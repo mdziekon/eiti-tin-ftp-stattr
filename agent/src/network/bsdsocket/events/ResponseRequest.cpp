@@ -4,7 +4,7 @@
 
 using tin::network::bsdsocket::events::ResponseRequest;
 
-ResponseRequest::ResponseRequest(const std::shared_ptr<json>& jsonPtr):
+ResponseRequest::ResponseRequest(const tin::utils::json::ptr& jsonPtr):
 jsonPtr(jsonPtr)
 {}
 

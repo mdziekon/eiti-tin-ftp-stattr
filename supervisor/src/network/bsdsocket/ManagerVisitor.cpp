@@ -2,7 +2,7 @@
 
 #include "Manager.hpp"
 
-#include <json/src/json.hpp>
+#include "../../utils/JSON.hpp"
 
 #include "events/Terminate.hpp"
 #include "events/ResponseReceived.hpp"
@@ -10,7 +10,6 @@
 
 #include "../../controllers/main/events/CmdResponseReceived.hpp"
 
-using json = nlohmann::json;
 using tin::network::bsdsocket::ManagerVisitor;
 namespace events = tin::network::bsdsocket::events;
 namespace mainCtrlEvents = tin::controllers::main::events;
@@ -29,7 +28,7 @@ void ManagerVisitor::visit(events::ResponseReceived& evt)
             new mainCtrlEvents::CmdResponseReceived(
                 evt.ip,
                 evt.port,
-                std::shared_ptr<json>(new json(json::parse(evt.message)))
+                tin::utils::json::makeSharedInstance(evt.message)
             )
         )
     );

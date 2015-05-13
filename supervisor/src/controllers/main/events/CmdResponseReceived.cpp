@@ -7,7 +7,7 @@ using tin::controllers::main::events::CmdResponseReceived;
 CmdResponseReceived::CmdResponseReceived(
     const std::string& ip,
     const unsigned int& port,
-    const std::shared_ptr<json>& jsonPtr
+    const tin::utils::json::ptr& jsonPtr
 ):
 ip(ip),
 port(port),

@@ -28,7 +28,7 @@ int main()
             new tin::network::bsdsocket::events::MessageRequest(
                 "localhost",
                 3333,
-                std::shared_ptr<json>(new json(json::parse("{ \"command\": \"test\" }"))),
+                tin::utils::json::makeSharedInstance("{ \"command\": \"test\" }"),
                 true
             )
         )
