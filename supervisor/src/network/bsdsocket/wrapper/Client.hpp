@@ -8,7 +8,7 @@
 
 #include "ClientHelperThread.hpp"
 #include "ClientVisitor.hpp"
-#include "utils/HandlersContainer.hpp"
+#include "../../../utils/HandlersContainer.hpp"
 
 namespace tin { namespace network { namespace bsdsocket { namespace wrapper
 {
@@ -50,7 +50,7 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper
 
         tin::network::bsdsocket::wrapper::ClientVisitor visitor;
 
-        tin::network::bsdsocket::wrapper::utils::HandlersContainer
+        tin::utils::HandlersContainer
         <void(const std::string&, const unsigned int&, const std::string&)>
             messageReceivedHandlers;
 

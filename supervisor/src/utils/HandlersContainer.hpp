@@ -1,10 +1,10 @@
-#ifndef TIN_NETWORK_BSDSOCKET_WRAPPER_UTILS_HANDLERSCONTAINER_HPP
-#define TIN_NETWORK_BSDSOCKET_WRAPPER_UTILS_HANDLERSCONTAINER_HPP
+#ifndef TIN_UTILS_HANDLERSCONTAINER_HPP
+#define TIN_UTILS_HANDLERSCONTAINER_HPP
 
 #include <unordered_map>
 #include <functional>
 
-namespace tin { namespace network { namespace bsdsocket { namespace wrapper { namespace utils
+namespace tin { namespace utils
 {
     template <typename T>
     class HandlersContainer
@@ -33,9 +33,8 @@ namespace tin { namespace network { namespace bsdsocket { namespace wrapper { na
         const_iterator begin() const;
         const_iterator end() const;
     };
-}}}}}
+}}
 
 #include "HandlersContainer.impl.hpp"
 
-#endif  /* TIN_NETWORK_BSDSOCKET_WRAPPER_UTILS_HANDLERSCONTAINER_HPP */
-
+#endif  /* TIN_UTILS_HANDLERSCONTAINER_HPP */

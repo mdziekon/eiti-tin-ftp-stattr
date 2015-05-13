@@ -14,7 +14,7 @@
 
 #include "ServerHelperThread.hpp"
 #include "ServerVisitor.hpp"
-#include "utils/HandlersContainer.hpp"
+#include "../../../utils/HandlersContainer.hpp"
 
 namespace tin { namespace network { namespace websocket { namespace wrapper
 {
@@ -93,11 +93,11 @@ namespace tin { namespace network { namespace websocket { namespace wrapper
         > connectionIDs;
         unsigned int nextConnectionID = 0;
 
-        tin::network::websocket::wrapper::utils::HandlersContainer<void(const unsigned int&)>
+        tin::utils::HandlersContainer<void(const unsigned int&)>
             connectionOpenedHandlers;
-        tin::network::websocket::wrapper::utils::HandlersContainer<void(const unsigned int&)>
+        tin::utils::HandlersContainer<void(const unsigned int&)>
             connectionClosedHandlers;
-        tin::network::websocket::wrapper::utils::HandlersContainer<void(const unsigned int&, const std::string&)>
+        tin::utils::HandlersContainer<void(const unsigned int&, const std::string&)>
             messageReceivedHandlers;
 
 
