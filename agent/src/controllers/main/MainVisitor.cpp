@@ -5,12 +5,12 @@
 #include "MainModule.hpp"
 
 #include "events/Terminate.hpp"
+#include "events/CmdReceived.hpp"
 
-#include "../../network/bsdsocket/typedefs.hpp"
-#include "../../network/bsdsocket/events/MessageReceived.hpp"
 #include "../../network/bsdsocket/events/ResponseRequest.hpp"
 
 namespace events = tin::controllers::main::events;
+namespace bsdsocketEvents = tin::network::bsdsocket::events;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
 controller(controller)
@@ -19,4 +19,15 @@ controller(controller)
 void tin::controllers::main::MainVisitor::visit(events::Terminate &event)
 {
     this->controller.terminate();
+}
+
+void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
+{
+    auto ptr = std::shared_ptr<json>(new json(json::parse("{ \"testMessage\": \"testResponse\" }")));
+
+    this->controller.networkManagerQueue.push(
+        tin::network::bsdsocket::EventPtr(
+            new bsdsocketEvents::ResponseRequest(ptr)
+        )
+    );
 }

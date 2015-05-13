@@ -8,6 +8,7 @@ namespace tin { namespace controllers { namespace main
     namespace events
     {
         struct Terminate;
+        struct CmdResponseReceived;
     }
 
     class MainVisitor
@@ -19,7 +20,8 @@ namespace tin { namespace controllers { namespace main
         MainVisitor(tin::controllers::main::MainModule& controller);
 
     public:
-        void visit(tin::controllers::main::events::Terminate &event);
+        void visit(tin::controllers::main::events::Terminate &evt);
+        void visit(tin::controllers::main::events::CmdResponseReceived &evt);
     };
 }}}
 

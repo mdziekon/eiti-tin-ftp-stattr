@@ -1,6 +1,7 @@
 #include <iostream>
 #include <system_error>
 
+#include "controllers/main/MainModule.hpp"
 #include "network/websocket/Manager.hpp"
 #include "network/bsdsocket/Manager.hpp"
 
@@ -10,12 +11,15 @@ int main()
 {
     tin::controllers::main::ControllerQueue ctrlQueue;
     tin::network::websocket::ManagerQueue netManagerQueue;
+
+    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 9001);
     tin::network::bsdsocket::ManagerQueue bsdManagerQueue;
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
 
     std::cout << "Hello supervisor!\n";
 
+    auto mainCtrlThread = mainCtrl.createThread();
     auto netManager = networkManager.createThread();
     auto bsdManagerThread = bsdManager.createThread();
 
@@ -24,14 +28,15 @@ int main()
             new tin::network::bsdsocket::events::MessageRequest(
                 "localhost",
                 3333,
-                "testmessage",
-                false
+                std::shared_ptr<json>(new json(json::parse("{ \"command\": \"test\" }"))),
+                true
             )
         )
     );
 
     try
     {
+        mainCtrlThread.join();
         netManager.join();
         bsdManagerThread.join();
     }

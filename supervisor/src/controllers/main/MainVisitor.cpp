@@ -5,6 +5,7 @@
 #include "MainModule.hpp"
 
 #include "events/Terminate.hpp"
+#include "events/CmdResponseReceived.hpp"
 
 #include "../../network/websocket/typedefs.hpp"
 #include "../../network/websocket/events/MessageSendRequest.hpp"
@@ -17,7 +18,13 @@ tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainMod
 controller(controller)
 {}
 
-void tin::controllers::main::MainVisitor::visit(events::Terminate &event)
+void tin::controllers::main::MainVisitor::visit(events::Terminate &evt)
 {
     this->controller.terminate();
+}
+
+void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt)
+{
+    std::cout << "[Supervisor] [MainCtrl] Received response: " << evt.jsonPtr->dump() << std::endl;
+    std::cout << "                        Source: " << evt.ip << ":" << evt.port << std::endl;
 }

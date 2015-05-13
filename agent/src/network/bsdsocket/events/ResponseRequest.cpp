@@ -4,10 +4,8 @@
 
 using tin::network::bsdsocket::events::ResponseRequest;
 
-ResponseRequest::ResponseRequest(
-    const std::string& message
-):
-message(message)
+ResponseRequest::ResponseRequest(const std::shared_ptr<json>& jsonPtr):
+jsonPtr(jsonPtr)
 {}
 
 void ResponseRequest::accept(tin::network::bsdsocket::ManagerVisitor& visitor)

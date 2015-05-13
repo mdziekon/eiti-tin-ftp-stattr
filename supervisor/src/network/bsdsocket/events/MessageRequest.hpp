@@ -1,9 +1,13 @@
 #ifndef TIN_NETWORK_BSDSOCKET_EVENTS_MessageRequest_HPP
 #define TIN_NETWORK_BSDSOCKET_EVENTS_MessageRequest_HPP
 
-#include <string>
+#include <memory>
+
+#include <json/src/json.hpp>
 
 #include "../Event.hpp"
+
+using json = nlohmann::json;
 
 namespace tin { namespace network { namespace bsdsocket { namespace events
 {
@@ -11,13 +15,13 @@ namespace tin { namespace network { namespace bsdsocket { namespace events
     {
         std::string ip;
         unsigned int port;
-        std::string message;
+        const std::shared_ptr<json> jsonPtr;
         bool waitForResponse;
 
         MessageRequest(
             const std::string& ip,
             const unsigned int& port,
-            const std::string& message,
+            const std::shared_ptr<json>& jsonPtr,
             const bool& waitForResponse
         );
 

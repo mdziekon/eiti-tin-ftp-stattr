@@ -7,12 +7,12 @@ using tin::network::bsdsocket::events::MessageRequest;
 MessageRequest::MessageRequest(
     const std::string& ip,
     const unsigned int& port,
-    const std::string& message,
+    const std::shared_ptr<json>& jsonPtr,
     const bool& waitForResponse
 ):
 ip(ip),
 port(port),
-message(message),
+jsonPtr(jsonPtr),
 waitForResponse(waitForResponse)
 {}
 
