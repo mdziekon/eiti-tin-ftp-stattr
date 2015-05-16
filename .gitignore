@@ -39,3 +39,9 @@ CMakeFiles
 CMakeCache.txt
 Makefile
 
+#KDevelop project files
+.cproject
+.kdev4
+.project
+.settings
+*.kdev4
