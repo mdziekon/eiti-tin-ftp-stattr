@@ -4,13 +4,6 @@
 #include <unordered_map>
 #include <sys/types.h>
 
-#include "ConnectionData.hpp"
-
-struct ethernet_header;
-struct ip_header;
-struct tcp_header;
-struct pcaprec_header;
-
 namespace tin { namespace agent { namespace analytics 
 {
 	class Analytics

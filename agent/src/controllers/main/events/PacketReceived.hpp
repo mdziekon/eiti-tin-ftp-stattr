@@ -8,9 +8,9 @@ namespace tin { namespace controllers { namespace main { namespace events
 {
     struct PacketReceived: public tin::controllers::main::Event
     {
-        const tin::utils::packet::ptr pac;
+        const tin::utils::Packet::ptr pac;
 
-        PacketReceived(const tin::utils::packet::ptr& packet);
+        PacketReceived(const tin::utils::Packet::ptr& packet);
 
         virtual void accept(tin::controllers::main::MainVisitor& visitor);
     };

@@ -1,6 +1,6 @@
 #include "packet.h"
 
-tin::utils::Packet::Packet(int packetNumber, int timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol)
+tin::utils::Packet::Packet(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol)
 {
 	this->packetNumber = packetNumber;
 	this->timestamp = timestamp;
@@ -12,7 +12,7 @@ tin::utils::Packet::Packet(int packetNumber, int timestamp, struct in_addr ip_sr
 	this->size_payload = -1; // unknown
 }
 
-tin::utils::Packet::Packet(int packetNumber, int timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload)
+tin::utils::Packet::Packet(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload)
 {
 	this->packetNumber = packetNumber;
 	this->timestamp = timestamp;
@@ -34,6 +34,18 @@ tin::utils::Packet::Packet(const Packet &pac)
 	th_sport = pac.th_sport;
 	th_dport = pac.th_dport;
 	size_payload = pac.size_payload;
+}
+
+tin::utils::Packet::Packet(const Packet *packet)
+{
+	packetNumber = packet->packetNumber;
+	timestamp = packet->timestamp;
+	ip_src = packet->ip_src;
+	ip_dst = packet->ip_dst;
+	ip_protocol = packet->ip_protocol;
+	th_sport = packet->th_sport;
+	th_dport = packet->th_dport;
+	size_payload = packet->size_payload;	
 }
 
 void tin::utils::Packet::showPacketInfo()
@@ -75,12 +87,12 @@ void tin::utils::Packet::showPacketInfo()
     return;
 }
 
-tin::utils::Packet::ptr tin::utils::Packet::makeSharedInstance(int packetNumber, int timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol))
+tin::utils::Packet::ptr tin::utils::Packet::makeSharedInstance(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol)
 {
     return tin::utils::Packet::ptr(new tin::utils::Packet(packetNumber, timestamp, ip_src, ip_dst,  ip_protocol));
 }
 
-tin::utils::Packet::ptr tin::utils::Packet::makeSharedInstance(int packetNumber, int timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload)
+tin::utils::Packet::ptr tin::utils::Packet::makeSharedInstance(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload)
 {
     return tin::utils::Packet::ptr(new tin::utils::Packet(packetNumber, timestamp, ip_src, ip_dst, ip_protocol, th_sport, th_dport, size_payload));
 }

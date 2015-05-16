@@ -1,94 +1,10 @@
-using tin::network::trafficcapture::Sniffer;
+#include "Sniffer.hpp"
 
-Sniffer::Sniffer(std::string device, std::string expression)
-{
-	this->device = device;
-	this->expression = expression;
-}
+using namespace tin::network::trafficcapture;
 
-void Sniffer::sniff()
-{
-    char errbuf[PCAP_ERRBUF_SIZE]; // error buffer 
-    pcap_t *handle;                // packet capture handle 
+std::vector<std::shared_ptr<tin::utils::Packet>> SnifferProxy::packetVector;
 
-    struct bpf_program fp;         // compiled filter program (expression) 
-    bpf_u_int32 mask;              // subnet mask 
-    bpf_u_int32 net;               // ip 
-    int num_packets = -1;          // number of packets to capture (-1 means till error) */
-
-
-    // get device
-    dev = getDevice(device);
-
-
-    if (dev == NULL) 
-    {
-        fprintf(stderr, "Couldn't find default device: %s\n",
-            errbuf);
-        exit(EXIT_FAILURE);
-    }
-    
-    
-    // get network number and mask associated with capture device 
-    if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) 
-    {
-        fprintf(stderr, "Couldn't get netmask for device %s: %s\n",
-            dev, errbuf);
-        net = 0;
-        mask = 0;
-    }
-
-    // get an expression
-    filter = getExpression(expression);
-
-    // print info 
-    printf("Device: %s\n", dev);
-    printf("Number of packets: %d\n", num_packets);
-    printf("Filter expression: %s\n", filter);
-
-    // open capture device
-    handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
-    if (handle == NULL) 
-    {
-        fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
-        exit(EXIT_FAILURE);
-    }
-
-    // make sure we're capturing on an Ethernet device [2]
-    if (pcap_datalink(handle) != DLT_EN10MB) 
-    {
-        fprintf(stderr, "%s is not an Ethernet\n", dev);
-        exit(EXIT_FAILURE);
-    }
-
-    // compile the filter 
-    if (pcap_compile(handle, &fp, filter, 0, net) == -1) 
-    {
-        fprintf(stderr, "Couldn't parse filter %s: %s\n",
-            filter, pcap_geterr(handle));
-        exit(EXIT_FAILURE);
-    }
-
-    // apply the filter 
-    if (pcap_setfilter(handle, &fp) == -1) 
-    {
-        fprintf(stderr, "Couldn't install filter %s: %s\n",
-            filter, pcap_geterr(handle));
-        exit(EXIT_FAILURE);
-    }
-
-    // capturing packets
-    pcap_loop(handle, num_packets, got_packet, NULL);
-
-    // cleanup 
-    pcap_freecode(&fp);
-    pcap_close(handle);
-
-    printf("\nCapture complete.\n");
-
-}
-
-void Sniffer::gotPacket(const struct pcap_pkthdr *header, const u_char *packet)
+void SnifferProxy::gotPacket(u_char *user, const struct pcap_pkthdr *header, const u_char *packet)
 {
 	static int counter = 0;                   // packet counter 
     
@@ -123,7 +39,7 @@ void Sniffer::gotPacket(const struct pcap_pkthdr *header, const u_char *packet)
     // if it is not TCP 
     if(ip->ip_pro != IPPROTO_TCP)
     {
-        Packet *pac = new Packet(counter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro);
+        auto pac = std::make_shared<tin::utils::Packet>(new tin::utils::Packet(counter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro));
         packetVector.push_back(pac);
         pac->showPacketInfo();
         return;
@@ -144,25 +60,111 @@ void Sniffer::gotPacket(const struct pcap_pkthdr *header, const u_char *packet)
     size_payload = ntohs(ip->ip_len) + (size_ip + size_tcp);
     
     // create new "Packet" and add it to vector
-    Packet *pac = new Packet(counter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro, tcp->th_sport, tcp->th_dport, size_payload);
-    packetVector.push_back(pac);
+    auto pac = std::make_shared<tin::utils::Packet>(new tin::utils::Packet(counter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro, tcp->th_sport, tcp->th_dport, size_payload));
+    SnifferProxy::packetVector.push_back(pac);
     pac->showPacketInfo();
+}
 
-return;
+Sniffer::Sniffer(std::string device, std::string expression):
+device(device),
+expression(expression)
+{}
+
+void Sniffer::sniff()
+{
+    char errbuf[PCAP_ERRBUF_SIZE]; // error buffer 
+    pcap_t *handle;                // packet capture handle 
+
+    struct bpf_program fp;         // compiled filter program (expression) 
+    bpf_u_int32 mask;              // subnet mask 
+    bpf_u_int32 net;               // ip 
+    int num_packets = -1;          // number of packets to capture (-1 means till error) */
+
+
+    // get device
+    auto dev = getDevice(device);
+
+
+    if (dev == NULL) 
+    {
+        fprintf(stderr, "Couldn't find default device: %s\n",
+            errbuf);
+        exit(EXIT_FAILURE);
+    }
+    
+    
+    // get network number and mask associated with capture device 
+    if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) 
+    {
+        fprintf(stderr, "Couldn't get netmask for device %s: %s\n",
+            dev, errbuf);
+        net = 0;
+        mask = 0;
+    }
+
+    // get an expression
+    filter = getExpression(expression);
+
+    // print info 
+    printf("Device: %s\n", dev);
+    printf("Number of packets: %d\n", num_packets);
+    printf("Filter expression: %s\n", filter.c_str());
+
+    // open capture device
+    handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
+    if (handle == NULL) 
+    {
+        fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
+        exit(EXIT_FAILURE);
+    }
+
+    // make sure we're capturing on an Ethernet device [2]
+    if (pcap_datalink(handle) != DLT_EN10MB) 
+    {
+        fprintf(stderr, "%s is not an Ethernet\n", dev);
+        exit(EXIT_FAILURE);
+    }
+
+    // compile the filter 
+    if (pcap_compile(handle, &fp, filter.c_str(), 0, net) == -1) 
+    {
+        fprintf(stderr, "Couldn't parse filter %s: %s\n",
+            filter.c_str(), pcap_geterr(handle));
+        exit(EXIT_FAILURE);
+    }
+
+    // apply the filter 
+    if (pcap_setfilter(handle, &fp) == -1) 
+    {
+        fprintf(stderr, "Couldn't install filter %s: %s\n",
+            filter.c_str(), pcap_geterr(handle));
+        exit(EXIT_FAILURE);
+    }
+
+    // capturing packets
+    pcap_loop(handle, num_packets, SnifferProxy::gotPacket, NULL);
+
+    // cleanup 
+    pcap_freecode(&fp);
+    pcap_close(handle);
+
+    printf("\nCapture complete.\n");
 
 }
 
-char* Sniffer::getDevice(std::string str)
+
+
+const char* Sniffer::getDevice(std::string str)
 {
    char* dev;
    dev = strdup(str.c_str());
    return dev;
 }
 
-char* Sniffer::getExpression(std::string str)
+const char* Sniffer::getExpression(std::string str)
 {
    expression = strdup(str.c_str());
-   return expression;
+   return expression.c_str();
 }
 
 void Sniffer::run()
@@ -175,14 +177,14 @@ void Sniffer::run()
     this->snifferThread.detach();
 }
 
-void Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet&)>& handler)
+unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler)
 {
 	return this->packetReceivedHandlers.insert(handler);
 }
 
-void Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet&)>&& handler)
+unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>&& handler)
 {
 	return this->packetReceivedHandlers.insert(
-        std::forward<std::function<void(const tin::utils::Packet&)>>(handler)
+        std::forward<std::function<void(const tin::utils::Packet::ptr&)>>(handler)
     );
 }

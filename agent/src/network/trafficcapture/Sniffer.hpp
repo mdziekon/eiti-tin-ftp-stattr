@@ -1,7 +1,8 @@
 #ifndef TIN_NETWORK_TRAFFICCAPTURE_SNIFFER_HPP
 #define TIN_NETWORK_TRAFFICCAPTURE_SNIFFER_HPP
 
-#include <pcap.h>
+#include<pcap.h>
+#include <pcap/pcap.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -16,12 +17,17 @@
 #include <vector>
 #include <string>
 #include <thread>
-#include <function>
+#include <functional>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <memory>
 
-#include "packet.h"
+#include "../../utils/packet.h"
+#include "../../utils/HandlersContainer.hpp"
 
-namespace tin { namespace network { name trafficcapture 
-
+namespace tin { namespace network { namespace trafficcapture 
+{
 		// Max Packet Size
 	#define SNAP_LEN 1518
 
@@ -93,30 +99,46 @@ namespace tin { namespace network { name trafficcapture
 	        u_int32_t incl_len;       // number of octets of packet saved in file 
 	        u_int32_t orig_len;       // actual length of packet 
 	} pcaprec_t; 
-
+	
+	/* A singleton with shared state for C-style event handlers */
+	class SnifferProxy
+	{
+		static std::vector<std::shared_ptr<tin::utils::Packet>> packetVector;
+		static std::atomic<int> totalClients;
+		static std::atomic<int> servedClients;
+		
+		static std::mutex packetMutex;
+		static std::condition_variable packetVectorEmpty;
+	public:
+		static void gotPacket(u_char *user, const struct pcap_pkthdr *header, const u_char *packet);
+		static std::shared_ptr<tin::utils::Packet> pollPacket();
+	};
+	
 	class Sniffer
 	{
 	public:
 		Sniffer(std::string device, std::string filter);
+		
 		void sniff();
-		void gotPacket(const struct pcap_pkthdr *header, const u_char *packet);
-		char* getDevice(std::string str);
-		char* getExpression(std::string str);
+		
+		const char* getDevice(std::string str);
+		const char* getExpression(std::string str);
 		void run();
-		unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet&)>& handler);
-		unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet&)>&& handler);
+		unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler);
+		unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>&& handler);
 
 	private:
 		std::string device;
 		std::string filter;
-		std::vector<Packet*> packetVector;
+		std::string expression;
+		static std::vector<tin::utils::Packet*> packetVector;
 
 		std::thread snifferThread;
 
-		tin::utils::HandlersContainer<void(const tin::utils::Packet&)> packetReceivedHandlers;
+		tin::utils::HandlersContainer<void(const tin::utils::Packet::ptr&)> packetReceivedHandlers;
 
-	}
+	};
 
-}}
+}}}
 
 #endif  /* TIN_NETWORK_TRAFFICCAPTURE_SNIFFER_HPP */
