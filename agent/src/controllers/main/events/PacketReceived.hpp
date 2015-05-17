@@ -2,7 +2,7 @@
 #define TIN_CONTROLLERS_MAIN_EVENTS_PACKETRECEIVED_HPP
 
 #include "../Event.hpp"
-#include "../../../utils/packet.h"
+#include "../../../utils/Packet.hpp"
 
 namespace tin { namespace controllers { namespace main { namespace events
 {

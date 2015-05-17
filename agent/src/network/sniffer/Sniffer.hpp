@@ -1,32 +1,25 @@
-#ifndef TIN_NETWORK_TRAFFICCAPTURE_SNIFFER_HPP
-#define TIN_NETWORK_TRAFFICCAPTURE_SNIFFER_HPP
+#ifndef TIN_NETWORK_SNIFFER_SNIFFER_HPP
+#define TIN_NETWORK_SNIFFER_SNIFFER_HPP
 
 #include <pcap.h>
 #include <pcap/pcap.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <iostream>
 #include <ctime>
-#include <vector>
 #include <string>
 #include <thread>
 #include <functional>
-#include <mutex>
-#include <atomic>
-#include <condition_variable>
 #include <memory>
 
-#include "../../utils/packet.h"
+#include "../../utils/Packet.hpp"
 #include "../../utils/HandlersContainer.hpp"
 
-namespace tin { namespace network { namespace trafficcapture
+namespace tin { namespace network { namespace sniffer
 {
     // Max Packet Size
     #define SNAP_LEN 1518
@@ -116,7 +109,7 @@ typedef struct tcp_header
         std::string device;
         std::string expression;
 
-        unsigned int packetCounter = 0;
+        unsigned long long packetCounter = 0;
 
         std::thread snifferThread;
 
@@ -125,4 +118,4 @@ typedef struct tcp_header
     };
 }}}
 
-#endif  /* TIN_NETWORK_TRAFFICCAPTURE_SNIFFER_HPP */
+#endif  /* TIN_NETWORK_SNIFFER_SNIFFER_HPP */

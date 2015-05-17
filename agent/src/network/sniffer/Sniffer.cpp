@@ -1,6 +1,6 @@
 #include "Sniffer.hpp"
 
-using namespace tin::network::trafficcapture;
+using namespace tin::network::sniffer;
 
 void pcap_trampoline(u_char *param, const struct pcap_pkthdr *pkt_header, const u_char *pkt_data)
 {
@@ -127,11 +127,17 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
     // if it is not TCP
     if(ip->ip_pro != IPPROTO_TCP)
     {
-        auto pac = std::make_shared<tin::utils::Packet>(new tin::utils::Packet(this->packetCounter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro));
+        auto pac = std::make_shared<tin::utils::Packet>(
+            this->packetCounter,
+            timestamp,
+            ip->ip_src,
+            ip->ip_dst,
+            ip->ip_pro
+        );
 
         this->runPacketReceivedHandlers(pac);
 
-        pac->showPacketInfo();
+        pac->printData();
         return;
     }
 
@@ -149,12 +155,21 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
     // compute tcp payload (segment) size
     size_payload = ntohs(ip->ip_len) + (size_ip + size_tcp);
 
-    // create new "Packet" and add it to vector
-    auto pac = std::make_shared<tin::utils::Packet>(new tin::utils::Packet(this->packetCounter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro, tcp->th_sport, tcp->th_dport, size_payload));
+    // create new "Packet"
+    auto pac = std::make_shared<tin::utils::Packet>(
+        this->packetCounter,
+        timestamp,
+        ip->ip_src,
+        ip->ip_dst,
+        ip->ip_pro,
+        tcp->th_sport,
+        tcp->th_dport,
+        size_payload
+    );
 
     this->runPacketReceivedHandlers(pac);
 
-    pac->showPacketInfo();
+    pac->printData();
 }
 
 void Sniffer::run()

@@ -2,7 +2,7 @@
 #include "../../controllers/main/typedefs.hpp"
 #include "../../controllers/main/events/PacketReceived.hpp"
 
-using namespace tin::network::trafficcapture;
+using namespace tin::network::sniffer;
 
 SnifferManager::SnifferManager(
     tin::controllers::main::ControllerQueue& controllerQueue,
