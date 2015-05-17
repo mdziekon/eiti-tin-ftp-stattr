@@ -111,6 +111,7 @@ namespace tin { namespace network { namespace trafficcapture
 		static std::condition_variable packetVectorEmpty;
 	public:
 		static void gotPacket(u_char *user, const struct pcap_pkthdr *header, const u_char *packet);
+		static void pushPacket(const std::shared_ptr<tin::utils::Packet>& packet);
 		static std::shared_ptr<tin::utils::Packet> pollPacket();
 	};
 	

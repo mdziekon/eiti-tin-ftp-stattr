@@ -3,6 +3,8 @@
 using namespace tin::network::trafficcapture;
 
 std::vector<std::shared_ptr<tin::utils::Packet>> SnifferProxy::packetVector;
+std::mutex SnifferProxy::packetMutex;
+std::condition_variable SnifferProxy::packetVectorEmpty;
 
 void SnifferProxy::gotPacket(u_char *user, const struct pcap_pkthdr *header, const u_char *packet)
 {
@@ -61,8 +63,26 @@ void SnifferProxy::gotPacket(u_char *user, const struct pcap_pkthdr *header, con
     
     // create new "Packet" and add it to vector
     auto pac = std::make_shared<tin::utils::Packet>(new tin::utils::Packet(counter, timestamp, ip->ip_src, ip->ip_dst, ip->ip_pro, tcp->th_sport, tcp->th_dport, size_payload));
-    SnifferProxy::packetVector.push_back(pac);
+    SnifferProxy::pushPacket(pac);
     pac->showPacketInfo();
+}
+
+void SnifferProxy::pushPacket(const std::shared_ptr<tin::utils::Packet>& packet)
+{
+	std::unique_lock<std::mutex> lock(SnifferProxy::packetMutex);
+	SnifferProxy::packetVector.push_back(packet);
+	if(packetVector.size() == 1) {
+		SnifferProxy::packetVectorEmpty.notify_all();
+	}
+}
+
+std::shared_ptr< tin::utils::Packet > SnifferProxy::pollPacket()
+{
+	std::unique_lock<std::mutex> lock(SnifferProxy::packetMutex);
+	SnifferProxy::packetVectorEmpty.wait(lock);
+	auto packet = SnifferProxy::packetVector.back();
+	SnifferProxy::packetVector.pop_back();
+	return packet;
 }
 
 Sniffer::Sniffer(std::string device, std::string expression):

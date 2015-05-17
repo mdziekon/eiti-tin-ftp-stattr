@@ -45,3 +45,4 @@ Makefile
 .project
 .settings
 *.kdev4
+*.kate-swp
