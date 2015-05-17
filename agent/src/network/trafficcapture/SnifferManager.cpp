@@ -5,7 +5,7 @@
 using namespace tin::network::trafficcapture;
 
 SnifferManager::SnifferManager(
-	tin::controllers::main::ControllerQueue& controllerQueue,
+    tin::controllers::main::ControllerQueue& controllerQueue,
     std::string device,
     std::string expression
 ):

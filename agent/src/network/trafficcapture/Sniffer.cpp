@@ -69,23 +69,23 @@ void SnifferProxy::gotPacket(u_char *user, const struct pcap_pkthdr *header, con
 
 void SnifferProxy::pushPacket(const std::shared_ptr<tin::utils::Packet>& packet)
 {
-	std::unique_lock<std::mutex> lock(SnifferProxy::packetMutex);
-	SnifferProxy::packetVector.push_back(packet);
-	if(packetVector.size() == 1) {
-		SnifferProxy::packetVectorEmpty.notify_all();
-	}
+    std::unique_lock<std::mutex> lock(SnifferProxy::packetMutex);
+    SnifferProxy::packetVector.push_back(packet);
+    if(packetVector.size() == 1) {
+        SnifferProxy::packetVectorEmpty.notify_all();
+    }
 }
 
 std::shared_ptr< tin::utils::Packet > SnifferProxy::pollPacket()
 {
-	std::unique_lock<std::mutex> lock(SnifferProxy::packetMutex);
-	SnifferProxy::packetVectorEmpty.wait(lock);
-	auto packet = SnifferProxy::packetVector.back();
-	SnifferProxy::packetVector.pop_back();
-	return packet;
+    std::unique_lock<std::mutex> lock(SnifferProxy::packetMutex);
+    SnifferProxy::packetVectorEmpty.wait(lock);
+    auto packet = SnifferProxy::packetVector.back();
+    SnifferProxy::packetVector.pop_back();
+    return packet;
 }
 
-Sniffer::Sniffer(std::string device, std::string expression):
+Sniffer::Sniffer(const std::string& device, const std::string& expression):
 device(device),
 expression(expression)
 {}
@@ -174,16 +174,16 @@ void Sniffer::sniff()
 
 
 
-const char* Sniffer::getDevice(std::string str)
+const char* Sniffer::getDevice(const std::string& device)
 {
    char* dev;
-   dev = strdup(str.c_str());
+   dev = strdup(device.c_str());
    return dev;
 }
 
-const char* Sniffer::getExpression(std::string str)
+const char* Sniffer::getExpression(const std::string& expression)
 {
-   expression = strdup(str.c_str());
+   this->expression = strdup(device.c_str());
    return expression.c_str();
 }
 
@@ -199,12 +199,12 @@ void Sniffer::run()
 
 unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler)
 {
-	return this->packetReceivedHandlers.insert(handler);
+    return this->packetReceivedHandlers.insert(handler);
 }
 
 unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>&& handler)
 {
-	return this->packetReceivedHandlers.insert(
+    return this->packetReceivedHandlers.insert(
         std::forward<std::function<void(const tin::utils::Packet::ptr&)>>(handler)
     );
 }

@@ -7,8 +7,8 @@
 
 namespace tin { namespace network { namespace trafficcapture
 {
-	class SnifferManager
-	{
+    class SnifferManager
+    {
     public:
         SnifferManager(tin::controllers::main::ControllerQueue& controllerQueue, std::string device, std::string expression);
     private:

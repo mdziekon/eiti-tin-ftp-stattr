@@ -15,30 +15,24 @@ namespace tin { namespace utils {
 
 class Packet
 {
-public:
-	Packet(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol);
-	Packet(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload);
-	Packet(const Packet& packet);
-	Packet(const Packet *packet);
-	void showPacketInfo();
-	typedef std::shared_ptr<tin::utils::Packet> ptr;
-	ptr makeSharedInstance(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol);
-	ptr makeSharedInstance(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload);
-    ptr getSharedInstance(const tin::utils::Packet& packet);
-
-
-
-private:
-	long int packetNumber; // Packet Number
-	int timestamp; // Timestamp
-	struct  in_addr ip_src, ip_dst; // ip src, ip dest
-	u_char ip_protocol; // protocol 
-	u_short th_sport;   // source port 
+    long int packetNumber; // Packet Number
+    int timestamp; // Timestamp
+    struct  in_addr ip_src, ip_dst; // ip src, ip dest
+    u_char ip_protocol; // protocol 
+    u_short th_sport;   // source port 
     u_short th_dport;   // destination port
-	int size_payload; // size of packet
-
-
+    int size_payload; // size of packet
+public:
+    Packet(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol);
+    Packet(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload);
+    Packet(const Packet& packet);
+    Packet(const Packet *packet);
+    void showPacketInfo();
+    typedef std::shared_ptr<tin::utils::Packet> ptr;
+    ptr makeSharedInstance(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol);
+    ptr makeSharedInstance(int packetNumber, time_t timestamp, struct in_addr ip_src, struct in_addr ip_dst, u_char ip_protocol, u_short th_sport, u_short th_dport, int size_payload);
+    ptr getSharedInstance(const tin::utils::Packet& packet);
 };
 
-} }
+}}
 #endif /* TIN_UTILS_PACKET_H */
