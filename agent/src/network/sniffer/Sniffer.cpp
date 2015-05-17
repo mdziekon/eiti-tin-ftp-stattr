@@ -29,17 +29,15 @@ void Sniffer::sniff()
 
     if (dev == NULL)
     {
-        fprintf(stderr, "Couldn't find default device: %s\n",
-            errbuf);
-        exit(EXIT_FAILURE);
+        // Throw an error (Couldn't find default device)
+        return;
     }
 
 
     // get network number and mask associated with capture device
     if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1)
     {
-        fprintf(stderr, "Couldn't get netmask for device %s: %s\n",
-            dev, errbuf);
+        // Throw an error (Couldn't get netmask for device: $device)
         net = 0;
         mask = 0;
     }
@@ -47,40 +45,36 @@ void Sniffer::sniff()
     // get an expression
     auto filter = this->expression.c_str();
 
-    // print info
-    printf("Device: %s\n", dev);
-    printf("Number of packets: %d\n", num_packets);
-    printf("Filter expression: %s\n", filter);
-
     // open capture device
     handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
     if (handle == NULL)
     {
-        fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
-        exit(EXIT_FAILURE);
+        // Throw an error (Couldn't open device: $device)
+        // errbuf contains error data
+        return;
     }
 
     // make sure we're capturing on an Ethernet device [2]
     if (pcap_datalink(handle) != DLT_EN10MB)
     {
-        fprintf(stderr, "%s is not an Ethernet\n", dev);
-        exit(EXIT_FAILURE);
+        // throw an error ($device is not an Ethernet)
+        return;
     }
 
     // compile the filter
     if (pcap_compile(handle, &fp, filter, 0, net) == -1)
     {
-        fprintf(stderr, "Couldn't parse filter %s: %s\n",
-            filter, pcap_geterr(handle));
-        exit(EXIT_FAILURE);
+        // throw an error (Could not parse filter: $expression)
+        // pcap_geterr(handle)
+        return;
     }
 
     // apply the filter
     if (pcap_setfilter(handle, &fp) == -1)
     {
-        fprintf(stderr, "Couldn't install filter %s: %s\n",
-            filter, pcap_geterr(handle));
-        exit(EXIT_FAILURE);
+        // throw an error (Could not parse filter: $expression)
+        // pcap_geterr(handle)
+        return;
     }
 
     // capturing packets
@@ -116,11 +110,11 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
     time_t timestamp = time(&date);
 
     // define/compute ip header offset
-    ip = (struct ip_header*)(packet + SIZE_ETHERNET);
+    ip = (struct ip_header*) (packet + SIZE_ETHERNET);
     size_ip = IP_HL(ip)*4;
     if (size_ip < 20)
     {
-        printf("   * Invalid IP header length: %u bytes\n", size_ip);
+        // Throw an error (Invalid IP header length: $size_ip bytes)
         return;
     }
 
@@ -137,7 +131,7 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
 
         this->runPacketReceivedHandlers(pac);
 
-        pac->printData();
+        // pac->printData();
         return;
     }
 
@@ -148,7 +142,7 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
     size_tcp = TH_OFF(tcp)*4;
     if (size_tcp < 20)
     {
-        printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
+        // throw an error (Invalid TCP header length: $size_tcp bytes)
         return;
     }
 
@@ -169,7 +163,7 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
 
     this->runPacketReceivedHandlers(pac);
 
-    pac->printData();
+    // pac->printData();
 }
 
 void Sniffer::run()
