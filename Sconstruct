@@ -99,7 +99,7 @@ if (platform.system() == "Linux"):
         Dir('common/cpp/includes/websocketpp')
     ]
     env.jDev.debuglibpath = []
-    env.jDev.debuglibs = [ 'boost_system' ]
+    env.jDev.debuglibs = [ 'boost_system', 'pcap' ]
 
     # release
     env.jDev.releasecxx = 'clang++'

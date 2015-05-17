@@ -31,3 +31,9 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
         )
     );
 }
+
+void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::PacketReceived& event)
+{
+
+}
+
