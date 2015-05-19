@@ -15,7 +15,7 @@
 
 **4. Add LUA file to Wireshark plugins**
 
-	cp ./eiti-tin-ftp-stattr/tin-json.lua /usr/lib/x86_64-linux-gnu/wireshark/libwireshark3/plugins
+	cp ./eiti-tin-ftp-stattr/wireshark-module/tin-json.lua /usr/lib/x86_64-linux-gnu/wireshark/libwireshark3/plugins
 
 **5. Check if plugin was added properly**
 
