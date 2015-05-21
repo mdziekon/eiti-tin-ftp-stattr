@@ -32,6 +32,7 @@ visitor(*this)
     this->socketHandle = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socketHandle == -1)
     {
+        std::cout << "[Server] Could not open a socket" << std::endl;
         // Throw socket open error
     }
 
@@ -43,6 +44,7 @@ visitor(*this)
     server.sin_port = ntohs(this->portNo);
     if (bind(this->socketHandle, (struct sockaddr *) &server, sizeof server) == -1)
     {
+        std::cout << "[Server] Could not bind a socket" << std::endl;
         // Throw socket bind error
     }
 

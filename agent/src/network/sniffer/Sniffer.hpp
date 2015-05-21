@@ -97,24 +97,29 @@ typedef struct tcp_header
     {
     public:
         Sniffer(const std::string& device, const std::string& filter);
+        ~Sniffer();
 
-        void sniff();
+        bool isSniffing() const;
+        void stopSniffing();
+        void changeConfig(const std::string& device, const std::string& expression);
 
-        void handlePacket(const struct pcap_pkthdr *header, const u_char *packet);
         void run();
         unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler);
         unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>&& handler);
 
+        void handlePacket(const struct pcap_pkthdr *header, const u_char *packet);
     private:
         std::string device;
         std::string expression;
 
         unsigned long long packetCounter = 0;
+        pcap_t* pcapHandle = nullptr;
 
         std::thread snifferThread;
 
         tin::utils::HandlersContainer<void(const tin::utils::Packet::ptr&)> packetReceivedHandlers;
         void runPacketReceivedHandlers(const tin::utils::Packet::ptr& packetPtr);
+        void sniff();
     };
 }}}
 
