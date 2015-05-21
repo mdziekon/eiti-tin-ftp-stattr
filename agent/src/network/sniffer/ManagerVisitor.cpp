@@ -16,7 +16,7 @@ void ManagerVisitor::visit(events::Terminate& evt)
 void ManagerVisitor::visit(events::ChangeFilter& evt)
 {
     this->manager.sniffer.stopSniffing();
-    this->manager.sniffer.changeConfig("lo", "src 127.0.0.1");
+    this->manager.sniffer.changeConfig(evt.device, evt.expression);
     this->manager.sniffer.run();
 }
 
