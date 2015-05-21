@@ -13,79 +13,45 @@ device(device),
 expression(expression)
 {}
 
-void Sniffer::sniff()
+Sniffer::~Sniffer()
 {
-    char errbuf[PCAP_ERRBUF_SIZE]; // error buffer
-    pcap_t *handle;                // packet capture handle
-
-    struct bpf_program fp;         // compiled filter program (expression)
-    bpf_u_int32 mask;              // subnet mask
-    bpf_u_int32 net;               // ip
-    int num_packets = -1;          // number of packets to capture (-1 means till error) */
-
-
-    // get device
-    auto dev = this->device.c_str();
-
-    if (dev == NULL)
+    if (this->isSniffing())
     {
-        // Throw an error (Couldn't find default device)
+        this->stopSniffing();
+    }
+    else if (this->snifferThread.joinable())
+    {
+        this->snifferThread.join();
+    }
+}
+
+bool Sniffer::isSniffing() const
+{
+    return this->pcapHandle != nullptr;
+}
+
+
+void Sniffer::stopSniffing()
+{
+    if (!this->isSniffing())
+    {
         return;
     }
 
+    pcap_breakloop(this->pcapHandle);
 
-    // get network number and mask associated with capture device
-    if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1)
+    this->snifferThread.join();
+}
+
+void Sniffer::changeConfig(const std::string& device, const std::string& expression)
+{
+    if (this->isSniffing())
     {
-        // Throw an error (Couldn't get netmask for device: $device)
-        net = 0;
-        mask = 0;
-    }
-
-    // get an expression
-    auto filter = this->expression.c_str();
-
-    // open capture device
-    handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
-    if (handle == NULL)
-    {
-        // Throw an error (Couldn't open device: $device)
-        // errbuf contains error data
         return;
     }
 
-    // make sure we're capturing on an Ethernet device [2]
-    if (pcap_datalink(handle) != DLT_EN10MB)
-    {
-        // throw an error ($device is not an Ethernet)
-        return;
-    }
-
-    // compile the filter
-    if (pcap_compile(handle, &fp, filter, 0, net) == -1)
-    {
-        // throw an error (Could not parse filter: $expression)
-        // pcap_geterr(handle)
-        return;
-    }
-
-    // apply the filter
-    if (pcap_setfilter(handle, &fp) == -1)
-    {
-        // throw an error (Could not parse filter: $expression)
-        // pcap_geterr(handle)
-        return;
-    }
-
-    // capturing packets
-    pcap_loop(handle, num_packets, pcap_trampoline, reinterpret_cast<u_char*>(this));
-
-    // cleanup
-    pcap_freecode(&fp);
-    pcap_close(handle);
-
-    printf("\nCapture complete.\n");
-
+    this->device = device;
+    this->expression = expression;
 }
 
 void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packet)
@@ -172,16 +138,6 @@ void Sniffer::run()
         &Sniffer::sniff,
         std::ref(*this)
     );
-
-    this->snifferThread.detach();
-}
-
-void Sniffer::runPacketReceivedHandlers(const tin::utils::Packet::ptr& packetPtr)
-{
-    for (auto iter: this->packetReceivedHandlers)
-    {
-        iter.second(packetPtr);
-    }
 }
 
 unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler)
@@ -194,4 +150,91 @@ unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::
     return this->packetReceivedHandlers.insert(
         std::forward<std::function<void(const tin::utils::Packet::ptr&)>>(handler)
     );
+}
+
+void Sniffer::runPacketReceivedHandlers(const tin::utils::Packet::ptr& packetPtr)
+{
+    for (auto iter: this->packetReceivedHandlers)
+    {
+        iter.second(packetPtr);
+    }
+}
+
+void Sniffer::sniff()
+{
+    if (this->isSniffing())
+    {
+        return;
+    }
+
+    char errbuf[PCAP_ERRBUF_SIZE]; // error buffer
+    struct bpf_program fp;         // compiled filter program (expression)
+    bpf_u_int32 mask;              // subnet mask
+    bpf_u_int32 net;               // ip
+    int num_packets = -1;          // number of packets to capture (-1 means till error) */
+
+
+    // get device
+    auto dev = this->device.c_str();
+
+    if (dev == NULL)
+    {
+        // Throw an error (Couldn't find default device)
+        return;
+    }
+
+
+    // get network number and mask associated with capture device
+    if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1)
+    {
+        // Throw an error (Couldn't get netmask for device: $device)
+        net = 0;
+        mask = 0;
+    }
+
+    // get an expression
+    auto filter = this->expression.c_str();
+
+    // open capture device
+    this->pcapHandle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
+    auto handle = this->pcapHandle;
+
+    if (handle == NULL)
+    {
+        // Throw an error (Couldn't open device: $device)
+        // errbuf contains error data
+        return;
+    }
+
+    // make sure we're capturing on an Ethernet device [2]
+    if (pcap_datalink(handle) != DLT_EN10MB)
+    {
+        // throw an error ($device is not an Ethernet)
+        return;
+    }
+
+    // compile the filter
+    if (pcap_compile(handle, &fp, filter, 0, net) == -1)
+    {
+        // throw an error (Could not parse filter: $expression)
+        // pcap_geterr(handle)
+        return;
+    }
+
+    // apply the filter
+    if (pcap_setfilter(handle, &fp) == -1)
+    {
+        // throw an error (Could not parse filter: $expression)
+        // pcap_geterr(handle)
+        return;
+    }
+
+    // capturing packets
+    pcap_loop(handle, num_packets, pcap_trampoline, reinterpret_cast<u_char*>(this));
+
+    // cleanup
+    pcap_freecode(&fp);
+    pcap_close(handle);
+
+    this->pcapHandle = nullptr;
 }

@@ -1,14 +1,17 @@
-#include "SnifferManager.hpp"
+#include "Manager.hpp"
+
 #include "../../controllers/main/typedefs.hpp"
 #include "../../controllers/main/events/PacketReceived.hpp"
 
 using namespace tin::network::sniffer;
 
-SnifferManager::SnifferManager(
+Manager::Manager(
+    tin::network::sniffer::ManagerQueue& incomingQueue,
     tin::controllers::main::ControllerQueue& controllerQueue,
     std::string device,
     std::string expression
 ):
+QueueThread(incomingQueue, ManagerVisitor(*this)),
 sniffer(device, expression),
 controllerQueue(controllerQueue)
 {
