@@ -26,7 +26,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
     this->controller.networkManagerQueue.push(
         tin::network::bsdsocket::EventPtr(
             new bsdsocketEvents::ResponseRequest(
-                tin::utils::json::makeSharedInstance("{ \"testMessage\": \"testResponse\" }")
+                tin::utils::json::makeSharedInstance("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
             )
         )
     );
