@@ -9,8 +9,8 @@ void pcap_trampoline(u_char *param, const struct pcap_pkthdr *pkt_header, const 
 }
 
 Sniffer::Sniffer(const std::string& device, const std::string& expression):
-device(device),
-expression(expression)
+device(device.c_str()),
+expression(expression.c_str())
 {}
 
 Sniffer::~Sniffer()
@@ -50,8 +50,8 @@ void Sniffer::changeConfig(const std::string& device, const std::string& express
         return;
     }
 
-    this->device = device;
-    this->expression = expression;
+    this->device = std::string(device.c_str());
+    this->expression = std::string(expression.c_str());
 }
 
 void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packet)
