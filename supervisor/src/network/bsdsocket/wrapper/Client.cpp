@@ -107,7 +107,7 @@ void Client::onMessageRequest(
 {
     std::string temp;
     int readBufSize = 1024;
-    char buf[readBufSize];
+    char buf[readBufSize + 1];
     int rval;
 
     struct sockaddr_in server;
@@ -143,7 +143,7 @@ void Client::onMessageRequest(
         // Throw connection error
     }
 
-    if (write(this->socketHandle, message.c_str(), message.length()) == -1)
+    if (write(this->socketHandle, message.c_str(), message.length() + 1) == -1)
     {
         return;
         // Throw write error
@@ -180,6 +180,11 @@ void Client::onMessageRequest(
         {
             // Reading completed, send message to queue
             temp.append(buf);
+
+            if (buf[rval - 1] != 0)
+            {
+                continue;
+            }
 
             this->onResponseReceive(ip, port, temp);
 
