@@ -193,6 +193,7 @@ void Server::listenerLoop()
                 }
             }
         }
+
         close(this->connectionHandle);
         this->connectionHandle = 0;
     }

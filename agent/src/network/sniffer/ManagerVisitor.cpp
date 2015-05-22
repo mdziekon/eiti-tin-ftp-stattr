@@ -5,6 +5,8 @@
 #include "events/Terminate.hpp"
 #include "events/ChangeFilter.hpp"
 
+#include <iostream>
+
 using tin::network::sniffer::ManagerVisitor;
 namespace events = tin::network::sniffer::events;
 
@@ -15,6 +17,8 @@ void ManagerVisitor::visit(events::Terminate& evt)
 
 void ManagerVisitor::visit(events::ChangeFilter& evt)
 {
+    std::cout << "[Sniffer] Changing config" << std::endl;
+
     this->manager.sniffer.stopSniffing();
     this->manager.sniffer.changeConfig(evt.device, evt.expression);
     this->manager.sniffer.run();

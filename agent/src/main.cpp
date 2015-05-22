@@ -13,7 +13,7 @@ int main()
     tin::network::bsdsocket::ManagerQueue netManagerQueue;
     tin::network::sniffer::ManagerQueue snifferManagerQueue;
 
-    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
+    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, snifferManagerQueue);
     tin::network::bsdsocket::Manager networkManager(netManagerQueue, ctrlQueue, 3333);
     tin::network::sniffer::Manager sniffManager(
         snifferManagerQueue,
@@ -29,13 +29,6 @@ int main()
     auto sniffThread = sniffManager.createThread();
 
     std::this_thread::sleep_for (std::chrono::seconds(1));
-
-    snifferManagerQueue.push(
-        std::make_shared<tin::network::sniffer::events::ChangeFilter>(
-            "lo",
-            "src 127.0.0.1"
-        )
-    );
 
     try
     {
