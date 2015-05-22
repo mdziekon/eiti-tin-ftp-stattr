@@ -13,7 +13,7 @@ int main()
     tin::network::websocket::ManagerQueue netManagerQueue;
 
     tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
-    tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 9001);
+    tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 3338);
     tin::network::bsdsocket::ManagerQueue bsdManagerQueue;
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
 
