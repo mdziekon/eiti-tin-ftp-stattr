@@ -10,6 +10,8 @@
 #include "events/MessageSendMultiRequest.hpp"
 #include "events/MessageBroadcastRequest.hpp"
 
+#include "../../utils/JSON.hpp"
+
 using tin::network::websocket::ManagerVisitor;
 namespace events = tin::network::websocket::events;
 
@@ -38,10 +40,44 @@ void ManagerVisitor::visit(events::ServerConnectionClosed& evt)
 
 void ManagerVisitor::visit(events::MessageReceived& evt)
 {
-    // this->manager.controllerQueue.push(
-    //     tin::controllers::main::EventPtr(
-    //     )
-    // );
+    auto jsonObj = nlohmann::json::parse(evt.message);
+
+    if (!jsonObj["cmd"].is_string()) {
+        jsonObj["error"] = {{ "invalid", "cmd" }};
+
+        this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
+        return;
+    }
+
+    if (jsonObj["cmd"] == std::string("list_machines")) {
+        jsonObj["data"] = {
+            { "machines", {
+                {
+                    { "id", 1 },
+                    { "name", "example machine" },
+                    { "ip", "196.168.0.1" },
+                    { "status", "sniffing" },
+                    { "lastSync", 1432331838 }
+                },
+                {
+                    { "id", 3 },
+                    { "name", "test server #1" },
+                    { "ip", "196.168.0.11" },
+                    { "status", "stand-by" },
+                    { "lastSync", 1432331838 }
+                },
+                {
+                    { "id", 7 },
+                    { "name", "test server #4" },
+                    { "ip", "196.168.0.50" },
+                    { "status", "offline" },
+                    { "lastSync", 1432331838 }
+                }
+            }}
+        };
+    }
+
+    this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
 }
 
 void ManagerVisitor::visit(events::MessageSendRequest& evt)
