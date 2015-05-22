@@ -9,6 +9,7 @@
 #include "events/CmdReceived.hpp"
 
 #include "../../network/bsdsocket/events/ResponseRequest.hpp"
+#include "../../network/bsdsocket/events/ConnectionTerminationRequest.hpp"
 #include "../../network/sniffer/events/ChangeFilter.hpp"
 
 namespace events = tin::controllers::main::events;
