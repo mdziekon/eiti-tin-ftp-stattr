@@ -13,7 +13,7 @@ int main()
     tin::network::bsdsocket::ManagerQueue netManagerQueue;
     tin::network::sniffer::ManagerQueue snifferManagerQueue;
 
-    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
+    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, snifferManagerQueue);
     tin::network::bsdsocket::Manager networkManager(netManagerQueue, ctrlQueue, 3333);
     tin::network::sniffer::Manager sniffManager(
         snifferManagerQueue,
