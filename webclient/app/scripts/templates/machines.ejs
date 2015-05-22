@@ -1,0 +1,79 @@
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Machines List</h1>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+
+<!-- /.row -->
+<div class="row">
+    <div class="col-lg-12 col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                List of all saved machines
+            </div>
+            <!-- /.panel-heading -->
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>IP</th>
+                                <th>Status</th>
+                                <th>Last Sync</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% _.each(machines, function (machine) { %>
+                                <tr>
+                                    <td><%- machine.id %></td>
+                                    <td><%- machine.name %></td>
+                                    <td><%- machine.ip %></td>
+                                    <td>
+                                        <span class="label <%- machine.status === "sniffing" ? "label-success" : (machine.status === "stand-by" ? "label-primary" : "label-danger") %>">
+                                            <%- _.capitalize(machine.status) %>
+                                        </span>
+                                    </td>
+                                    <td title="<%- moment(machine.lastSync).format("MMMM Do YYYY, h:mm:ss a") %>">
+                                        <%- moment(machine.lastSync).fromNow() %>
+                                    </td>
+                                    <td class="text-right">
+                                        <% if (machine.status === "sniffing") { %>
+                                            <a class="btn btn-warning btn-switch-status" data-machine-id="<%- machine.id %>">
+                                                <i class="fa fa-pause"></i> Stop Sniffer
+                                            </a>
+                                        <% } else if (machine.status === "stand-by") { %>
+                                            <a class="btn btn-success btn-switch-status" data-machine-id="<%- machine.id %>">
+                                                <i class="fa fa-play"></i> Start Sniffer
+                                            </a>
+                                        <% } %>
+
+                                        <% if (machine.status === "sniffing" || machine.status === "stand-by") { %>
+                                            <a class="btn btn-primary btn-sync" data-machine-id="<%- machine.id %>">
+                                                <i class="fa fa-refresh"></i> Sync Now
+                                            </a>
+                                        <% } %>
+
+                                        <a href="machines/edit/<%- machine.id %>" class="btn btn-primary">
+                                            <i class="fa fa-pencil"></i> Edit
+                                        </a>
+                                        <a href="machines/delete/<%- machine.id %>" class="btn btn-danger">
+                                            <i class="fa fa-trash-o"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+</div>
+<!-- /.row -->

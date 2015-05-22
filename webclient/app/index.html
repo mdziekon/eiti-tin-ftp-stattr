@@ -1,0 +1,117 @@
+<!doctype html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>TIN WebApp</title>
+        <meta name="description" content="TIN WebApp">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        <!-- build:css(.tmp) styles/main.css -->
+        <link rel="stylesheet" href="styles/main.css">
+        <!-- endbuild -->
+        <!-- build:js scripts/vendor/modernizr.js -->
+        <script src="bower_components/modernizr/modernizr.js"></script>
+        <!-- endbuild -->
+    </head>
+    <body>
+        <!--[if lt IE 10]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+
+        <div id="wrapper">
+            <!-- Navigation -->
+            <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="dashboard">TIN WebApp</a>
+                </div>
+                <!-- /.navbar-header -->
+
+                <div class="navbar-default sidebar" role="navigation">
+                    <div class="sidebar-nav navbar-collapse">
+                        <ul class="nav" id="side-menu">
+                            <li>
+                                <a class="active" href="dashboard"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                            </li>
+                            <li>
+                                <a href="machines"><i class="fa fa-briefcase fa-fw"></i> Machines</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- /.sidebar-collapse -->
+                </div>
+                <!-- /.navbar-static-side -->
+            </nav>
+
+            <div id="page-wrapper">
+            </div>
+            <!-- /#page-wrapper -->
+
+        </div>
+        <!-- /#wrapper -->
+
+
+
+        <!-- build:js scripts/vendor.js -->
+        <script src="bower_components/jquery/dist/jquery.js"></script>
+        <script src="bower_components/lodash/dist/lodash.compat.js"></script>
+        <script src="bower_components/backbone/backbone.js"></script>
+        <script src="bower_components/spinjs/spin.js"></script>
+        <script src="bower_components/spinjs/jquery.spin.js"></script>
+        <script src="bower_components/moment/moment.js"></script>
+        <!-- endbuild -->
+
+        <!-- build:js scripts/vendor/bootstrap.js -->
+        <script src="bower_components/bootstrap/js/affix.js"></script>
+        <script src="bower_components/bootstrap/js/alert.js"></script>
+        <script src="bower_components/bootstrap/js/dropdown.js"></script>
+        <script src="bower_components/bootstrap/js/tooltip.js"></script>
+        <script src="bower_components/bootstrap/js/modal.js"></script>
+        <script src="bower_components/bootstrap/js/transition.js"></script>
+        <script src="bower_components/bootstrap/js/button.js"></script>
+        <script src="bower_components/bootstrap/js/popover.js"></script>
+        <script src="bower_components/bootstrap/js/carousel.js"></script>
+        <script src="bower_components/bootstrap/js/scrollspy.js"></script>
+        <script src="bower_components/bootstrap/js/collapse.js"></script>
+        <script src="bower_components/bootstrap/js/tab.js"></script>
+        <!-- endbuild -->
+
+        <!-- build:js scripts/sb-admin-2.js -->
+        <!-- Metis Menu Plugin JavaScript -->
+        <script src="scripts/sb-admin-2/plugins/metisMenu/metisMenu.min.js"></script>
+        <!-- Morris Charts JavaScript -->
+        <script src="scripts/sb-admin-2/plugins/morris/raphael.min.js"></script>
+        <script src="scripts/sb-admin-2/plugins/morris/morris.min.js"></script>
+        <!-- DataTables JavaScript -->
+        <script src="scripts/sb-admin-2/plugins/dataTables/jquery.dataTables.js"></script>
+        <script src="scripts/sb-admin-2/plugins/dataTables/dataTables.bootstrap.js"></script>
+        <!-- Custom Theme JavaScript -->
+        <script src="scripts/sb-admin-2/sb-admin-2.js"></script>
+        <!-- endbuild -->
+
+        <script src="../.tmp/scripts/templates.js"></script>
+
+        <!-- build:js({.tmp,app}) scripts/main.js -->
+        <script src="scripts/main.js"></script>
+        <script src="scripts/underscore-mixins.js"></script>
+        <script src="scripts/sockets.js"></script>
+        <script src="scripts/backbone-prototypes.js"></script>
+        <script src="scripts/templates.js"></script>
+        <script src="scripts/routes/main.js"></script>
+        <script src="scripts/views/dashboard.js"></script>
+
+        <script src="scripts/models/machine.js"></script>
+        <script src="scripts/collections/machine.js"></script>
+        <script src="scripts/views/machines.js"></script>
+        <!-- endbuild -->
+
+        <!-- <script src="scripts/morris-example-data.js"></script> -->
+    </body>
+</html>
