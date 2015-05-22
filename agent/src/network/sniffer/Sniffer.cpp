@@ -129,7 +129,7 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
 
     this->runPacketReceivedHandlers(pac);
 
-    pac->printData();
+    // pac->printData();
 }
 
 void Sniffer::run()
