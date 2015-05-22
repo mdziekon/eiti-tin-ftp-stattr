@@ -30,13 +30,6 @@ int main()
 
     std::this_thread::sleep_for (std::chrono::seconds(1));
 
-    snifferManagerQueue.push(
-        std::make_shared<tin::network::sniffer::events::ChangeFilter>(
-            "lo",
-            "src 127.0.0.1"
-        )
-    );
-
     try
     {
         mainCtrlThread.join();

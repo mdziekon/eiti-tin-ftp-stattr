@@ -29,30 +29,73 @@ void tin::controllers::main::MainVisitor::visit(events::Terminate &event)
 
 void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 {
+    std::cout << "[MainCtrl] Command Received, processing" << std::endl;
+
 	json& temp = *(event.jsonPtr);
-	if(temp.find("cmd") != temp.end())
-	{
-		const std::string tmp = temp["cmd"];
-		if (strcmp(tmp.c_str(), "sync") == 0) {
-				this->controller.networkManagerQueue.push(
-        		tin::network::bsdsocket::EventPtr(
-            	new bsdsocketEvents::ResponseRequest(
-                	tin::utils::json::makeSharedInstance("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
-            	)));
 
-    	} else if(strcmp(tmp.c_str(),"change filter") == 0) {
-    		if((temp.find("device") != temp.end()) && (temp.find("expression") != temp.end())) {
-				this->controller.snifferManagerQueue.push(
-				tin::network::sniffer::EventPtr(
-					new snifferEvents::ChangeFilter(temp["device"], temp["expression"])
-				));
-			}
+    if (temp.find("cmd") == temp.end() || !temp["cmd"].is_string())
+    {
+        std::cout << "[MainCtrl] Invalid command received" << std::endl;
+        return;
+    }
 
-		}
+    const std::string cmd = temp["cmd"];
 
-	
-	}
-    
+    if (cmd == "sync")
+    {
+        this->controller.networkManagerQueue.push(
+            std::make_shared<bsdsocketEvents::ResponseRequest>(
+                std::make_shared<json>(
+                    "{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }"
+                )
+            )
+        );
+    }
+    else if (cmd == "change_filter")
+    {
+        if (temp.find("device") == temp.end() || temp.find("expression") == temp.end() || !temp["device"].is_string() || !temp["expression"].is_string())
+        {
+            std::cout << "[MainCtrl] Invalid arguments for \"change_filter\" command" << std::endl;
+
+            this->controller.networkManagerQueue.push(
+                std::make_shared<bsdsocketEvents::ResponseRequest>(
+                    std::make_shared<json>(
+                        "{ \"error\": { \"invalid\": [ \"device\", \"expression\" ] } }"
+                    )
+                )
+            );
+
+            return;
+        }
+
+        std::cout << "[MainCtrl] Received change_filter, changing to: " << temp["device"] << " / " << temp["expression"] << std::endl;
+
+        this->controller.snifferManagerQueue.push(
+            std::make_shared<snifferEvents::ChangeFilter>(
+                temp["device"], temp["expression"]
+            )
+        );
+
+        this->controller.networkManagerQueue.push(
+            std::make_shared<bsdsocketEvents::ResponseRequest>(
+                std::make_shared<json>(
+                    "{ \"cmd\": \"change_filter\", \"success\": true }"
+                )
+            )
+        );
+    }
+    else
+    {
+        std::cout << "[MainCtrl] Invalid command received: " << cmd << std::endl;
+
+        this->controller.networkManagerQueue.push(
+            std::make_shared<bsdsocketEvents::ResponseRequest>(
+                std::make_shared<json>(
+                    "{ \"error\": { \"invalid\": \"cmd\" } }"
+                )
+            )
+        );
+    }
 }
 
 void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::PacketReceived &event)
