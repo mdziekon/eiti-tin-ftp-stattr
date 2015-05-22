@@ -46,7 +46,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
         this->controller.networkManagerQueue.push(
             std::make_shared<bsdsocketEvents::ResponseRequest>(
                 std::make_shared<json>(
-                    "{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }"
+                    json::parse("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
                 )
             )
         );
@@ -60,7 +60,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
             this->controller.networkManagerQueue.push(
                 std::make_shared<bsdsocketEvents::ResponseRequest>(
                     std::make_shared<json>(
-                        "{ \"error\": { \"invalid\": [ \"device\", \"expression\" ] } }"
+                        json::parse("{ \"error\": { \"invalid\": [ \"device\", \"expression\" ] } }")
                     )
                 )
             );
@@ -79,7 +79,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
         this->controller.networkManagerQueue.push(
             std::make_shared<bsdsocketEvents::ResponseRequest>(
                 std::make_shared<json>(
-                    "{ \"cmd\": \"change_filter\", \"success\": true }"
+                    json::parse("{ \"cmd\": \"change_filter\", \"success\": true }")
                 )
             )
         );
@@ -91,7 +91,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
         this->controller.networkManagerQueue.push(
             std::make_shared<bsdsocketEvents::ResponseRequest>(
                 std::make_shared<json>(
-                    "{ \"error\": { \"invalid\": \"cmd\" } }"
+                    json::parse("{ \"error\": { \"invalid\": \"cmd\" } }")
                 )
             )
         );
