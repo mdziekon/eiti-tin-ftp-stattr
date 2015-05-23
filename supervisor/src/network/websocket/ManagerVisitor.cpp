@@ -174,6 +174,61 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
             jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
         }
     }
+    else if (route == "stats-per-day")
+    {
+        if (type == "GET")
+        {
+            jsonObj["data"] = {
+                { "stats", {
+                    {
+                        { "day", 1432404865 },
+                        { "machines", {
+                            {
+                                { "id", 1 },
+                                { "name", "Machine test" },
+                                { "traffic", 12 }
+                            },
+                            {
+                                { "id", 2 },
+                                { "name", "Machine ubuntu" },
+                                { "traffic", 24 }
+                            }
+                        }}
+                    },
+                    {
+                        { "day", 1432404865 + (24*60*60) },
+                        { "machines", {
+                            {
+                                { "id", 1 },
+                                { "name", "Machine test" },
+                                { "traffic", 17 }
+                            },
+                            {
+                                { "id", 2 },
+                                { "name", "Machine ubuntu" },
+                                { "traffic", 11 }
+                            }
+                        }}
+                    },
+                    {
+                        { "day", 1432404865 + (2*24*60*60) },
+                        { "machines", {
+                            {
+                                { "id", 1 },
+                                { "name", "Machine test" },
+                                { "traffic", 5 }
+                            },
+                            {
+                                { "id", 2 },
+                                { "name", "Machine ubuntu" },
+                                { "traffic", 30 }
+                            }
+                        }}
+                    }
+                } }
+            };
+        }
+    }
     else
     {
         jsonObj["error"] = {{ "invalud", { {"route", route} } }};
