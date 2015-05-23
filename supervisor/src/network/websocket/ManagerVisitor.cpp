@@ -107,7 +107,12 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
             auto& machine = machines.at(machineID);
 
-            if (action == "sync")
+            if (action == "" && jsonObj["type"] == std::string("DELETE"))
+            {
+                machines.erase(machineID);
+                jsonObj["data"] = {{ "success", true }};
+            }
+            else if (action == "sync")
             {
                 auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::system_clock::now().time_since_epoch()
