@@ -5,6 +5,8 @@
         return this.construct.apply(this, arguments);
     };
 
+    app.SocketResponse = function () {};
+
     _.extend(app.SocketConnection.prototype, {
         construct: function (options) {
             var self = this;
@@ -39,7 +41,7 @@
 
                 var uid = json.uid;
                 if (self.getListener(uid)) {
-                    self.getListener(uid).resolve(json);
+                    self.getListener(uid).resolve(_.extend((new app.SocketResponse()), json));
                     self.detachListener(uid);
                 }
             };

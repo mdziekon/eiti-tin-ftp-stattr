@@ -189,9 +189,43 @@
     Backbone.sync = function (method, object, options) {
         options = options || {};
 
-        var promise = app.connection.send(_.extend({
-            cmd: _.result(object, "command")
-        }, options.data));
+        var type;
+        switch (method) {
+            case "create":
+                type = "POST";
+                break;
+            case "read":
+                type = "GET";
+                break;
+            case "update":
+                type = options.patch ? "PATCH" : "PUT";
+                break;
+            case "delete":
+                type = "DELETE";
+                break;
+        }
+
+
+        var data = {
+            route: _.result(options, "url") || _.result(object, "url"),
+            type: type
+        };
+
+        if (!options.data && !options.noData) {
+            if (type === "POST" || type === "PUT") {
+                _.extend(data, {
+                    data: object.toJSON()
+                });
+            } else if (type === "PATCH" && object instanceof Backbone.Collection) {
+                _.extend(data, {
+                    data: object.changedAttributes()
+                });
+            }
+        } else if (options.data) {
+            data.data = options.data;
+        }
+
+        var promise = app.connection.send(data);
 
         promise.done(options.success || function () {});
         promise.fail(options.error || function () {});
