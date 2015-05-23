@@ -5,15 +5,16 @@ webapp.Views = webapp.Views || {};
 (function () {
     'use strict';
 
-    webapp.Views.Machines = Backbone.ModernView.extend({
+    webapp.Views.MachinesList = Backbone.ModernView.extend({
 
         el: "#page-wrapper",
 
-        template: JST['app/scripts/templates/machines.ejs'],
+        template: JST['app/scripts/templates/machines/list.ejs'],
 
         events: {
             "click .btn-sync": "syncMachine",
-            "click .btn-delete": "deleteMachine"
+            "click .btn-delete": "deleteMachine",
+            "click .btn-toggle-sniffer": "toggleSniffer"
         },
 
         serialize: function (renderTemplate) {
@@ -58,6 +59,21 @@ webapp.Views = webapp.Views || {};
                 view.render();
             }).fail(function () {
                 console.error("Deletion failed");
+            });
+        },
+
+        toggleSniffer: function (evt) {
+            var view = this;
+            var $el = $(evt.currentTarget);
+
+            var machineID = $el.data("machine-id");
+
+            var machine = view.machines.get(machineID);
+
+            machine.toggleSniffer().done(function () {
+                view.render();
+            }).fail(function () {
+                console.error("Toggle failed");
             });
         }
     });

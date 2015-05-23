@@ -11,7 +11,8 @@ webapp.Routers = webapp.Routers || {};
             "/": "index",
             "dashboard": "dashboard",
             "machines": "machines",
-            "machines/add": "machinesAdd"
+            "machines/add": "machinesAdd",
+            "machines/:machineID/edit": "machinesEdit"
         },
 
         index: function () {
@@ -25,13 +26,21 @@ webapp.Routers = webapp.Routers || {};
         },
 
         machines: function () {
-            var view = new webapp.Views.Machines();
+            var view = new webapp.Views.MachinesList();
 
             view.render();
         },
 
         machinesAdd: function () {
             var view = new webapp.Views.MachinesAdd();
+
+            view.render();
+        },
+
+        machinesEdit: function (machineID) {
+            var view = new webapp.Views.MachinesEdit({
+                machineID: machineID
+            });
 
             view.render();
         }

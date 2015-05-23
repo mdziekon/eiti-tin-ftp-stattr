@@ -9,7 +9,7 @@ webapp.Views = webapp.Views || {};
 
         el: "#page-wrapper",
 
-        template: JST['app/scripts/templates/machines-add.ejs'],
+        template: JST['app/scripts/templates/machines/add.ejs'],
 
         events: {
             "submit form": "saveMachine"

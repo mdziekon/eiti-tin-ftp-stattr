@@ -46,16 +46,22 @@
                                             <%- _.capitalize(machine.status) %>
                                         </span>
                                     </td>
-                                    <td title="<%- moment(machine.lastSync).format("MMMM Do YYYY, h:mm:ss a") %>">
-                                        <%- moment(machine.lastSync).fromNow() %>
-                                    </td>
+                                    <% if (machine.lastSync === 0) { %>
+                                        <td>
+                                            <strong class="text-muted">Never</strong>
+                                        </td>
+                                    <% } else { %>
+                                        <td title="<%- moment(machine.lastSync).format("MMMM Do YYYY, h:mm:ss a") %>">
+                                            <%- _.capitalize(moment(machine.lastSync).fromNow()) %>
+                                        </td>
+                                    <% } %>
                                     <td class="text-right">
                                         <% if (machine.status === "sniffing") { %>
-                                            <a class="btn btn-warning btn-switch-status" data-machine-id="<%- machine.id %>">
+                                            <a class="btn btn-warning btn-toggle-sniffer" data-machine-id="<%- machine.id %>">
                                                 <i class="fa fa-pause"></i> Stop Sniffer
                                             </a>
                                         <% } else if (machine.status === "stand-by") { %>
-                                            <a class="btn btn-success btn-switch-status" data-machine-id="<%- machine.id %>">
+                                            <a class="btn btn-success btn-toggle-sniffer" data-machine-id="<%- machine.id %>">
                                                 <i class="fa fa-play"></i> Start Sniffer
                                             </a>
                                         <% } %>
@@ -66,7 +72,7 @@
                                             </a>
                                         <% } %>
 
-                                        <a href="machines/edit/<%- machine.id %>" class="btn btn-primary">
+                                        <a href="machines/<%- machine.id %>/edit" class="btn btn-primary">
                                             <i class="fa fa-pencil"></i> Edit
                                         </a>
                                         <a class="btn btn-danger btn-delete" data-machine-id="<%- machine.id %>">

@@ -198,7 +198,10 @@
                 type = "GET";
                 break;
             case "update":
-                type = options.patch ? "PATCH" : "PUT";
+                type = "PUT";
+                break;
+            case "patch":
+                type = "PATCH";
                 break;
             case "delete":
                 type = "DELETE";
@@ -216,9 +219,9 @@
                 _.extend(data, {
                     data: object.toJSON()
                 });
-            } else if (type === "PATCH" && object instanceof Backbone.Collection) {
+            } else if (type === "PATCH" && !(object instanceof Backbone.Collection)) {
                 _.extend(data, {
-                    data: object.changedAttributes()
+                    data: options.attrs
                 });
             }
         } else if (options.data) {
