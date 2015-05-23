@@ -56,7 +56,7 @@ webapp.Routers = webapp.Routers || {};
         },
 
         statsMachine: function (machineID) {
-            var view = new webapp.Views.Stats.Machine({
+            var view = new webapp.Views.Stats.MachineView({
                 machineID: machineID
             });
 

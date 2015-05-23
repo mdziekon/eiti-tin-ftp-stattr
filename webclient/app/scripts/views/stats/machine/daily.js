@@ -2,16 +2,16 @@
 
 webapp.Views = webapp.Views || {};
 webapp.Views.Stats = webapp.Views.Stats || {};
-webapp.Views.Stats.General = webapp.Views.Stats.General || {};
+webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
 
 (function () {
     'use strict';
 
-    webapp.Views.Stats.General.PerMachine = Backbone.ModernView.extend({
+    webapp.Views.Stats.Machine.Daily = Backbone.ModernView.extend({
 
-        el: "#page-wrapper .per-machine-view",
+        el: "#page-wrapper .daily-view",
 
-        template: JST['app/scripts/templates/stats/general/per-machine.ejs'],
+        template: JST['app/scripts/templates/stats/machine/daily.ejs'],
 
         events: {
             "click .btn-change-period li a": "changePeriod"
@@ -26,7 +26,9 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
         serialize: function (renderTemplate) {
             var view = this;
 
-            view.stats = new webapp.Collections.Stats.PerMachine();
+            view.stats = new webapp.Collections.Stats.MachinePerDay(null, {
+                machineID: view.options.machineID
+            });
 
             view.fetchStats({
                 data: {
@@ -36,7 +38,7 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
                 renderTemplate({
                     json: {
                         lastDays: view.lastDays,
-                        machines: view.stats.toJSON()
+                        stats: view.stats.toJSON()
                     }
                 });
             }).fail(function () {

@@ -6,8 +6,8 @@ webapp.Collections.Stats = webapp.Collections.Stats || {};
 (function () {
     'use strict';
 
-    webapp.Collections.Stats.Machine = Backbone.ModernCollection.extend({
-        model: webapp.Models.Stats.Machine,
+    webapp.Collections.Stats.PerMachine = Backbone.ModernCollection.extend({
+        model: webapp.Models.Stats.PerMachine,
 
         url: "stats-per-machine",
 
