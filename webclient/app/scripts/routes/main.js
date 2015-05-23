@@ -50,7 +50,7 @@ webapp.Routers = webapp.Routers || {};
         },
 
         statsGeneral: function () {
-            var view = new webapp.Views.Stats.General();
+            var view = new webapp.Views.Stats.GeneralView();
 
             view.render();
         },

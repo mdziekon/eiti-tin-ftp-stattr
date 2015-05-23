@@ -1,0 +1,76 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-bar-chart-o fa-fw"></i> Machines' Stats
+        <div class="pull-right">
+            <div class="btn-group btn-change-period">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <span class="text">Last <%- lastDays %> days</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="#" data-period="last3">Last 3 days</a>
+                    </li>
+                    <li>
+                        <a href="#" data-period="last7">Last 7 days</a>
+                    </li>
+                    <li>
+                        <a href="#" data-period="last30">Last 30 days</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#" data-period="last90">Last 3 months</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th style="width: 150px;">Total Traffic</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!machines.length) { %>
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                <strong class="text-muted">No data for selected period</strong>
+                            </td>
+                        </tr>
+                    <% } %>
+                    <% _.each(machines, function (machine) { %>
+                        <tr>
+                            <td><%- machine.id %></td>
+                            <td>
+                                <a href="stats/machine/<%- machine.id %>">
+                                    <%- machine.name %>
+                                </a>
+                            </td>
+                            <td><%- machine.traffic %> MB</td>
+                        </tr>
+                    <% }); %>
+                    <% if (machines.length) { %>
+                        <tr>
+                            <td colspan="2" class="text-right">
+                                <strong class="text-muted">Total</strong>
+                            </td>
+                            <td>
+                                <%- _.reduce(machines, function (total, machine) { return total + machine.traffic; }, 0) %> MB
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        <!-- /.table-responsive -->
+    </div>
+    </div>
+    <!-- /.panel-body -->
+</div>
+<!-- /.panel -->
