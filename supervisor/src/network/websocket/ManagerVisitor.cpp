@@ -178,60 +178,76 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     {
         if (type == "GET")
         {
-            jsonObj["data"] = {
-                { "stats", {
+            unsigned int lastDays = 7;
+
+            if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+            {
+                lastDays = jsonObj["data"]["lastDays"];
+            }
+
+            auto day = nlohmann::json();
+            day = {
+                { "day", 1432404865 },
+                { "machines", {
                     {
-                        { "day", 1432404865 },
-                        { "machines", {
-                            {
-                                { "id", 1 },
-                                { "name", "Machine test" },
-                                { "traffic", 12 }
-                            },
-                            {
-                                { "id", 2 },
-                                { "name", "Machine ubuntu" },
-                                { "traffic", 24 }
-                            }
-                        }}
+                        { "id", 1 },
+                        { "name", "Machine test" },
+                        { "traffic", 12 }
                     },
                     {
-                        { "day", 1432404865 + (24*60*60) },
-                        { "machines", {
-                            {
-                                { "id", 1 },
-                                { "name", "Machine test" },
-                                { "traffic", 17 }
-                            },
-                            {
-                                { "id", 2 },
-                                { "name", "Machine ubuntu" },
-                                { "traffic", 11 }
-                            }
-                        }}
-                    },
-                    {
-                        { "day", 1432404865 + (2*24*60*60) },
-                        { "machines", {
-                            {
-                                { "id", 1 },
-                                { "name", "Machine test" },
-                                { "traffic", 5 }
-                            },
-                            {
-                                { "id", 2 },
-                                { "name", "Machine ubuntu" },
-                                { "traffic", 30 }
-                            }
-                        }}
+                        { "id", 2 },
+                        { "name", "Machine ubuntu" },
+                        { "traffic", 24 }
                     }
-                } }
+                }}
             };
+
+            jsonObj["data"] = {
+                { "stats", {} }
+            };
+
+            for(int i = 0; i < lastDays; ++i)
+            {
+                jsonObj["data"]["stats"][i] = day;
+                jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
+                jsonObj["data"]["stats"][i]["machines"][0]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                jsonObj["data"]["stats"][i]["machines"][1]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
+            }
+        }
+    }
+    else if (route == "stats-per-machine")
+    {
+        if (type == "GET")
+        {
+            unsigned int lastDays = 7;
+
+            if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+            {
+                lastDays = jsonObj["data"]["lastDays"];
+            }
+
+            auto machine = nlohmann::json();
+            machine = {
+                { "id", 0 },
+                { "name", "Linux Machine " },
+                { "traffic", 15 }
+            };
+
+            jsonObj["data"] = {
+                { "machines", {} }
+            };
+
+            for(int i = 0; i < lastDays; ++i)
+            {
+                jsonObj["data"]["machines"][i] = machine;
+                jsonObj["data"]["machines"][i]["id"] = ((int) jsonObj["data"]["machines"][i]["id"]) + (i);
+                jsonObj["data"]["machines"][i]["traffic"] = ((int) jsonObj["data"]["machines"][i]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
+            }
         }
     }
     else
     {
-        jsonObj["error"] = {{ "invalud", { {"route", route} } }};
+        jsonObj["error"] = {{ "invalid", { {"route", route} } }};
     }
 
 
