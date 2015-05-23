@@ -61,9 +61,10 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     }
 
     std::string route = jsonObj["route"];
+    std::string type = jsonObj["type"];
     if (route == "machine")
     {
-        if (jsonObj["type"] == std::string("GET"))
+        if (type == "GET")
         {
             jsonObj["data"] = {
                 { "machines", {} }
@@ -78,9 +79,9 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                     { "status", std::get<2>(it.second) },
                     { "lastSync", std::get<3>(it.second) }
                 };
-            }//1432331838
+            }
         }
-        else if (jsonObj["type"] == std::string("POST"))
+        else if (type == "POST")
         {
             std::string name = jsonObj["data"]["name"];
             std::string ip = jsonObj["data"]["ip"];
@@ -107,12 +108,32 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
             auto& machine = machines.at(machineID);
 
-            if (action == "" && jsonObj["type"] == std::string("DELETE"))
+            if (action == "" && type == "GET")
+            {
+                jsonObj["data"] = {
+                    { "id", machineID },
+                    { "name", std::get<0>(machine) },
+                    { "ip", std::get<1>(machine) },
+                    { "status", std::get<2>(machine) },
+                    { "lastSync", std::get<3>(machine) }
+                };
+            }
+            else if (action == "" && type == "PATCH")
+            {
+                std::string name = jsonObj["data"]["name"];
+                std::string ip = jsonObj["data"]["ip"];
+
+                std::get<0>(machine) = name;
+                std::get<1>(machine) = ip;
+
+                jsonObj["data"] = {{ "success", true }};
+            }
+            else if (action == "" && type == "DELETE")
             {
                 machines.erase(machineID);
                 jsonObj["data"] = {{ "success", true }};
             }
-            else if (action == "sync")
+            else if (action == "sync" && type == "POST")
             {
                 auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::system_clock::now().time_since_epoch()
@@ -121,6 +142,23 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 std::get<3>(machine) = ms.count();
 
                 jsonObj["data"] = {{ "success", true }};
+            }
+            else if (action == "toggle-sniffer" && type == "POST")
+            {
+                if (std::get<2>(machine) == "sniffing")
+                {
+                    std::get<2>(machine) = "stand-by";
+                    jsonObj["data"] = {{ "success", true }};
+                }
+                else if (std::get<2>(machine) == "stand-by")
+                {
+                    std::get<2>(machine) = "sniffing";
+                    jsonObj["data"] = {{ "success", true }};
+                }
+                else
+                {
+                    jsonObj["error"] = {{ "invalid", { {"status", std::get<2>(machine)} } }};
+                }
             }
             else
             {
