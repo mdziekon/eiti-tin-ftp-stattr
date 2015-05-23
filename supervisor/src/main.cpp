@@ -2,6 +2,7 @@
 #include <system_error>
 
 #include "controllers/main/MainModule.hpp"
+#include "controllers/terminal/TerminalModule.hpp"
 #include "network/websocket/Manager.hpp"
 #include "network/bsdsocket/Manager.hpp"
 
@@ -13,6 +14,7 @@ int main()
     tin::network::websocket::ManagerQueue netManagerQueue;
 
     tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
+    tin::controllers::terminal::TerminalModule terminalCtrl(ctrlQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 9001);
     tin::network::bsdsocket::ManagerQueue bsdManagerQueue;
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
@@ -22,6 +24,7 @@ int main()
     auto mainCtrlThread = mainCtrl.createThread();
     auto netManager = networkManager.createThread();
     auto bsdManagerThread = bsdManager.createThread();
+    auto terminalCtrlThread = terminalCtrl.createThread();
 
     bsdManagerQueue.push(
         tin::network::bsdsocket::EventPtr(
@@ -39,6 +42,7 @@ int main()
         mainCtrlThread.join();
         netManager.join();
         bsdManagerThread.join();
+        terminalCtrlThread.join();
     }
     catch (std::system_error& e)
     {
