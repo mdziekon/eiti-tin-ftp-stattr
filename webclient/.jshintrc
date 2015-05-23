@@ -30,6 +30,7 @@
         "assert": true,
         "expect": true,
         "should": true,
-        "Morris": false
+        "Morris": false,
+        "moment": true
     }
 }
