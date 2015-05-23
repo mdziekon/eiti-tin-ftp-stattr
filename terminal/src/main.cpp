@@ -60,7 +60,7 @@ private:
 	{
 		boost::asio::async_write(socket_,
 			boost::asio::buffer(msgs_.front().data(),
-				msgs_.front().length())),
+				msgs_.front().length()),
 			[this](boost::system::error_code ec, std::size_t /* ?? */)
 		{
 			if(!ec)
@@ -83,7 +83,7 @@ private:
 	tcp::socket socket_;
 	command_message command_msg_;
 	command_message_queue msgs_;
-}
+};
 
 int main(int argc, char* argv[])
 {
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 		auto endpoint_iterator = resolver.resolve({ argv[1], argv[2] });
 		terminal_client client(io_service, endpoint_iterator);
 
-		std::thread t([&io-service]() { io_service.run(); });
+		std::thread t([&io_service]() { io_service.run(); });
 
 		char line[command_message::max_body_length + 1];
 
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 			client.write(msg);
 		}
 
-		c.close();
+		client.close();
 		t.join();
 	}
 	catch(std::exception& e)

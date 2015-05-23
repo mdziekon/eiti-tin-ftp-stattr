@@ -12,9 +12,10 @@ int main()
 {
     tin::controllers::main::ControllerQueue ctrlQueue;
     tin::network::websocket::ManagerQueue netManagerQueue;
+    tin::controllers::terminal::TerminalQueue terminalQueue;
 
     tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
-    tin::controllers::terminal::TerminalModule terminalCtrl(ctrlQueue);
+    tin::controllers::terminal::TerminalModule terminalCtrl(terminalQueue, ctrlQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 9001);
     tin::network::bsdsocket::ManagerQueue bsdManagerQueue;
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
