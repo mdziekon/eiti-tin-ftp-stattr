@@ -37,6 +37,13 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <% if (!machines.length) { %>
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <strong class="text-muted">No machines added yet</strong>
+                                    </td>
+                                </tr>
+                            <% } %>
                             <% _.each(machines, function (machine) { %>
                                 <tr>
                                     <td><%- machine.id %></td>
