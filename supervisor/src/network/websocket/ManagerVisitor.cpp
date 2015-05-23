@@ -245,6 +245,58 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
             }
         }
     }
+    else if (route.substr(0, 22) == "stats-machine-per-day/")
+    {
+        auto routeRest = route.substr(22);
+        auto action = std::string("");
+        if (routeRest.find("/") != std::string::npos)
+        {
+            action = routeRest.substr(routeRest.find("/") + 1);
+            routeRest = routeRest.substr(0, routeRest.find("/"));
+        }
+
+        unsigned int machineID;
+        try
+        {
+            machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+            auto& machine = machines.at(machineID);
+
+            if (action == "" && type == "GET")
+            {
+                unsigned int lastDays = 7;
+
+                if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+                {
+                    lastDays = jsonObj["data"]["lastDays"];
+                }
+
+                jsonObj["data"] = {
+                    { "stats", {} }
+                };
+
+                for(int i = 0; i < lastDays; ++i)
+                {
+                    jsonObj["data"]["stats"][i] = {};
+                    jsonObj["data"]["stats"][i]["day"] = (1432404865) + (i * 24 * 60 * 60);
+                    jsonObj["data"]["stats"][i]["traffic"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                    jsonObj["data"]["stats"][i]["packets"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                }
+            }
+            else
+            {
+                jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+            }
+        }
+        catch (std::invalid_argument& e)
+        {
+            jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+        }
+        catch (std::out_of_range& e)
+        {
+            jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
+        }
+    }
     else
     {
         jsonObj["error"] = {{ "invalid", { {"route", route} } }};
