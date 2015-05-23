@@ -10,9 +10,13 @@ webapp.Routers = webapp.Routers || {};
             "": "index",
             "/": "index",
             "dashboard": "dashboard",
+
             "machines": "machines",
             "machines/add": "machinesAdd",
-            "machines/:machineID/edit": "machinesEdit"
+            "machines/:machineID/edit": "machinesEdit",
+
+            "stats": "statsGeneral",
+            "stats/machine/:machineID": "statsMachine"
         },
 
         index: function () {
@@ -39,6 +43,20 @@ webapp.Routers = webapp.Routers || {};
 
         machinesEdit: function (machineID) {
             var view = new webapp.Views.MachinesEdit({
+                machineID: machineID
+            });
+
+            view.render();
+        },
+
+        statsGeneral: function () {
+            var view = new webapp.Views.Stats.General();
+
+            view.render();
+        },
+
+        statsMachine: function (machineID) {
+            var view = new webapp.Views.Stats.Machine({
                 machineID: machineID
             });
 
