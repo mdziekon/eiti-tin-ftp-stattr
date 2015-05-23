@@ -246,6 +246,17 @@
 
         init: function (attributes, options) {
             // Override this at will
+        },
+
+        parse: function (response) {
+            if (response instanceof app.SocketResponse) {
+                return this.postParse(response.data || {});
+            }
+            return this.postParse(response);
+        },
+
+        postParse: function (data) {
+            return data;
         }
     });
 
@@ -262,6 +273,17 @@
 
         init: function (models, options) {
             // Override this at will
+        },
+
+        parse: function (response) {
+            if (response instanceof app.SocketResponse) {
+                return this.postParse(response.data || {});
+            }
+            return this.postParse(response);
+        },
+
+        postParse: function (data) {
+            return data;
         }
     });
 })(
