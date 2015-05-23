@@ -8,10 +8,10 @@ webapp.Collections = webapp.Collections || {};
     webapp.Collections.Machine = Backbone.ModernCollection.extend({
         model: webapp.Models.Machine,
 
-        command: "list_machines",
+        url: "machine",
 
-        parse: function (response) {
-            return response.data.machines;
+        postParse: function (response) {
+            return response.machines;
         }
 
     });

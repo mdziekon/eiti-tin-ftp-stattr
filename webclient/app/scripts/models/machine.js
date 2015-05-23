@@ -8,11 +8,21 @@ webapp.Models = webapp.Models || {};
     webapp.Models.Machine = Backbone.ModernModel.extend({
         defaults: {},
 
-        command: "get_machine",
+        postParse: function (response) {
+            var data = response;
 
-        parse: function (response) {
-            return _.extend(response, {
-                lastSync: response.lastSync * 1000
+            if (data.lastSync) {
+                data.lastSync *= 1000;
+            }
+
+            return data;
+        },
+
+        syncMachine: function () {
+            return this.sync("update", this, {
+                patch: true,
+                url: "machine/" + this.id + "/sync",
+                noData: true
             });
         }
     });

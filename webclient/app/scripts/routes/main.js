@@ -10,7 +10,8 @@ webapp.Routers = webapp.Routers || {};
             "": "index",
             "/": "index",
             "dashboard": "dashboard",
-            "machines": "machines"
+            "machines": "machines",
+            "machines/add": "machinesAdd"
         },
 
         index: function () {
@@ -25,6 +26,12 @@ webapp.Routers = webapp.Routers || {};
 
         machines: function () {
             var view = new webapp.Views.Machines();
+
+            view.render();
+        },
+
+        machinesAdd: function () {
+            var view = new webapp.Views.MachinesAdd();
 
             view.render();
         }

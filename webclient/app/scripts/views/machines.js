@@ -11,22 +11,39 @@ webapp.Views = webapp.Views || {};
 
         template: JST['app/scripts/templates/machines.ejs'],
 
-        events: {},
+        events: {
+            "click .btn-sync": "syncMachine"
+        },
 
         serialize: function (renderTemplate) {
-            var machines = new webapp.Collections.Machine();
+            var view = this;
+            view.machines = new webapp.Collections.Machine();
 
-            machines.fetch().done(function () {
+            view.machines.fetch().done(function () {
                 renderTemplate({
                     json: {
-                        machines: machines.toJSON()
+                        machines: view.machines.toJSON()
                     }
                 });
             }).fail(function () {
                 console.error("Failure");
             });
-        }
+        },
 
+        syncMachine: function (evt) {
+            var view = this;
+            var $el = $(evt.currentTarget);
+
+            var machineID = $el.data("machine-id");
+
+            var machine = view.machines.get(machineID);
+
+            machine.syncMachine().done(function () {
+                view.render();
+            }).fail(function () {
+                console.error("Sync failed");
+            });
+        }
     });
 
 })();
