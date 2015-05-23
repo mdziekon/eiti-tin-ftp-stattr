@@ -56,6 +56,11 @@
                                             <%- _.capitalize(moment(machine.lastSync).fromNow()) %>
                                         </td>
                                     <% } %>
+                                    <td>
+                                        <a href="stats/machine/<%- machine.id %>" class="btn btn-primary">
+                                            <i class="fa fa-tasks "></i> Show
+                                        </a>
+                                    </td>
                                     <td class="text-right">
                                         <% if (machine.status === "sniffing") { %>
                                             <a class="btn btn-warning btn-toggle-sniffer" data-machine-id="<%- machine.id %>">
