@@ -16,6 +16,10 @@ using tin::network::websocket::ManagerVisitor;
 namespace events = tin::network::websocket::events;
 
 #include <iostream>
+#include <tuple>
+#include <map>
+#include <stdexcept>
+#include <chrono>
 
 void ManagerVisitor::visit(events::TerminateNetworkManager& evt)
 {
@@ -40,42 +44,98 @@ void ManagerVisitor::visit(events::ServerConnectionClosed& evt)
 
 void ManagerVisitor::visit(events::MessageReceived& evt)
 {
+    static unsigned int lastID = 0;
+    static std::map<unsigned int, std::tuple<std::string, std::string, std::string, unsigned int>> machines;
+
+    std::cout << "[WebSockets] Received message: " << std::endl;
+    std::cout << evt.message << std::endl;
+
     auto jsonObj = nlohmann::json::parse(evt.message);
 
-    if (!jsonObj["cmd"].is_string()) {
-        jsonObj["error"] = {{ "invalid", "cmd" }};
+    if (!jsonObj["route"].is_string() || !jsonObj["type"].is_string())
+    {
+        jsonObj["error"] = {{ "invalid", { {"route", "type"} } }};
 
         this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
         return;
     }
 
-    if (jsonObj["cmd"] == std::string("list_machines")) {
-        jsonObj["data"] = {
-            { "machines", {
-                {
-                    { "id", 1 },
-                    { "name", "example machine" },
-                    { "ip", "196.168.0.1" },
-                    { "status", "sniffing" },
-                    { "lastSync", 1432331838 }
-                },
-                {
-                    { "id", 3 },
-                    { "name", "test server #1" },
-                    { "ip", "196.168.0.11" },
-                    { "status", "stand-by" },
-                    { "lastSync", 1432331838 }
-                },
-                {
-                    { "id", 7 },
-                    { "name", "test server #4" },
-                    { "ip", "196.168.0.50" },
-                    { "status", "offline" },
-                    { "lastSync", 1432331838 }
-                }
-            }}
-        };
+    std::string route = jsonObj["route"];
+    if (route == "machine")
+    {
+        if (jsonObj["type"] == std::string("GET"))
+        {
+            jsonObj["data"] = {
+                { "machines", {} }
+            };
+
+            for(auto& it: machines)
+            {
+                jsonObj["data"]["machines"][jsonObj["data"]["machines"].size()] = {
+                    { "id", it.first },
+                    { "name", std::get<0>(it.second) },
+                    { "ip", std::get<1>(it.second) },
+                    { "status", std::get<2>(it.second) },
+                    { "lastSync", std::get<3>(it.second) }
+                };
+            }//1432331838
+        }
+        else if (jsonObj["type"] == std::string("POST"))
+        {
+            std::string name = jsonObj["data"]["name"];
+            std::string ip = jsonObj["data"]["ip"];
+
+            auto tup = std::tuple<std::string, std::string, std::string, unsigned int>(name, ip, "stand-by", 0);
+
+            machines.insert({lastID++, tup});
+        }
     }
+    else if (route.substr(0, 8) == "machine/")
+    {
+        auto routeRest = route.substr(8);
+        auto action = std::string("");
+        if (routeRest.find("/") != std::string::npos)
+        {
+            action = routeRest.substr(routeRest.find("/") + 1);
+            routeRest = routeRest.substr(0, routeRest.find("/"));
+        }
+
+        unsigned int machineID;
+        try
+        {
+            machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+            auto& machine = machines.at(machineID);
+
+            if (action == "sync")
+            {
+                auto ms = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                );
+
+                std::get<3>(machine) = ms.count();
+
+                jsonObj["data"] = {{ "success", true }};
+            }
+            else
+            {
+                jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+            }
+        }
+        catch (std::invalid_argument& e)
+        {
+            jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+        }
+        catch (std::out_of_range& e)
+        {
+            jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
+        }
+    }
+    else
+    {
+        jsonObj["error"] = {{ "invalud", { {"route", route} } }};
+    }
+
 
     this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
 }
