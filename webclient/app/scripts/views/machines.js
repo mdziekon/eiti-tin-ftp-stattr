@@ -12,7 +12,8 @@ webapp.Views = webapp.Views || {};
         template: JST['app/scripts/templates/machines.ejs'],
 
         events: {
-            "click .btn-sync": "syncMachine"
+            "click .btn-sync": "syncMachine",
+            "click .btn-delete": "deleteMachine"
         },
 
         serialize: function (renderTemplate) {
@@ -42,6 +43,21 @@ webapp.Views = webapp.Views || {};
                 view.render();
             }).fail(function () {
                 console.error("Sync failed");
+            });
+        },
+
+        deleteMachine: function (evt) {
+            var view = this;
+            var $el = $(evt.currentTarget);
+
+            var machineID = $el.data("machine-id");
+
+            var machine = view.machines.get(machineID);
+
+            machine.destroy().done(function () {
+                view.render();
+            }).fail(function () {
+                console.error("Deletion failed");
             });
         }
     });
