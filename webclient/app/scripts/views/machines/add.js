@@ -23,16 +23,13 @@ webapp.Views = webapp.Views || {};
 
             var machines = new webapp.Collections.Machine();
 
-            var machine = machines.create(
+            machines.create(
                 $form.serializeObject(),
                 {
                     wait: true,
+                    errorPlaceholder: view.$(".alert-placeholder"),
                     success: function () {
-                        console.log(machine);
                         webapp.router.navigate("machines", { trigger: true });
-                    },
-                    error: function () {
-                        console.error("Creation error");
                     }
                 }
             );

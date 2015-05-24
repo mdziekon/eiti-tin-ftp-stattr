@@ -20,20 +20,20 @@ webapp.Models = webapp.Models || {};
             return data;
         },
 
-        syncMachine: function () {
-            return this.sync("create", this, {
+        syncMachine: function (options) {
+            return this.sync("create", this, _.defaults({
                 patch: true,
                 url: this.url() + "/sync",
                 noData: true
-            });
+            }, options));
         },
 
-        toggleSniffer: function () {
-            return this.sync("create", this, {
+        toggleSniffer: function (options) {
+            return this.sync("create", this, _.defaults({
                 patch: true,
                 url: this.url() + "/toggle-sniffer",
                 noData: true
-            });
+            }, options));
         }
     });
 

@@ -31,7 +31,11 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
                     json: {}
                 });
             }).fail(function () {
-                console.error("Failure");
+                renderTemplate({
+                    error: {
+                        message: "Failed to load daily stats"
+                    }
+                });
             });
         },
 

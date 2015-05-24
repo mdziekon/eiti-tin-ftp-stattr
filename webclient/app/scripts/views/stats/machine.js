@@ -26,7 +26,11 @@ webapp.Views.Stats = webapp.Views.Stats || {};
                     }
                 });
             }).fail(function () {
-                console.log("Machine fetch fail");
+                renderTemplate({
+                    error: {
+                        message: "Failed to load specified machine"
+                    }
+                });
             });
         },
 

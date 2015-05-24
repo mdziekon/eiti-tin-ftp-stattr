@@ -28,52 +28,80 @@ webapp.Views = webapp.Views || {};
                     }
                 });
             }).fail(function () {
-                console.error("Failure");
+                renderTemplate({
+                    error: {
+                        message: "Failed to load machines list"
+                    }
+                });
             });
         },
 
         syncMachine: function (evt) {
             var view = this;
             var $el = $(evt.currentTarget);
+            var flashDfd = new $.Deferred();
 
             var machineID = $el.data("machine-id");
 
             var machine = view.machines.get(machineID);
+            var syncPromise = machine.syncMachine({
+                submitElement: $el,
+                submitElementFlashDfd: flashDfd
+            });
 
-            machine.syncMachine().done(function () {
+            var promises = [
+                syncPromise,
+                flashDfd.promise()
+            ];
+
+            $.when.apply($, promises).done(function () {
                 view.render();
-            }).fail(function () {
-                console.error("Sync failed");
             });
         },
 
         deleteMachine: function (evt) {
             var view = this;
             var $el = $(evt.currentTarget);
+            var flashDfd = new $.Deferred();
 
             var machineID = $el.data("machine-id");
 
             var machine = view.machines.get(machineID);
+            var deletePromise = machine.destroy({
+                submitElement: $el,
+                submitElementFlashDfd: flashDfd
+            });
 
-            machine.destroy().done(function () {
+            var promises = [
+                deletePromise,
+                flashDfd.promise()
+            ];
+
+            $.when.apply($, promises).done(function () {
                 view.render();
-            }).fail(function () {
-                console.error("Deletion failed");
             });
         },
 
         toggleSniffer: function (evt) {
             var view = this;
             var $el = $(evt.currentTarget);
+            var flashDfd = new $.Deferred();
 
             var machineID = $el.data("machine-id");
 
             var machine = view.machines.get(machineID);
+            var togglePromise = machine.toggleSniffer({
+                submitElement: $el,
+                submitElementFlashDfd: flashDfd
+            });
 
-            machine.toggleSniffer().done(function () {
+            var promises = [
+                togglePromise,
+                flashDfd.promise()
+            ];
+
+            $.when.apply($, promises).done(function () {
                 view.render();
-            }).fail(function () {
-                console.error("Toggle failed");
             });
         }
     });

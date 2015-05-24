@@ -70,17 +70,17 @@
                                     </td>
                                     <td class="text-right">
                                         <% if (machine.status === "sniffing") { %>
-                                            <a class="btn btn-warning btn-toggle-sniffer" data-machine-id="<%- machine.id %>">
+                                            <a class="btn btn-warning btn-toggle-sniffer" data-machine-id="<%- machine.id %>" data-load-text="Stopping..." data-complete-text="Completed" data-error-text="Error">
                                                 <i class="fa fa-pause"></i> Stop Sniffer
                                             </a>
                                         <% } else if (machine.status === "stand-by") { %>
-                                            <a class="btn btn-success btn-toggle-sniffer" data-machine-id="<%- machine.id %>">
+                                            <a class="btn btn-success btn-toggle-sniffer" data-machine-id="<%- machine.id %>" data-load-text="Starting..." data-complete-text="Completed" data-error-text="Error">
                                                 <i class="fa fa-play"></i> Start Sniffer
                                             </a>
                                         <% } %>
 
                                         <% if (machine.status === "sniffing" || machine.status === "stand-by") { %>
-                                            <a class="btn btn-primary btn-sync" data-machine-id="<%- machine.id %>">
+                                            <a class="btn btn-primary btn-sync" data-machine-id="<%- machine.id %>" data-load-text="Syncing..." data-complete-text="Completed" data-error-text="Error">
                                                 <i class="fa fa-refresh"></i> Sync Now
                                             </a>
                                         <% } %>
@@ -88,7 +88,7 @@
                                         <a href="machines/<%- machine.id %>/edit" class="btn btn-primary">
                                             <i class="fa fa-pencil"></i> Edit
                                         </a>
-                                        <a class="btn btn-danger btn-delete" data-machine-id="<%- machine.id %>">
+                                        <a class="btn btn-danger btn-delete" data-machine-id="<%- machine.id %>" data-load-text="Deleting..." data-complete-text="Completed" data-error-text="Error">
                                             <i class="fa fa-trash-o"></i> Delete
                                         </a>
                                     </td>

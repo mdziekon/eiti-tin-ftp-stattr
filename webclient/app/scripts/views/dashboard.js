@@ -23,7 +23,11 @@ webapp.Views = webapp.Views || {};
                     }
                 });
             }).fail(function () {
-                console.error("Failure");
+                renderTemplate({
+                    error: {
+                        message: "Failed to load machines list"
+                    }
+                });
             });
         }
     });

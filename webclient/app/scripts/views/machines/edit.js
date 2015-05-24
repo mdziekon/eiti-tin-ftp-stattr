@@ -30,7 +30,11 @@ webapp.Views = webapp.Views || {};
                     }
                 });
             }).fail(function () {
-                console.log("Machine fetch fail");
+                renderTemplate({
+                    error: {
+                        message: "Failed to load machine's data"
+                    }
+                });
             });
         },
 
@@ -47,12 +51,9 @@ webapp.Views = webapp.Views || {};
                 {
                     wait: true,
                     patch: true,
+                    errorPlaceholder: view.$(".alert-placeholder"),
                     success: function () {
-                        console.log(machine);
                         webapp.router.navigate("machines", { trigger: true });
-                    },
-                    error: function () {
-                        console.error("Update error");
                     }
                 }
             );

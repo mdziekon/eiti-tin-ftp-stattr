@@ -42,7 +42,11 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
                     }
                 });
             }).fail(function () {
-                console.error("Failure");
+                renderTemplate({
+                    error: {
+                        message: "Failed to load machine's stats"
+                    }
+                });
             });
         },
 
