@@ -15,8 +15,15 @@ webapp.Collections.Stats = webapp.Collections.Stats || {};
 
         postParse: function (response) {
             return response.stats;
-        }
+        },
 
+        forTemplate: function (options) {
+            var json = this.map(function (model) {
+                return model.forTemplate(options);
+            });
+
+            return json;
+        }
     });
 
 })();

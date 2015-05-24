@@ -1,10 +1,35 @@
 <div class="panel panel-default">
-    <div class="panel-heading">
-        <i class="fa fa-bar-chart-o fa-fw"></i> Daily Stats
+     <div class="panel-heading clearfix">
+        <i class="fa fa-bar-chart-o fa-fw"></i> Daily Traffic
         <div class="pull-right">
+            <div class="btn-group btn-change-traffic-mode">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <span class="text">
+                        <% if (trafficMode === "both") { %>
+                            Incoming &amp; Outcoming
+                        <% } else if (trafficMode === "in") { %>
+                            Incoming
+                        <% } else if (trafficMode === "out") { %>
+                            Outcoming
+                        <% } %>
+                    </span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="#" data-traffic-mode="in">Incoming</a>
+                    </li>
+                    <li>
+                        <a href="#" data-traffic-mode="out">Outcoming</a>
+                    </li>
+                    <li>
+                        <a href="#" data-traffic-mode="both">Incoming &amp; Outcoming</a>
+                    </li>
+                </ul>
+            </div>
             <div class="btn-group btn-change-period">
                 <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                    <span class="text">Last 7 days</span>
+                    <span class="text">Last <%- lastDays %> days</span>
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu pull-right" role="menu">

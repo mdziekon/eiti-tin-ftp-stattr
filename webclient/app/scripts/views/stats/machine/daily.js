@@ -14,13 +14,16 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
         template: JST['app/scripts/templates/stats/machine/daily.ejs'],
 
         events: {
-            "click .btn-change-period li a": "changePeriod"
+            "click .btn-change-period li a": "changePeriod",
+            "click .btn-change-traffic-mode li a": "changeTrafficMode"
         },
 
         defaultLastDays: 7,
+        defaultTrafficMode: "both",
 
         init: function () {
             this.lastDays = this.defaultLastDays;
+            this.trafficMode = this.defaultTrafficMode;
         },
 
         serialize: function (renderTemplate) {
@@ -38,7 +41,8 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
                 renderTemplate({
                     json: {
                         lastDays: view.lastDays,
-                        stats: view.stats.toJSON()
+                        trafficMode: view.trafficMode,
+                        stats: view.stats.forTemplate({ trafficMode: view.trafficMode })
                     }
                 });
             }).fail(function () {
@@ -68,6 +72,17 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
             var period = $el.data("period");
 
             view.lastDays = parseInt(period.replace("last", ""), 10);
+            view.render();
+        },
+
+        changeTrafficMode: function (evt) {
+            evt.preventDefault();
+
+            var view = this;
+            var $el = $(evt.currentTarget);
+            var trafficMode = $el.data("traffic-mode");
+
+            view.trafficMode = trafficMode;
             view.render();
         }
     });

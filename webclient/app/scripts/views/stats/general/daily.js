@@ -14,7 +14,16 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
         template: JST['app/scripts/templates/stats/general/daily.ejs'],
 
         events: {
-            "click .btn-change-period li a": "changePeriod"
+            "click .btn-change-period li a": "changePeriod",
+            "click .btn-change-traffic-mode li a": "changeTrafficMode"
+        },
+
+        defaultLastDays: 7,
+        defaultTrafficMode: "both",
+
+        init: function () {
+            this.lastDays = this.defaultLastDays;
+            this.trafficMode = this.defaultTrafficMode;
         },
 
         serialize: function (renderTemplate) {
@@ -28,7 +37,10 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
                 }
             }).done(function () {
                 renderTemplate({
-                    json: {}
+                    json: {
+                        lastDays: view.lastDays,
+                        trafficMode: view.trafficMode
+                    }
                 });
             }).fail(function () {
                 renderTemplate({
@@ -72,7 +84,7 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             };
 
             view.statsPerDay.each(function (model) {
-                var modelData = model.toJSON();
+                var modelData = model.forTemplate({ trafficMode: view.trafficMode });
                 var machinesData = {};
                 _.each(modelData.machines, function (machine) {
                     machinesData["machine_" + machine.id] = machine.traffic;
@@ -114,6 +126,8 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             var $el = $(evt.currentTarget);
             var period = $el.data("period");
 
+            view.lastDays = parseInt(period.replace("last", ""), 10);
+
             view.fetchStats({
                 data: {
                     lastDays: parseInt(period.replace("last", ""), 10)
@@ -126,6 +140,17 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             }).fail(function () {
                 console.error("Refetch Failure");
             });
+        },
+
+        changeTrafficMode: function (evt) {
+            evt.preventDefault();
+
+            var view = this;
+            var $el = $(evt.currentTarget);
+            var trafficMode = $el.data("traffic-mode");
+
+            view.trafficMode = trafficMode;
+            view.render();
         }
     });
 
