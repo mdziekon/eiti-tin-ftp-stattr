@@ -45,224 +45,145 @@ void ManagerVisitor::visit(events::ServerConnectionClosed& evt)
 void ManagerVisitor::visit(events::MessageReceived& evt)
 {
     static unsigned int lastID = 0;
-    static std::map<unsigned int, std::tuple<std::string, std::string, std::string, unsigned int>> machines;
+    static std::map<unsigned int, std::tuple<std::string, std::string, unsigned int, std::string, unsigned int>> machines;
 
     std::cout << "[WebSockets] Received message: " << std::endl;
     std::cout << evt.message << std::endl;
 
     auto jsonObj = nlohmann::json::parse(evt.message);
 
-    if (!jsonObj["route"].is_string() || !jsonObj["type"].is_string())
+    try
     {
-        jsonObj["error"] = {{ "invalid", { {"route", "type"} } }};
-
-        this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
-        return;
-    }
-
-    std::string route = jsonObj["route"];
-    std::string type = jsonObj["type"];
-    if (route == "machine")
-    {
-        if (type == "GET")
+        if (!jsonObj["route"].is_string() || !jsonObj["type"].is_string())
         {
-            jsonObj["data"] = {
-                { "machines", {} }
-            };
+            jsonObj["error"] = {{ "invalid", { {"route", "type"} } }};
 
-            for(auto& it: machines)
-            {
-                jsonObj["data"]["machines"][jsonObj["data"]["machines"].size()] = {
-                    { "id", it.first },
-                    { "name", std::get<0>(it.second) },
-                    { "ip", std::get<1>(it.second) },
-                    { "status", std::get<2>(it.second) },
-                    { "lastSync", std::get<3>(it.second) }
-                };
-            }
-        }
-        else if (type == "POST")
-        {
-            std::string name = jsonObj["data"]["name"];
-            std::string ip = jsonObj["data"]["ip"];
-
-            auto tup = std::tuple<std::string, std::string, std::string, unsigned int>(name, ip, "stand-by", 0);
-
-            machines.insert({lastID++, tup});
-        }
-    }
-    else if (route.substr(0, 8) == "machine/")
-    {
-        auto routeRest = route.substr(8);
-        auto action = std::string("");
-        if (routeRest.find("/") != std::string::npos)
-        {
-            action = routeRest.substr(routeRest.find("/") + 1);
-            routeRest = routeRest.substr(0, routeRest.find("/"));
+            this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
+            return;
         }
 
-        unsigned int machineID;
-        try
+        std::string route = jsonObj["route"];
+        std::string type = jsonObj["type"];
+        if (route == "machine")
         {
-            machineID = static_cast<unsigned int>(std::stoul(routeRest));
-
-            auto& machine = machines.at(machineID);
-
-            if (action == "" && type == "GET")
+            if (type == "GET")
             {
                 jsonObj["data"] = {
-                    { "id", machineID },
-                    { "name", std::get<0>(machine) },
-                    { "ip", std::get<1>(machine) },
-                    { "status", std::get<2>(machine) },
-                    { "lastSync", std::get<3>(machine) }
+                    { "machines", {} }
                 };
+
+                for(auto& it: machines)
+                {
+                    jsonObj["data"]["machines"][jsonObj["data"]["machines"].size()] = {
+                        { "id", it.first },
+                        { "name", std::get<0>(it.second) },
+                        { "ip", std::get<1>(it.second) },
+                        { "port", std::get<2>(it.second) },
+                        { "status", std::get<3>(it.second) },
+                        { "lastSync", std::get<4>(it.second) }
+                    };
+                }
             }
-            else if (action == "" && type == "PATCH")
+            else if (type == "POST")
             {
                 std::string name = jsonObj["data"]["name"];
                 std::string ip = jsonObj["data"]["ip"];
+                unsigned int port = jsonObj["data"]["port"];
 
-                std::get<0>(machine) = name;
-                std::get<1>(machine) = ip;
+                auto tup = std::tuple<std::string, std::string, unsigned int, std::string, unsigned int>(name, ip, port, "stand-by", 0);
 
-                jsonObj["data"] = {{ "success", true }};
+                machines.insert({lastID++, tup});
             }
-            else if (action == "" && type == "DELETE")
+        }
+        else if (route.substr(0, 8) == "machine/")
+        {
+            auto routeRest = route.substr(8);
+            auto action = std::string("");
+            if (routeRest.find("/") != std::string::npos)
             {
-                machines.erase(machineID);
-                jsonObj["data"] = {{ "success", true }};
+                action = routeRest.substr(routeRest.find("/") + 1);
+                routeRest = routeRest.substr(0, routeRest.find("/"));
             }
-            else if (action == "sync" && type == "POST")
-            {
-                auto ms = std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::system_clock::now().time_since_epoch()
-                );
 
-                std::get<3>(machine) = ms.count();
-
-                jsonObj["data"] = {{ "success", true }};
-            }
-            else if (action == "toggle-sniffer" && type == "POST")
+            unsigned int machineID;
+            try
             {
-                if (std::get<2>(machine) == "sniffing")
+                machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+                auto& machine = machines.at(machineID);
+
+                if (action == "" && type == "GET")
                 {
-                    std::get<2>(machine) = "stand-by";
+                    jsonObj["data"] = {
+                        { "id", machineID },
+                        { "name", std::get<0>(machine) },
+                        { "ip", std::get<1>(machine) },
+                        { "port", std::get<2>(machine) },
+                        { "status", std::get<3>(machine) },
+                        { "lastSync", std::get<4>(machine) }
+                    };
+                }
+                else if (action == "" && type == "PATCH")
+                {
+                    std::string name = jsonObj["data"]["name"];
+                    std::string ip = jsonObj["data"]["ip"];
+                    unsigned int port = jsonObj["data"]["port"];
+
+                    std::get<0>(machine) = name;
+                    std::get<1>(machine) = ip;
+                    std::get<2>(machine) = port;
+
                     jsonObj["data"] = {{ "success", true }};
                 }
-                else if (std::get<2>(machine) == "stand-by")
+                else if (action == "" && type == "DELETE")
                 {
-                    std::get<2>(machine) = "sniffing";
+                    machines.erase(machineID);
                     jsonObj["data"] = {{ "success", true }};
+                }
+                else if (action == "sync" && type == "POST")
+                {
+                    auto ms = std::chrono::duration_cast<std::chrono::seconds>(
+                        std::chrono::system_clock::now().time_since_epoch()
+                    );
+
+                    std::get<4>(machine) = ms.count();
+
+                    jsonObj["data"] = {{ "success", true }};
+                }
+                else if (action == "toggle-sniffer" && type == "POST")
+                {
+                    if (std::get<3>(machine) == "sniffing")
+                    {
+                        std::get<3>(machine) = "stand-by";
+                        jsonObj["data"] = {{ "success", true }};
+                    }
+                    else if (std::get<3>(machine) == "stand-by")
+                    {
+                        std::get<3>(machine) = "sniffing";
+                        jsonObj["data"] = {{ "success", true }};
+                    }
+                    else
+                    {
+                        jsonObj["error"] = {{ "invalid", { {"status", std::get<3>(machine)} } }};
+                    }
                 }
                 else
                 {
-                    jsonObj["error"] = {{ "invalid", { {"status", std::get<2>(machine)} } }};
+                    jsonObj["error"] = {{ "invalid", { {"action", action} } }};
                 }
             }
-            else
+            catch (std::invalid_argument& e)
             {
-                jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+                jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+            }
+            catch (std::out_of_range& e)
+            {
+                jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
             }
         }
-        catch (std::invalid_argument& e)
+        else if (route == "stats-per-day")
         {
-            jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
-        }
-        catch (std::out_of_range& e)
-        {
-            jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
-        }
-    }
-    else if (route == "stats-per-day")
-    {
-        if (type == "GET")
-        {
-            unsigned int lastDays = 7;
-
-            if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
-            {
-                lastDays = jsonObj["data"]["lastDays"];
-            }
-
-            auto day = nlohmann::json();
-            day = {
-                { "day", 1432404865 },
-                { "machines", {
-                    {
-                        { "id", 1 },
-                        { "name", "Machine test" },
-                        { "traffic", 12 }
-                    },
-                    {
-                        { "id", 2 },
-                        { "name", "Machine ubuntu" },
-                        { "traffic", 24 }
-                    }
-                }}
-            };
-
-            jsonObj["data"] = {
-                { "stats", {} }
-            };
-
-            for(int i = 0; i < lastDays; ++i)
-            {
-                jsonObj["data"]["stats"][i] = day;
-                jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
-                jsonObj["data"]["stats"][i]["machines"][0]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]) + (5 * (i % 2 == 1 ? -1 : 1));
-                jsonObj["data"]["stats"][i]["machines"][1]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
-            }
-        }
-    }
-    else if (route == "stats-per-machine")
-    {
-        if (type == "GET")
-        {
-            unsigned int lastDays = 7;
-
-            if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
-            {
-                lastDays = jsonObj["data"]["lastDays"];
-            }
-
-            auto machine = nlohmann::json();
-            machine = {
-                { "id", 0 },
-                { "name", "Linux Machine " },
-                { "traffic", 15 }
-            };
-
-            jsonObj["data"] = {
-                { "machines", {} }
-            };
-
-            for(int i = 0; i < lastDays; ++i)
-            {
-                jsonObj["data"]["machines"][i] = machine;
-                jsonObj["data"]["machines"][i]["id"] = ((int) jsonObj["data"]["machines"][i]["id"]) + (i);
-                jsonObj["data"]["machines"][i]["traffic"] = ((int) jsonObj["data"]["machines"][i]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
-            }
-        }
-    }
-    else if (route.substr(0, 22) == "stats-machine-per-day/")
-    {
-        auto routeRest = route.substr(22);
-        auto action = std::string("");
-        if (routeRest.find("/") != std::string::npos)
-        {
-            action = routeRest.substr(routeRest.find("/") + 1);
-            routeRest = routeRest.substr(0, routeRest.find("/"));
-        }
-
-        unsigned int machineID;
-        try
-        {
-            machineID = static_cast<unsigned int>(std::stoul(routeRest));
-
-            auto& machine = machines.at(machineID);
-
-            if (action == "" && type == "GET")
+            if (type == "GET")
             {
                 unsigned int lastDays = 7;
 
@@ -271,35 +192,126 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                     lastDays = jsonObj["data"]["lastDays"];
                 }
 
+                auto day = nlohmann::json();
+                day = {
+                    { "day", 1432404865 },
+                    { "machines", {
+                        {
+                            { "id", 1 },
+                            { "name", "Machine test" },
+                            { "traffic", 12 }
+                        },
+                        {
+                            { "id", 2 },
+                            { "name", "Machine ubuntu" },
+                            { "traffic", 24 }
+                        }
+                    }}
+                };
+
                 jsonObj["data"] = {
                     { "stats", {} }
                 };
 
                 for(int i = 0; i < lastDays; ++i)
                 {
-                    jsonObj["data"]["stats"][i] = {};
-                    jsonObj["data"]["stats"][i]["day"] = (1432404865) + (i * 24 * 60 * 60);
-                    jsonObj["data"]["stats"][i]["traffic"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
-                    jsonObj["data"]["stats"][i]["packets"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                    jsonObj["data"]["stats"][i] = day;
+                    jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
+                    jsonObj["data"]["stats"][i]["machines"][0]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                    jsonObj["data"]["stats"][i]["machines"][1]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
                 }
             }
-            else
+        }
+        else if (route == "stats-per-machine")
+        {
+            if (type == "GET")
             {
-                jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+                unsigned int lastDays = 7;
+
+                if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+                {
+                    lastDays = jsonObj["data"]["lastDays"];
+                }
+
+                auto machine = nlohmann::json();
+                machine = {
+                    { "id", 0 },
+                    { "name", "Linux Machine " },
+                    { "traffic", 15 }
+                };
+
+                jsonObj["data"] = {
+                    { "machines", {} }
+                };
+
+                for(int i = 0; i < lastDays; ++i)
+                {
+                    jsonObj["data"]["machines"][i] = machine;
+                    jsonObj["data"]["machines"][i]["id"] = ((int) jsonObj["data"]["machines"][i]["id"]) + (i);
+                    jsonObj["data"]["machines"][i]["traffic"] = ((int) jsonObj["data"]["machines"][i]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                }
             }
         }
-        catch (std::invalid_argument& e)
+        else if (route.substr(0, 22) == "stats-machine-per-day/")
         {
-            jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+            auto routeRest = route.substr(22);
+            auto action = std::string("");
+            if (routeRest.find("/") != std::string::npos)
+            {
+                action = routeRest.substr(routeRest.find("/") + 1);
+                routeRest = routeRest.substr(0, routeRest.find("/"));
+            }
+
+            unsigned int machineID;
+            try
+            {
+                machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+                auto& machine = machines.at(machineID);
+
+                if (action == "" && type == "GET")
+                {
+                    unsigned int lastDays = 7;
+
+                    if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+                    {
+                        lastDays = jsonObj["data"]["lastDays"];
+                    }
+
+                    jsonObj["data"] = {
+                        { "stats", {} }
+                    };
+
+                    for(int i = 0; i < lastDays; ++i)
+                    {
+                        jsonObj["data"]["stats"][i] = {};
+                        jsonObj["data"]["stats"][i]["day"] = (1432404865) + (i * 24 * 60 * 60);
+                        jsonObj["data"]["stats"][i]["traffic"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["packets"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                    }
+                }
+                else
+                {
+                    jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+                }
+            }
+            catch (std::invalid_argument& e)
+            {
+                jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+            }
+            catch (std::out_of_range& e)
+            {
+                jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
+            }
         }
-        catch (std::out_of_range& e)
+        else
         {
-            jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
+            jsonObj["error"] = {{ "invalid", { {"route", route} } }};
         }
     }
-    else
+    catch(std::exception& e)
     {
-        jsonObj["error"] = {{ "invalid", { {"route", route} } }};
+        jsonObj["error"] = {{ "unknown", true }};
     }
 
 
