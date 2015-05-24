@@ -15,20 +15,22 @@
             self.attributes = _.defaults(options.attributes || {}, _.result(self, "defaultAttributes"));
             self.priv = {
                 listeners: {},
-                connectionPromise: undefined,
-                socket: undefined
+                socket: undefined,
+                dfds: {
+                    connected: new $.Deferred(),
+                    error: new $.Deferred()
+                }
             };
-
-            var connectionDfd = new $.Deferred();
 
             var location = self.get("host") + ":" + self.get("port");
             var socket = new WebSocket("ws://" + location);
 
             socket.onopen = function () {
-                connectionDfd.resolve();
+                self.priv.dfds.connected.resolve();
             };
             socket.onerror = function () {
-                connectionDfd.reject({ error: { connection: true } });
+                self.priv.dfds.connected.reject();
+                self.priv.dfds.error.reject();
             };
             socket.onmessage = function (evt) {
                 var json;
@@ -50,7 +52,6 @@
                 }
             };
 
-            self.priv.connectionPromise = connectionDfd.promise();
             self.priv.socket = socket;
         },
 
@@ -78,7 +79,15 @@
             var dfd = new $.Deferred();
             options = options || {};
 
-            return self.priv.connectionPromise.then(function () {
+            self.priv.dfds.error.fail(function () {
+                dfd.reject({ error: { connection: true } });
+            });
+
+            self.priv.dfds.connected.done(function () {
+                if (dfd.state() !== "pending") {
+                    return;
+                }
+
                 try {
                     if (!_.isObject(data)) {
                         data = JSON.parse(data);
@@ -103,14 +112,14 @@
                     timeoutHandle = window.setTimeout(function () {
                         dfd.reject({ error: { timeout: true, delay: timeout } });
                     }, timeout);
-                }
 
-                return dfd.promise().done(function () {
-                    if (timeoutHandle) {
+                    dfd.done(function () {
                         window.clearTimeout(timeoutHandle);
-                    }
-                });
+                    });
+                }
             });
+
+            return dfd.promise();
         }
     });
 })(window.webapp);
