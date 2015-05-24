@@ -1,0 +1,109 @@
+<div class="panel panel-default">
+     <div class="panel-heading clearfix">
+        <i class="fa fa-bar-chart-o fa-fw"></i> Connections' Summary
+        <div class="pull-right">
+            <div class="btn-group btn-change-traffic-mode">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <span class="text">
+                        <% if (trafficMode === "both") { %>
+                            Incoming &amp; Outcoming
+                        <% } else if (trafficMode === "in") { %>
+                            Incoming
+                        <% } else if (trafficMode === "out") { %>
+                            Outcoming
+                        <% } %>
+                    </span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="#" data-traffic-mode="in">Incoming</a>
+                    </li>
+                    <li>
+                        <a href="#" data-traffic-mode="out">Outcoming</a>
+                    </li>
+                    <li>
+                        <a href="#" data-traffic-mode="both">Incoming &amp; Outcoming</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="btn-group btn-change-period">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <span class="text">Last <%- lastDays %> days</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="#" data-period="last3">Last 3 days</a>
+                    </li>
+                    <li>
+                        <a href="#" data-period="last7">Last 7 days</a>
+                    </li>
+                    <li>
+                        <a href="#" data-period="last30">Last 30 days</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#" data-period="last90">Last 3 months</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Connection</th>
+                        <th>Last Time</th>
+                        <th>Traffic</th>
+                        <th>Packets</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!connections.length) { %>
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <strong class="text-muted">No data for selected period</strong>
+                            </td>
+                        </tr>
+                    <% } %>
+                    <% _.each(connections, function (connection) { %>
+                        <tr>
+                            <td>
+                                <%- connection.ip %>:<%- connection.port %>
+                            </td>
+                            <td title="<%- moment(connection.lastTime).format("MMMM Do YYYY, h:mm:ss a") %>">
+                                <%- _.capitalize(moment(connection.lastTime).fromNow()) %>
+                            </td>
+                            <td>
+                                <%- connection.traffic %> MB
+                            </td>
+                            <td>
+                                <%- connection.packets %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                    <% if (connections.length) { %>
+                        <tr>
+                            <td class="text-right" colspan="2">
+                                <strong class="text-muted">Total</strong>
+                            </td>
+                            <td>
+                                <%- _.reduce(connections, function (total, connection) { return total + connection.traffic; }, 0) %> MB
+                            </td>
+                            <td>
+                                <%- _.reduce(connections, function (total, connection) { return total + connection.packets; }, 0) %>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        <!-- /.table-responsive -->
+    </div>
+    <!-- /.panel-body -->
+</div>
+<!-- /.panel -->

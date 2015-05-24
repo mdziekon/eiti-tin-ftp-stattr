@@ -38,6 +38,9 @@ webapp.Views.Stats = webapp.Views.Stats || {};
             var subviews = [
                 new webapp.Views.Stats.Machine.Daily({
                     machineID: this.options.machineID
+                }),
+                new webapp.Views.Stats.Machine.PerConnection({
+                    machineID: this.options.machineID
                 })
             ];
 
