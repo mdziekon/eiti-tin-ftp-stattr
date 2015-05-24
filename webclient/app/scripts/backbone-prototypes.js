@@ -235,9 +235,21 @@
             data.data = options.data;
         }
 
+        if (options.errorPlaceholder) {
+            app.hideError(options.errorPlaceholder);
+        }
+
         var promise = app.connection.send(data);
 
         promise.done(options.success || function () {});
+        if (options.errorPlaceholder) {
+            promise.fail(function (errorJSON) {
+                app.showError(
+                    options.errorPlaceholder,
+                    JSON.stringify(errorJSON)
+                );
+            });
+        }
         promise.fail(options.error || function () {});
 
         return promise;

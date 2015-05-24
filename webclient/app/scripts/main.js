@@ -81,6 +81,23 @@ window.webapp = {
 
     getAPIUrl: function (url) {
         return this.apiURL + (this.apiURL[this.apiURL.length - 1] === "/" ? "" : "/") + url;
+    },
+
+    showError: function ($container, message) {
+        if (!($container instanceof $)) {
+            $container = $($container);
+        }
+
+        $container.text(message);
+        $container.show();
+    },
+
+    hideError: function ($container) {
+        if (!($container instanceof $)) {
+            $container = $($container);
+        }
+
+        $container.hide();
     }
 };
 
