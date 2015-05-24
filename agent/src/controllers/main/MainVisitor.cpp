@@ -51,6 +51,19 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
             )
         );
     }
+
+    else if (cmd == "ping")
+    {
+        this->controller.networkManagerQueue.push(
+            std::make_shared<bsdsocketEvents::ResponseRequest>(
+                std::make_shared<json>(
+                    json::parse("{ \"cmd\": \"ping\", \"request\": \"pong\" }")
+                )
+            )
+        );
+
+    }
+
     else if (cmd == "change_filter")
     {
         if (temp.find("device") == temp.end() || temp.find("expression") == temp.end() || !temp["device"].is_string() || !temp["expression"].is_string())
