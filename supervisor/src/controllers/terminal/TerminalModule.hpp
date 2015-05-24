@@ -2,6 +2,7 @@
 #define TIN_CONTROLLERS_TERMINAL_TERMINALMODULE_HPP
 
 #include <vector>
+#include <boost/asio.hpp>
 
 #include "typedefs.hpp"
 #include "../main/typedefs.hpp"
@@ -11,6 +12,10 @@
 
 #include "Event.hpp"
 #include "TerminalVisitor.hpp"
+#include "TerminalServer.hpp"
+
+using boost::asio::ip::tcp;
+
 
 namespace tin { namespace controllers { namespace terminal
 {
@@ -26,6 +31,8 @@ namespace tin { namespace controllers { namespace terminal
         );
     private:
         tin::controllers::main::ControllerQueue& controllerQueue;
+        boost::asio::io_service io_service_;
+        tin::controllers::terminal::TerminalServer* terminalServer_;
     };
 }}}
 

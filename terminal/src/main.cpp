@@ -61,7 +61,7 @@ private:
 		boost::asio::async_write(socket_,
 			boost::asio::buffer(msgs_.front().data(),
 				msgs_.front().length()),
-			[this](boost::system::error_code ec, std::size_t /* ?? */)
+			[this](boost::system::error_code ec, int /* ?? */)
 		{
 			if(!ec)
 			{
@@ -89,16 +89,19 @@ int main(int argc, char* argv[])
 {
 	try
 	{
-		if(argc != 3)
+		char host[] = "localhost";
+		char port[] = "4321";
+		
+		/*if(argc != 3)
 		{
 			std::cerr << "Usage: <host> <port>\n";
 			return 1;
-		}
+		}*/
 
 		boost::asio::io_service io_service;
 
 		tcp::resolver resolver(io_service);
-		auto endpoint_iterator = resolver.resolve({ argv[1], argv[2] });
+		auto endpoint_iterator = resolver.resolve({ host, port }); //argv[1], argv[2] });
 		terminal_client client(io_service, endpoint_iterator);
 
 		std::thread t([&io_service]() { io_service.run(); });
