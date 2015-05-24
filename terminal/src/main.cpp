@@ -1,89 +1,12 @@
 #include <cstdlib>
-#include <deque>
 #include <iostream>
 #include <thread>
 #include <boost/asio.hpp>
-#include "command_message.hpp"
 
 using boost::asio::ip::tcp;
 
-typedef std::deque <command_message> command_message_queue;
-
-class terminal_client
-{
-public:
-	terminal_client(boost::asio::io_service& io_service,
-		tcp::resolver::iterator endpoint_iterator)
-	: io_service_(io_service),
-		socket_(io_service)
-	{
-		do_connect(endpoint_iterator);		
-	}
-
-	void write(const command_message& msg)
-	{
-		io_service_.post(
-			[this, msg] ()
-			{
-				bool write_in_progress = !msgs_.empty();
-				msgs_.push_back(msg);
-				if(!write_in_progress)
-				{
-					do_write();
-				}
-			});
-	}
-
-	void close()
-	{
-		io_service_.post(
-			[this] ()
-			{
-				socket_.close();
-			});
-	}
-
-private:
-	void do_connect(tcp::resolver::iterator endpoint_iterator)
-	{
-		boost::asio::async_connect(socket_, endpoint_iterator,
-			[this](boost::system::error_code ec, tcp::resolver::iterator)
-			{
-				if(!ec)
-				{
-					// read_ACC;
-				}
-			});
-	}
-
-	void do_write()
-	{
-		boost::asio::async_write(socket_,
-			boost::asio::buffer(msgs_.front().data(),
-				msgs_.front().length()),
-			[this](boost::system::error_code ec, int /* ?? */)
-		{
-			if(!ec)
-			{
-				msgs_.pop_front();
-				if(!msgs_.empty())
-				{
-					do_write();
-				}
-			}
-			else
-			{
-				socket_.close();
-			}
-		});
-	}
-
-private:
-	boost::asio::io_service& io_service_;
-	tcp::socket socket_;
-	command_message command_msg_;
-	command_message_queue msgs_;
-};
+enum { max_length = 1024 };
+char data[max_length];
 
 int main(int argc, char* argv[])
 {
@@ -91,33 +14,37 @@ int main(int argc, char* argv[])
 	{
 		char host[] = "localhost";
 		char port[] = "4321";
-		
-		/*if(argc != 3)
-		{
-			std::cerr << "Usage: <host> <port>\n";
-			return 1;
-		}*/
+
+		std::cout << "Terminal sessions started." << std::endl;
 
 		boost::asio::io_service io_service;
 
+		tcp::socket socket(io_service);
 		tcp::resolver resolver(io_service);
-		auto endpoint_iterator = resolver.resolve({ host, port }); //argv[1], argv[2] });
-		terminal_client client(io_service, endpoint_iterator);
+		
+		auto endpoint_iterator = resolver.resolve({ host, port });
+    	boost::asio::connect(socket, endpoint_iterator);
 
 		std::thread t([&io_service]() { io_service.run(); });
-
-		char line[command_message::max_body_length + 1];
-
-		while(std::cin.getline(line, command_message::max_body_length + 1))
+		
+		// char reply[max_length];
+		
+		while(std::cin.getline(data, max_length))
 		{
-			command_message msg;
-			msg.body_length(std::strlen(line));
-			std::memcpy(msg.body(), line, msg.body_length());
-			msg.encode_header();
-			client.write(msg);
+			boost::asio::write(socket, boost::asio::buffer(data, std::strlen(data)));
+			
+			/*
+			boost::asio::async_read(socket, boost::asio::buffer(reply, max_length),
+				[](boost::system::error_code ec, int )
+			{
+				if(!ec)
+				{
+					std::cout << "Server replied!";
+				}	
+			});
+			*/
 		}
 
-		client.close();
 		t.join();
 	}
 	catch(std::exception& e)

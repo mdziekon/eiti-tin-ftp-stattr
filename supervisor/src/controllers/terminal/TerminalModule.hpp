@@ -31,7 +31,6 @@ namespace tin { namespace controllers { namespace terminal
         );
     private:
         tin::controllers::main::ControllerQueue& controllerQueue;
-        boost::asio::io_service io_service_;
         tin::controllers::terminal::TerminalServer* terminalServer_;
     };
 }}}

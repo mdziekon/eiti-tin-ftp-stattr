@@ -12,15 +12,11 @@ namespace tin { namespace controllers { namespace terminal
     {
     public:
         TerminalServer(boost::asio::io_service& io_service,
-        	const tcp::endpoint& endpoint);
+        	short port);
     private:
     	void do_accept();
-        void do_read_header();
-        void do_read_body();
-        void respond();
     	tcp::acceptor acceptor_;
     	tcp::socket socket_;
-        command_message cmd_msg_;
     };
 }}}
 
