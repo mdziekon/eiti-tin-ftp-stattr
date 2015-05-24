@@ -30,7 +30,11 @@
             };
             socket.onerror = function () {
                 self.priv.dfds.connected.reject();
-                self.priv.dfds.error.reject();
+                self.priv.dfds.error.reject({ error: { connection: { error: true } } });
+            };
+            socket.onclose = function () {
+                self.priv.dfds.connected.reject();
+                self.priv.dfds.error.reject({ error: { connection: { closed: true } } });
             };
             socket.onmessage = function (evt) {
                 var json;
@@ -79,12 +83,15 @@
             var dfd = new $.Deferred();
             options = options || {};
 
-            self.priv.dfds.error.fail(function () {
-                dfd.reject({ error: { connection: true } });
+            self.priv.dfds.error.fail(function (errorData) {
+                dfd.reject(errorData);
             });
 
             self.priv.dfds.connected.done(function () {
                 if (dfd.state() !== "pending") {
+                    return;
+                }
+                if (self.priv.dfds.error.state() !== "pending") {
                     return;
                 }
 
