@@ -43,11 +43,13 @@ webapp.Views = webapp.Views || {};
             var view = this;
 
             var $form = view.$("form");
+            var formData = $form.serializeObject();
+            formData.port = parseInt(formData.port, 10);
 
             var machine = view.machine;
 
             machine.save(
-                $form.serializeObject(),
+                formData,
                 {
                     wait: true,
                     patch: true,

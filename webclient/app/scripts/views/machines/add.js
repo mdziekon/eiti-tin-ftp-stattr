@@ -20,11 +20,13 @@ webapp.Views = webapp.Views || {};
             var view = this;
 
             var $form = view.$("form");
+            var formData = $form.serializeObject();
+            formData.port = parseInt(formData.port, 10);
 
             var machines = new webapp.Collections.Machine();
 
             machines.create(
-                $form.serializeObject(),
+                formData,
                 {
                     wait: true,
                     errorPlaceholder: view.$(".alert-placeholder"),

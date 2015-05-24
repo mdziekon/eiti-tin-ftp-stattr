@@ -29,7 +29,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Name</th>
-                                <th>IP</th>
+                                <th>IP:Port</th>
                                 <th>Status</th>
                                 <th>Last Sync</th>
                                 <th>Stats</th>
@@ -48,7 +48,7 @@
                                 <tr>
                                     <td><%- machine.id %></td>
                                     <td><%- machine.name %></td>
-                                    <td><%- machine.ip %></td>
+                                    <td><%- machine.ip %>:<%- machine.port %></td>
                                     <td>
                                         <span class="label <%- machine.status === "sniffing" ? "label-success" : (machine.status === "stand-by" ? "label-primary" : "label-danger") %>">
                                             <%- _.capitalize(machine.status) %>
