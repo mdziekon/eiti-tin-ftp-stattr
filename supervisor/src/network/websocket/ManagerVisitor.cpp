@@ -320,6 +320,64 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
             }
         }
+        else if (route.substr(0, 29) == "stats-machine-per-connection/")
+        {
+            auto routeRest = route.substr(29);
+            auto action = std::string("");
+            if (routeRest.find("/") != std::string::npos)
+            {
+                action = routeRest.substr(routeRest.find("/") + 1);
+                routeRest = routeRest.substr(0, routeRest.find("/"));
+            }
+
+            unsigned int machineID;
+            try
+            {
+                machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+                auto& machine = machines.at(machineID);
+
+                if (action == "" && type == "GET")
+                {
+                    unsigned int lastDays = 7;
+
+                    if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+                    {
+                        lastDays = jsonObj["data"]["lastDays"];
+                    }
+
+                    jsonObj["data"] = {
+                        { "connections", {} }
+                    };
+
+                    for(int i = 0; i < lastDays; ++i)
+                    {
+                        jsonObj["data"]["connections"][i] = {};
+                        jsonObj["data"]["connections"][i]["ip"] = (1270000) + (i * 5);
+                        jsonObj["data"]["connections"][i]["port"] = 3333;
+                        jsonObj["data"]["connections"][i]["lastTime"] = (1432404865) + (i * 8 * 60 * 60);
+                        jsonObj["data"]["connections"][i]["traffic"] = {};
+                        jsonObj["data"]["connections"][i]["traffic"]["out"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["connections"][i]["traffic"]["in"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["connections"][i]["packets"] = {};
+                        jsonObj["data"]["connections"][i]["packets"]["out"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["connections"][i]["packets"]["in"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                    }
+                }
+                else
+                {
+                    jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+                }
+            }
+            catch (std::invalid_argument& e)
+            {
+                jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+            }
+            catch (std::out_of_range& e)
+            {
+                jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
+            }
+        }
         else
         {
             jsonObj["error"] = {{ "invalid", { {"route", route} } }};
