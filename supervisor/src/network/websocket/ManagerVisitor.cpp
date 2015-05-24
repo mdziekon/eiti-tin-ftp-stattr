@@ -199,12 +199,18 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                         {
                             { "id", 1 },
                             { "name", "Machine test" },
-                            { "traffic", 12 }
+                            { "traffic", {
+                                { "out", 12 },
+                                { "in", 3 }
+                            } }
                         },
                         {
                             { "id", 2 },
                             { "name", "Machine ubuntu" },
-                            { "traffic", 24 }
+                            { "traffic", {
+                                { "out", 24 },
+                                { "in", 17 }
+                            } }
                         }
                     }}
                 };
@@ -217,8 +223,10 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 {
                     jsonObj["data"]["stats"][i] = day;
                     jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
-                    jsonObj["data"]["stats"][i]["machines"][0]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]) + (5 * (i % 2 == 1 ? -1 : 1));
-                    jsonObj["data"]["stats"][i]["machines"][1]["traffic"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                    jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                    jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                    jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                    jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"]) + (2 * (i % 2 == 0 ? -1 : 1));
                 }
             }
         }
@@ -237,7 +245,10 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 machine = {
                     { "id", 0 },
                     { "name", "Linux Machine " },
-                    { "traffic", 15 }
+                    { "traffic", {
+                        { "out", 12 },
+                        { "in", 7 }
+                    } }
                 };
 
                 jsonObj["data"] = {
@@ -248,7 +259,8 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 {
                     jsonObj["data"]["machines"][i] = machine;
                     jsonObj["data"]["machines"][i]["id"] = ((int) jsonObj["data"]["machines"][i]["id"]) + (i);
-                    jsonObj["data"]["machines"][i]["traffic"] = ((int) jsonObj["data"]["machines"][i]["traffic"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                    jsonObj["data"]["machines"][i]["traffic"]["out"] = ((int) jsonObj["data"]["machines"][i]["traffic"]["out"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                    jsonObj["data"]["machines"][i]["traffic"]["in"] = ((int) jsonObj["data"]["machines"][i]["traffic"]["in"]) + (2 * (i % 2 == 0 ? -1 : 1));
                 }
             }
         }
@@ -286,8 +298,12 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                     {
                         jsonObj["data"]["stats"][i] = {};
                         jsonObj["data"]["stats"][i]["day"] = (1432404865) + (i * 24 * 60 * 60);
-                        jsonObj["data"]["stats"][i]["traffic"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
-                        jsonObj["data"]["stats"][i]["packets"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["traffic"] = {};
+                        jsonObj["data"]["stats"][i]["traffic"]["out"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["traffic"]["in"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["packets"] = {};
+                        jsonObj["data"]["stats"][i]["packets"]["out"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["packets"]["in"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
                     }
                 }
                 else
