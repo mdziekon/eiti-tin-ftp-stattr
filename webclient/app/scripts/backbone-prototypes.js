@@ -220,6 +220,7 @@
             route: _.result(options, "url") || _.result(object, "url"),
             type: type
         };
+        var $button;
 
         if (!options.data && !options.noData) {
             if (type === "POST" || type === "PUT") {
@@ -238,10 +239,32 @@
         if (options.errorPlaceholder) {
             app.hideError(options.errorPlaceholder);
         }
+        if (options.submitElement && !options.noLoading) {
+            $button = app.getJQElement(options.submitElement);
+            app.buttonToggleLoading($button, true);
+        }
 
         var promise = app.connection.send(data);
 
         promise.done(options.success || function () {});
+
+        if (options.submitElement) {
+            $button = app.getJQElement(options.submitElement);
+            promise.done(function () {
+                app.flashButton($button, "complete", 1500).done(function () {
+                    if (options.submitElementFlashDfd) {
+                        options.submitElementFlashDfd.resolve();
+                    }
+                });
+            });
+            promise.fail(function () {
+                app.flashButton($button, "error", 1500).done(function () {
+                    if (options.submitElementFlashDfd) {
+                        options.submitElementFlashDfd.resolve();
+                    }
+                });
+            });
+        }
         if (options.errorPlaceholder) {
             promise.fail(function (errorJSON) {
                 app.showError(
@@ -250,6 +273,7 @@
                 );
             });
         }
+
         promise.fail(options.error || function () {});
 
         return promise;

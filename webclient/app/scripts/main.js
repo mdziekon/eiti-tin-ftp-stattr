@@ -83,21 +83,83 @@ window.webapp = {
         return this.apiURL + (this.apiURL[this.apiURL.length - 1] === "/" ? "" : "/") + url;
     },
 
+    getJQElement: function (el) {
+        return (!(el instanceof $)) ? $(el) : el;
+    },
+
     showError: function ($container, message) {
-        if (!($container instanceof $)) {
-            $container = $($container);
-        }
+        $container = webapp.getJQElement($container);
 
         $container.text(message);
         $container.show();
     },
 
     hideError: function ($container) {
-        if (!($container instanceof $)) {
-            $container = $($container);
-        }
+        $container = webapp.getJQElement($container);
 
         $container.hide();
+    },
+
+    buttonToggleLoading: function ($button, enable) {
+        if (enable && $button.data("is-loading") === "true") {
+            return;
+        }
+        if (!enable && $button.data("is-loading") !== "true") {
+            return;
+        }
+
+        if (enable) {
+            $button.data("loading-old-classes", $button.attr("class"));
+            $button.data("is-loading", "true");
+
+            $button.button("load");
+            $button.addClass("disabled");
+        } else {
+            $button.attr("class", $button.data("loading-old-classes"));
+            $button.button("reset");
+
+            $.removeData($button, "loading-old-classes");
+            $.removeData($button, "is-loading");
+        }
+    },
+
+    flashButton: function ($button, state, durance) {
+        var dfd = new $.Deferred();
+
+        webapp.buttonToggleLoading($button, false);
+
+        $button.button(state);
+        $button.data("flashing-old-classes", $button.attr("class"));
+        $button.addClass("disabled");
+
+        if (state === "complete" || state === "error") {
+            $button.removeClass("btn-default btn-primary btn-success btn-info btn-warning btn-danger btn-link");
+        }
+
+        if (state === "complete") {
+            $button.addClass("btn-success");
+        } else if (state === "error") {
+            $button.addClass("btn-danger");
+        }
+
+        if (durance >= 0) {
+            window.setTimeout(function () {
+                $button.attr("class", $button.data("flashing-old-classes"));
+                $button.button("reset");
+
+                $.removeData($button, "flashing-old-classes");
+
+                dfd.resolve();
+            }, durance);
+        } else {
+            $button.attr("class", $button.data("flashing-old-classes"));
+
+            $.removeData($button, "flashing-old-classes");
+
+            dfd.resolve();
+        }
+
+        return dfd.promise();
     }
 };
 
