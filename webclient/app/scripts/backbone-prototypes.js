@@ -34,6 +34,8 @@
     });
 
     Backbone.ModernView = Backbone.View.extend({
+        errorTemplate: JST['app/scripts/templates/error.ejs'],
+
         initialize: function (options) {
             this._init.apply(this, arguments);
 
@@ -70,9 +72,14 @@
                 options = options || {};
 
                 view.$el.spin(false);
-                view.$el.html(view.template(options.json));
 
-                view.afterRender();
+                if (!options.error) {
+                    view.$el.html(view.template(options.json));
+
+                    view.afterRender();
+                } else {
+                    view.$el.html(view.errorTemplate(options.error));
+                }
             };
 
             view.$el.html("");

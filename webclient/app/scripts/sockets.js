@@ -41,7 +41,11 @@
 
                 var uid = json.uid;
                 if (self.getListener(uid)) {
-                    self.getListener(uid).resolve(_.extend((new app.SocketResponse()), json));
+                    if (json.error) {
+                        self.getListener(uid).reject({ error: json.error });
+                    } else {
+                        self.getListener(uid).resolve(_.extend((new app.SocketResponse()), json));
+                    }
                     self.detachListener(uid);
                 }
             };
