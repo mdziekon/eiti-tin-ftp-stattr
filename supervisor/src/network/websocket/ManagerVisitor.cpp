@@ -1,5 +1,5 @@
 #include "ManagerVisitor.hpp"
-#include "MainModule.hpp"
+
 #include "Manager.hpp"
 
 #include "events/TerminateNetworkManager.hpp"
@@ -9,6 +9,7 @@
 #include "events/MessageSendRequest.hpp"
 #include "events/MessageSendMultiRequest.hpp"
 #include "events/MessageBroadcastRequest.hpp"
+#include "../../controllers/main/events/WebClientRequestReceived.hpp"
 
 #include "../../utils/JSON.hpp"
 
@@ -66,7 +67,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
         std::string type = jsonObj["type"];
         if (route == "machine")
         {
-            json temp;
+            nlohmann::json temp;
             temp["route"] = route;
             temp["type"] = type;
 
@@ -76,9 +77,9 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                     { "machines", {} }
                 };*/
 
-                this->manager.controllerQueue.push(tin::controllers::Main::EventPtr(
+                this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
                     new tin::controllers::main::events::WebClientRequestReceived
-                    (tin::utils::json::makeSharedInstance(temp)));
+                    (tin::utils::json::makeSharedInstance(temp))));
 
                 /*for(auto& it: machines)
                 {
@@ -102,9 +103,9 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 temp["data"]["ip"] = ip;
                 temp["data"]["port"] = port;
 
-                this->manager.controllerQueue.push(tin::controllers::Main::EventPtr(
+                this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
                     new tin::controllers::main::events::WebClientRequestReceived
-                    (tin::utils::json::makeSharedInstance(temp)));
+                    (tin::utils::json::makeSharedInstance(temp))));
 
                 /*auto tup = std::tuple<std::string, std::string, unsigned int, std::string, unsigned int>(name, ip, port, "stand-by", 0);
 
