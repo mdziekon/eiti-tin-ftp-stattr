@@ -15,10 +15,15 @@ int main()
     tin::controllers::terminal::TerminalQueue terminalQueue;
 
     tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue);
-    tin::controllers::terminal::TerminalModule terminalCtrl(terminalQueue, ctrlQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 9001);
     tin::network::bsdsocket::ManagerQueue bsdManagerQueue;
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
+
+    // Terminal Server
+    boost::asio::io_service io_service;
+    boost::asio::io_service::work work(io_service);
+    std::thread terminalServiceThread([&io_service]() { io_service.run(); });
+    tin::controllers::terminal::TerminalModule terminalCtrl(terminalQueue, ctrlQueue, io_service);
 
     std::cout << "Hello supervisor!\n";
 
@@ -44,6 +49,8 @@ int main()
         netManager.join();
         bsdManagerThread.join();
         terminalCtrlThread.join();
+        terminalServiceThread.join();
+
     }
     catch (std::system_error& e)
     {

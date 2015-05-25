@@ -27,7 +27,8 @@ namespace tin { namespace controllers { namespace terminal
     public:
         TerminalModule(
     		tin::controllers::terminal::TerminalQueue &incomingQueue,
-            tin::controllers::main::ControllerQueue &controllerQueue
+            tin::controllers::main::ControllerQueue &controllerQueue,
+            boost::asio::io_service& io_service
         );
     private:
         tin::controllers::main::ControllerQueue& controllerQueue;
