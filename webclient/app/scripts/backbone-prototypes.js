@@ -119,14 +119,14 @@
         },
 
         el: "#modal-placeholder",
-        template: "common/templates/modal.html",
+        template: JST['app/scripts/templates/common/modal-view.ejs'],
 
         innerView: undefined,
 
         _init: function (options) {
             var view = this;
 
-            Backbone.ModernView.prototype._init.apply(view, options);
+            Backbone.ModernView.prototype._init.apply(view, arguments);
 
             view.modalSettings = _.defaults(view.modalSettings || {}, view.defaultModalSettings);
 
@@ -157,7 +157,7 @@
 
                 if (button.onClick && _.isFunction(button.onClick)) {
                     var eventKey = "click .modal-footer " + btnSelector;
-                    newEvents[eventKey] = _.partial(button.onClick, _, view);
+                    newEvents[eventKey] = _.partial(button.onClick, view);
                 }
 
                 btnIdx++;
