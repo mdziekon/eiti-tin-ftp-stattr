@@ -142,12 +142,7 @@ void Client::onMessageRequest(
     // Connect to server with created socket
     if (connect(this->socketHandle, (struct sockaddr *) &server, sizeof server) == -1)
     {
-        std::string temp2 = message;
-        temp2.erase(0,8);
-        temp2.pop_back();
-        temp2.pop_back();
-        json j;
-        j["cmd"] = temp2;
+        auto j = json::parse(message);
         j["error"] = {{"notConnected", true}};
         std::string temp3 = j.dump();
         this->onResponseReceive(ip, port, temp3);
