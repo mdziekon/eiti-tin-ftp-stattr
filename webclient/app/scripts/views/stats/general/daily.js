@@ -18,10 +18,12 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             "click .btn-change-traffic-mode li a": "changeTrafficMode"
         },
 
+        defaultPeriod: "last7",
         defaultLastDays: 7,
         defaultTrafficMode: "both",
 
         init: function () {
+            this.period = this.defaultPeriod;
             this.lastDays = this.defaultLastDays;
             this.trafficMode = this.defaultTrafficMode;
         },
@@ -38,7 +40,9 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             }).done(function () {
                 renderTemplate({
                     json: {
+                        period: view.period,
                         lastDays: view.lastDays,
+                        filterText: "",
                         trafficMode: view.trafficMode
                     }
                 });
@@ -125,19 +129,46 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             var view = this;
             var $el = $(evt.currentTarget);
             var period = $el.data("period");
+            var dfd = new $.Deferred();
 
-            view.lastDays = parseInt(period.replace("last", ""), 10);
+            if (period === "filter") {
+                var modal = new webapp.Views.Stats.DateFilterModal({
+                    submitDfd: dfd,
+                    datetimepicker: {
+                        format: "YYYY-MM-DD"
+                    }
+                });
+                modal.showModal();
+                modal.$el.on("hidden.bs.modal", function () {
+                    dfd.reject();
+                });
+            } else {
+                dfd.resolve();
+            }
 
-            view.fetchStats({
-                data: {
-                    lastDays: parseInt(period.replace("last", ""), 10)
-                },
-                submitElement: view.$(".btn-change-period .btn")
-            }).done(function () {
-                view.$(".btn-change-period .dropdown-toggle .text").text($el.text());
-                view.$("#stats-chart-daily-traffic").empty();
+            dfd.done(function (filter) {
+                if (period !== "filter") {
+                    filter = {
+                        lastDays: parseInt(period.replace("last", ""), 10)
+                    };
+                }
 
-                view.createCharts();
+                view.fetchStats({
+                    data: filter,
+                    submitElement: view.$(".btn-change-period .btn"),
+                    flashOptions: {
+                        complete: {
+                            beforeFlash: function () {
+                                view.$(".btn-change-period .dropdown-toggle .text").text($el.text());
+                            }
+                        }
+                    }
+                }).done(function () {
+                    view.$("#stats-chart-daily-traffic").empty();
+
+                    view.updateFilterText(filter);
+                    view.createCharts();
+                });
             });
         },
 
@@ -152,6 +183,22 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
 
             view.trafficMode = trafficMode;
             view.createCharts();
+        },
+
+        updateFilterText: function (filter) {
+            var $el = this.$(".period-text");
+
+            if (filter.lastDays) {
+                $el.text("Last " + filter.lastDays + " days");
+            } else {
+                if (!filter.from) {
+                    $el.text("Up to " + moment(filter.to * 1000).format("YYYY-MM-DD"));
+                } else if (!filter.to) {
+                    $el.text("Since " + moment(filter.from * 1000).format("YYYY-MM-DD"));
+                } else {
+                    $el.text("From " + moment(filter.from * 1000).format("YYYY-MM-DD") + " to " + moment(filter.to * 1000).format("YYYY-MM-DD"));
+                }
+            }
         }
     });
 

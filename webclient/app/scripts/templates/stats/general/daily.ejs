@@ -1,6 +1,9 @@
 <div class="panel panel-default">
     <div class="panel-heading clearfix">
         <i class="fa fa-bar-chart-o fa-fw"></i> Daily Traffic
+        <span class="period-header">
+            (<span class="period-text">Last <%- lastDays %> days</span>)
+        </span>
         <div class="pull-right">
             <div class="btn-group btn-change-traffic-mode">
                 <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -29,7 +32,13 @@
             </div>
             <div class="btn-group btn-change-period">
                 <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                    <span class="text">Last <%- lastDays %> days</span>
+                    <span class="text">
+                        <% if (period === "filter") { %>
+                            Own period
+                        <% } else { %>
+                            Last <%- lastDays %> days
+                        <% } %>
+                    </span>
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu pull-right" role="menu">
@@ -42,9 +51,12 @@
                     <li>
                         <a href="#" data-period="last30">Last 30 days</a>
                     </li>
-                    <li class="divider"></li>
                     <li>
                         <a href="#" data-period="last90">Last 3 months</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#" data-period="filter">Own period</a>
                     </li>
                 </ul>
             </div>

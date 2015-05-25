@@ -1,0 +1,31 @@
+<div class="modal modal-box fade" id="<%- modal.id %>" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <% if (modal.closeButton) { %>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <% } %>
+                <h4 class="modal-title"><%- modal.title %></h4>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <% _.each(modal.buttons, function (button) { %>
+                    <button
+                        type="button"
+                        class="btn <%- _.isArray(button.classes) ? button.classes.join(" ") : button.classes %>"
+                        <% if (button.isClose) { %>
+                            data-dismiss="modal"
+                        <% } %>
+                        <% _.each(button.data, function (value, key) { %>
+                            data-<%- key %>="<%- value %>"
+                        <% }); %>
+                    >
+                        <%- button.text %>
+                    </button>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+</div>
