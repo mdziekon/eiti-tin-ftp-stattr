@@ -6,7 +6,8 @@
 #include "typedefs.hpp"
 #include "../../utils/typedefs.hpp"
 #include "../../network/bsdsocket/typedefs.hpp"
-#include "../../network/sniffer/typedefs.hpp"
+#include "../../models/typedefs.hpp"
+
 #include "../../utils/QueueThread.hpp"
 
 #include "Event.hpp"
@@ -23,12 +24,12 @@ namespace tin { namespace controllers { namespace main
         MainModule(
             tin::controllers::main::ControllerQueue &incomingQueue,
             tin::network::bsdsocket::ManagerQueue &networkManagerQueue,
-            tin::network::sniffer::ManagerQueue &snifferManagerQueue
+            tin::agent::models::StatsGathererQueue& statsGathererQueue
         );
 
     private:
-        tin::network::bsdsocket::ManagerQueue &networkManagerQueue;
-        tin::network::sniffer::ManagerQueue &snifferManagerQueue;
+        tin::network::bsdsocket::ManagerQueue& networkManagerQueue;
+        tin::agent::models::StatsGathererQueue& statsGathererQueue;
     };
 }}}
 
