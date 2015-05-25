@@ -1,11 +1,12 @@
 #include "MainVisitor.hpp"
 
 #include <iostream>
-#include <ctime>
+#include <chrono>
 #include "Event.hpp"
 #include "typedefs.hpp"
 
 #include "MainModule.hpp"
+
 
 #include "events/Terminate.hpp"
 #include "events/CmdResponseReceived.hpp"
@@ -40,35 +41,52 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
     std::map<int, utils::Machine>::iterator idMachineMapIt;
     ipPortIdMapIt = controller.ipPortIdMap.find(it);
     idMachineMapIt = controller.idMachineMap.find(ipPortIdMapIt->second);
-    utils::Machine m = idMachineMapIt->second;
+    utils::Machine& m = idMachineMapIt->second;
 
     json& temp = *(evt.jsonPtr);
 
-    if (temp.find("error") == temp.end())
+    if (temp.find("error") != temp.end() && temp["error"].is_string())
     {
-    	m.status = "offline";
+        if(temp.find("notConnected") != temp.end())
+        {
+            bool error = temp["error"]["notConnected"]; 
+            if(error == true)
+    	       m.status = "offline";
+        }
         std::cout << "[Supervisor][MainCtrl] Error received" << std::endl;
         return;
     }
 
-    const std::string cmd = temp["cmd"];
-
-    if (cmd == "sync")
+    if(temp.find("cmd") != temp.end() && temp["cmd"].is_string())
     {
-        m.lastSynchronization = time(NULL);
-    }
+        const std::string cmd = temp["cmd"];
 
-    else if (cmd == "ping")
-    {
-    	if(m.status == "offline")
-    		m.status.assign("online");
-    }
+        if (cmd == "sync")
+        {
+            auto ms = std::chrono::duration_cast<std::chrono::seconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+            m.lastSynchronization = ms.count();
+        }
 
-    else if (cmd == "change_filter")
-    {
-    	const std::string expr = temp["expression"];
-    	m.filter = expr;
-    	m.status = "sniffing";
+        else if (cmd == "ping")
+        {
+            if(temp.find("response") != temp.end())
+            {
+                const std::string response = temp["error"]["response"]; 
+                if(response == "sniffing")
+                    m.status("sniffing");
+                if(response == "stand-by")
+                    m.status.assign("stand-by");
+            }
+            
+        }
+
+        else if (cmd == "change_filter")
+        {
+        	const std::string expr = temp["expression"];
+        	m.filter = expr;
+        	m.status = "sniffing";
+        }
     }
 
 }
