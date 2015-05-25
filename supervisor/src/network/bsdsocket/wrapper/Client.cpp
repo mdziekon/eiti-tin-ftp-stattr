@@ -11,7 +11,6 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <errno.h>
 
 #include <iostream>
 
@@ -27,6 +26,13 @@ receiverHelperThread(*this, this->receiverQueue),
 transmitterHelperThread(*this, this->transmitterQueue),
 visitor(*this)
 {
+    // Create socket
+    this->socketHandle = socket(AF_INET, SOCK_STREAM, 0);
+    if (this->socketHandle == -1)
+    {
+        // Throw socket open error
+    }
+
     this->run();
 }
 
@@ -107,7 +113,7 @@ void Client::onMessageRequest(
 {
     std::string temp;
     int readBufSize = 1024;
-    char buf[readBufSize + 1];
+    char buf[readBufSize];
     int rval;
 
     struct sockaddr_in server;
@@ -128,14 +134,6 @@ void Client::onMessageRequest(
     // Get port
     server.sin_port = htons(port);
 
-    // Create socket
-    this->socketHandle = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->socketHandle == -1)
-    {
-        return;
-        // Throw socket open error
-    }
-
     // Connect to server with created socket
     if (connect(this->socketHandle, (struct sockaddr *) &server, sizeof server) == -1)
     {
@@ -143,7 +141,7 @@ void Client::onMessageRequest(
         // Throw connection error
     }
 
-    if (write(this->socketHandle, message.c_str(), message.length() + 1) == -1)
+    if (write(this->socketHandle, message.c_str(), message.length()) == -1)
     {
         return;
         // Throw write error
@@ -180,11 +178,6 @@ void Client::onMessageRequest(
         {
             // Reading completed, send message to queue
             temp.append(buf);
-
-            if (buf[rval - 1] != 0)
-            {
-                continue;
-            }
 
             this->onResponseReceive(ip, port, temp);
 

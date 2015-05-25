@@ -10,7 +10,6 @@ namespace tin { namespace network { namespace bsdsocket
         struct Terminate;
         struct MessageReceived;
         struct ResponseRequest;
-        struct ConnectionTerminationRequest;
     }
 
     class ManagerVisitor
@@ -21,7 +20,6 @@ namespace tin { namespace network { namespace bsdsocket
         void visit(tin::network::bsdsocket::events::Terminate& evt);
         void visit(tin::network::bsdsocket::events::MessageReceived& evt);
         void visit(tin::network::bsdsocket::events::ResponseRequest& evt);
-        void visit(tin::network::bsdsocket::events::ConnectionTerminationRequest& evt);
 
     private:
         tin::network::bsdsocket::Manager& manager;

@@ -131,7 +131,7 @@ void Server::listenerLoop()
 
     int readBufSize = 1024;
     int rval;
-    char buf[readBufSize + 1];
+    char buf[readBufSize];
     std::string temp;
 
     // Receive Connections - max 5 in queue
@@ -181,11 +181,6 @@ void Server::listenerLoop()
 
                     temp.append(buf);
 
-                    if (buf[rval - 1] != 0)
-                    {
-                        continue;
-                    }
-
                     this->onMessageReceive(temp);
 
                     this->connectionActionAwaiting = true;
@@ -198,7 +193,6 @@ void Server::listenerLoop()
                 }
             }
         }
-
         close(this->connectionHandle);
         this->connectionHandle = 0;
     }
@@ -213,7 +207,7 @@ void Server::onMessageReceive(const std::string& message)
 
 void Server::onResponseRequest(const std::string& message)
 {
-    auto writeResult = write(this->connectionHandle, message.c_str(), message.length() + 1);
+    auto writeResult = write(this->connectionHandle, message.c_str(), message.length());
 
     if (writeResult == -1)
     {

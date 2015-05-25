@@ -7,7 +7,6 @@
 #include "events/Terminate.hpp"
 #include "events/MessageReceived.hpp"
 #include "events/ResponseRequest.hpp"
-#include "events/ConnectionTerminationRequest.hpp"
 
 #include "../../controllers/main/events/CmdReceived.hpp"
 
@@ -38,13 +37,6 @@ void ManagerVisitor::visit(events::ResponseRequest& evt)
     std::cout << "[Agent] Sending response: " << evt.jsonPtr->dump() << std::endl;
 
     this->manager.server.sendResponse(evt.jsonPtr->dump());
-}
-
-void ManagerVisitor::visit(events::ConnectionTerminationRequest& evt)
-{
-    std::cout << "[Agent] Terminating connection" << std::endl;
-
-    this->manager.server.terminateConnection();
 }
 
 ManagerVisitor::ManagerVisitor(tin::network::bsdsocket::Manager& manager):
