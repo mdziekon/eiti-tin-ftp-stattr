@@ -1,9 +1,10 @@
 #include "Machine.hpp"
 
-tin::utils::Machine::Machine(std::string ip, unsigned int port)
+tin::utils::Machine::Machine(std::string ip, std::string name,  unsigned int port)
     	{
     		this->id = incCounter();
     		this->ip = ip;
+            this->name = name;
     		this->port = port;
     	};
 
