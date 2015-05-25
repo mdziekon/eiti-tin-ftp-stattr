@@ -18,8 +18,10 @@
 #include "events/IncomingMessage.hpp"
 #include "events/OutcomingMessage.hpp"
 #include "events/Terminate.hpp"
+#include "../../../utils/JSON.hpp"
 
 using tin::network::bsdsocket::wrapper::Client;
+using nlohmann::json;
 namespace events = tin::network::bsdsocket::wrapper::events;
 
 Client::Client():
@@ -132,6 +134,7 @@ void Client::onMessageRequest(
     this->socketHandle = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socketHandle == -1)
     {
+
         return;
         // Throw socket open error
     }
@@ -139,6 +142,15 @@ void Client::onMessageRequest(
     // Connect to server with created socket
     if (connect(this->socketHandle, (struct sockaddr *) &server, sizeof server) == -1)
     {
+        std::string temp2 = message;
+        temp2.erase(0,8);
+        temp2.pop_back();
+        temp2.pop_back();
+        json j;
+        j["cmd"] = temp2;
+        j["error"] = {{"notConnected", true}};
+        std::string temp3 = j.dump();
+        this->onResponseReceive(ip, port, temp3);
         return;
         // Throw connection error
     }
