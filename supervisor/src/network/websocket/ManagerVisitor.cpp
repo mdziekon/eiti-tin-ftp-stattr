@@ -378,6 +378,62 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
             }
         }
+        else if (route.substr(0, 23) == "stats-machine-per-hour/")
+        {
+            auto routeRest = route.substr(23);
+            auto action = std::string("");
+            if (routeRest.find("/") != std::string::npos)
+            {
+                action = routeRest.substr(routeRest.find("/") + 1);
+                routeRest = routeRest.substr(0, routeRest.find("/"));
+            }
+
+            unsigned int machineID;
+            try
+            {
+                machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+                auto& machine = machines.at(machineID);
+
+                if (action == "" && type == "GET")
+                {
+                    unsigned int lastDays = 7;
+
+                    if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
+                    {
+                        lastDays = jsonObj["data"]["lastDays"];
+                    }
+
+                    jsonObj["data"] = {
+                        { "stats", {} }
+                    };
+
+                    for(int i = 0; i < 24; ++i)
+                    {
+                        jsonObj["data"]["stats"][i] = {};
+                        jsonObj["data"]["stats"][i]["hour"] = i;
+                        jsonObj["data"]["stats"][i]["traffic"] = {};
+                        jsonObj["data"]["stats"][i]["traffic"]["out"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["traffic"]["in"] = (12) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["packets"] = {};
+                        jsonObj["data"]["stats"][i]["packets"]["out"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["packets"]["in"] = (102) + (100 * (i % 2 == 0 ? -1 : 1));
+                    }
+                }
+                else
+                {
+                    jsonObj["error"] = {{ "invalid", { {"action", action} } }};
+                }
+            }
+            catch (std::invalid_argument& e)
+            {
+                jsonObj["error"] = {{ "invalid", { {"routeID", true} } }};
+            }
+            catch (std::out_of_range& e)
+            {
+                jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
+            }
+        }
         else
         {
             jsonObj["error"] = {{ "invalid", { {"route", route} } }};
