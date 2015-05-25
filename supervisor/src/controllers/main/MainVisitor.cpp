@@ -6,11 +6,14 @@
 
 #include "events/Terminate.hpp"
 #include "events/CmdResponseReceived.hpp"
+#include "events/NetworkRequest.hpp"
 
 #include "../../network/websocket/typedefs.hpp"
 #include "../../network/websocket/events/MessageSendRequest.hpp"
 #include "../../network/websocket/events/MessageSendRequest.hpp"
 #include "../../network/websocket/events/MessageBroadcastRequest.hpp"
+
+#include "../../network/bsdsocket/events/MessageRequest.hpp"
 
 namespace events = tin::controllers::main::events;
 
@@ -27,4 +30,11 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 {
     std::cout << "[Supervisor] [MainCtrl] Received response: " << evt.jsonPtr->dump() << std::endl;
     std::cout << "                        Source: " << evt.ip << ":" << evt.port << std::endl;
+    
+    
+}
+
+void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)
+{
+    this->controller.bsdManagerQueue.push(std::make_shared<tin::network::bsdsocket::events::MessageRequest>(evt.ip, evt.port, evt.jsonPtr, true));
 }

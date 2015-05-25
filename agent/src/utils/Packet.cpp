@@ -1,6 +1,9 @@
 #include "Packet.hpp"
 
 #include <iostream>
+#include <netinet/in.h>
+
+#include "../exceptions/MalformedJSONException.hpp"
 
 using Packet = tin::utils::Packet;
 
@@ -33,6 +36,44 @@ Packet::Packet(
 ):
 Packet(no, timestamp, sourceIP, destinationIP, protocol, 0, 0, -1)
 {}
+
+Packet::Packet(const nlohmann::json& serialized)
+{
+    if(serialized.find("sourceIP") == serialized.end() ||
+       serialized.find("destinationIP") == serialized.end() ||
+       serialized.find("no") == serialized.end() ||
+       serialized.find("timestamp") == serialized.end() ||
+       serialized.find("protocol") == serialized.end()
+    ) {
+        throw tin::agent::exceptions::MalformedJSONException("Not enough data to form a Packet");
+    }
+    this->sourceIP.s_addr = serialized["sourceIP"];
+    this->destinationIP.s_addr = serialized["destinationIP"];
+    this->no = serialized["no"];
+    this->timestamp = serialized["timestamp"];
+    this->protocol = serialized["protocol"];
+    
+    if(serialized.find("sourcePort") != serialized.end()) {
+        this->sourcePort = serialized["sourcePort"];
+    }
+    else {
+        this->sourcePort = 0;
+    }
+    
+    if(serialized.find("destinationPort") != serialized.end()) {
+        this->destinationPort = serialized["destinationPort"];
+    }
+    else {
+        this->destinationPort = 0;
+    }
+    
+    if(serialized.find("payloadSize") != serialized.end()) {
+        this->payloadSize = serialized["payloadSize"];
+    }
+    else {
+        this->payloadSize = -1;
+    }
+}
 
 const std::string Packet::getSourceIP() const
 {
@@ -77,4 +118,24 @@ void Packet::printData() const
     }
 
     return;
+}
+
+nlohmann::json Packet::serialize() const
+{
+    nlohmann::json json;
+    json["sourceIP"] = this->sourceIP.s_addr;
+    json["destinationIP"] = this->destinationIP.s_addr;
+    json["no"] = this->no;
+    json["timestamp"] = this->timestamp;
+    json["protocol"] = this->protocol;
+    
+    if(this->sourcePort != 0 &&
+       this->destinationPort != 0 &&
+       this->payloadSize != -1) {
+        json["sourcePort"] = this->sourcePort;
+        json["destinationPort"] = this->destinationPort;
+        json["payloadSize"] = this->payloadSize;
+    }
+    
+    return json;
 }
