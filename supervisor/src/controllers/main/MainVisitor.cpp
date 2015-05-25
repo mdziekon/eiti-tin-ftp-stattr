@@ -7,9 +7,9 @@
 
 #include "MainModule.hpp"
 
-
 #include "events/Terminate.hpp"
 #include "events/CmdResponseReceived.hpp"
+#include "events/WebClientRequestReceived.hpp"
 #include "../../utils/Machine.hpp"
 
 #include "../../network/websocket/typedefs.hpp"
@@ -87,6 +87,65 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
         	m.filter = expr;
         	m.status = "sniffing";
         }
+    }
+
+}
+
+void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived &evt)
+{
+    std::cout << "[Supervisor] WebClient Request Received, processing" << std::endl;
+
+    json& temp = *(evt.jsonPtr);
+
+    if(temp.find("route") == temp.end() || temp.find("type") == temp.end() ||
+        !temp["route"].is_string() || !temp["type"].is_string())
+        {
+            std::cout << "[Supervisor] Bad WebClient request" << std::endl;
+            return;
+        }
+
+    std::string route = temp["route"];
+    std::string type = temp["type"];
+
+    if (route == "machines" && type == "GET")
+    {
+        json jsonObj;
+        jsonObj["data"] = {
+                { "machines", {} }
+            };
+            
+            for(auto& it: this->controller.idMachineMap)
+            {
+                jsonObj["data"]["machines"][jsonObj["data"]["machines"].size()] = {
+                    { "id", it.second.id},
+                    { "name", it.second.name },
+                    { "ip", it.second.ip },
+                    { "port", it.second.port },
+                    { "status", it.second.status },
+                    { "lastSync", it.second.lastSynchronization }
+                    };
+            }
+    }
+
+    else if(route == "machines" && type == "POST")
+    {
+        if(temp.find("data") == temp.end())
+        {
+            std::cout << "[Supervisor] No data in POST" << std::endl;
+            return;
+        }
+
+        const std::string ip = temp["data"]["ip"];
+        const std::string name = temp["data"]["name"];
+        unsigned port = temp["data"]["port"];
+
+        utils::Machine m = utils::Machine(ip, name, port);
+
+        this->controller.ipPortIdMap.insert(
+            std::pair<std::pair<std::string, unsigned int>, int>
+             (std::make_pair(ip, port), m.id));
+        this->controller.idMachineMap.insert(std::pair<int, utils::Machine>(m.id, m));
+
     }
 
 }
