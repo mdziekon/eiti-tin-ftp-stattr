@@ -3,7 +3,6 @@
 #include <utility>
 
 #include "Event.hpp"
-#include "../main/events/CmdResponseReceived.hpp"
 
 tin::controllers::terminal::TerminalModule::TerminalModule(
     tin::controllers::terminal::TerminalQueue &incomingQueue,
