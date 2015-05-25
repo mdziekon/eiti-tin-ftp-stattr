@@ -2,7 +2,7 @@
 #define TIN_CONTROLLERS_TERMINAL_TERMINALSESSION_HPP
 
 #include <boost/asio.hpp>
-#include "../../../terminal/src/command_message.hpp"
+#include "../main/typedefs.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -12,9 +12,12 @@ namespace tin { namespace controllers { namespace terminal
     	public std::enable_shared_from_this <TerminalSession>
     {
     public:
-        TerminalSession(tcp::socket socket);
+        TerminalSession(
+            tin::controllers::main::ControllerQueue &controllerQueue,
+            tcp::socket socket);
         void start();
     private:
+        tin::controllers::main::ControllerQueue& controllerQueue;
     	void do_read();
     	void do_write(int length);
 

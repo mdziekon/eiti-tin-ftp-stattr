@@ -3,13 +3,13 @@
 #include <utility>
 
 #include "Event.hpp"
+#include "../main/events/CmdResponseReceived.hpp"
 
 tin::controllers::terminal::TerminalModule::TerminalModule(
     tin::controllers::terminal::TerminalQueue &incomingQueue,
     tin::controllers::main::ControllerQueue &controllerQueue,
 	boost::asio::io_service& io_service) :	
-		QueueThread(incomingQueue, TerminalVisitor(*this)),
-		controllerQueue(controllerQueue)
+		QueueThread(incomingQueue, TerminalVisitor(*this))
 {
-	terminalServer_ = new tin::controllers::terminal::TerminalServer(io_service, 4321);
+	terminalServer_ = new tin::controllers::terminal::TerminalServer(controllerQueue, io_service, 4321);
 }

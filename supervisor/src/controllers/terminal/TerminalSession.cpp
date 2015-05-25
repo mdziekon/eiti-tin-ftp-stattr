@@ -1,6 +1,10 @@
 #include "TerminalSession.hpp"
+#include "../main/events/CmdResponseReceived.hpp"
 
-tin::controllers::terminal::TerminalSession::TerminalSession(tcp::socket socket) :
+tin::controllers::terminal::TerminalSession::TerminalSession(
+        tin::controllers::main::ControllerQueue &controllerQueue,
+        tcp::socket socket) :
+	controllerQueue(controllerQueue),
 	socket_(std::move(socket))
 {
 }
@@ -18,7 +22,14 @@ void tin::controllers::terminal::TerminalSession::do_read()
 		{
 			if(!ec)
 			{
-  				std::cout << "Terminal sent command: " << data_ << std::endl;
+				controllerQueue.push(
+            	std::make_shared<tin::controllers::main::events::CmdResponseReceived>(
+	                "localhost", 4321,
+	                std::make_shared<nlohmann::json>(
+	                    nlohmann::json::parse("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
+	                )
+            	));
+				//std::cout << "Terminal sent command: " << data_ << std::endl;
 				do_write(length);
 			}
 		});

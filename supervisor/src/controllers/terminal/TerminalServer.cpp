@@ -3,8 +3,10 @@
 #include <thread>
 
 tin::controllers::terminal::TerminalServer::TerminalServer(
+  tin::controllers::main::ControllerQueue &controllerQueue,
 	boost::asio::io_service& io_service,
 	short port) :
+	controllerQueue(controllerQueue),
 	acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
 	socket_(io_service)
 {
@@ -18,7 +20,7 @@ void tin::controllers::terminal::TerminalServer::do_accept()
 		{
 			if(!ec)
 			{
-        std::make_shared<TerminalSession>(std::move(socket_))->start();
+        std::make_shared<TerminalSession>(controllerQueue, std::move(socket_))->start();
 			}
       
 			do_accept();
