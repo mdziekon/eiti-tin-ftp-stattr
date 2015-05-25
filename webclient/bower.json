@@ -10,7 +10,10 @@
     "modernizr": "~2.7.1",
     "spinjs": "~2.0.2",
     "backbone-fetch-cache": "~1.5.5",
-    "moment": "~2.10.3"
+    "moment": "~2.10.3",
+    "flot": "~0.8.3",
+    "flot.tooltip": "~0.8.5",
+    "flot.curvedlines": "~1.1.1"
   },
   "devDependencies": {}
 }
