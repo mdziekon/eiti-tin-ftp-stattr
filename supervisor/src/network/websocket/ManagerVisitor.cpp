@@ -186,15 +186,40 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
             if (type == "GET")
             {
                 unsigned int lastDays = 7;
+                bool useFilter = false;
+
+                unsigned int filterFrom;
+                unsigned int filterTo;
+
+                auto now = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                ).count();
 
                 if (jsonObj["data"].is_object() && jsonObj["data"]["lastDays"].is_number())
                 {
                     lastDays = jsonObj["data"]["lastDays"];
                 }
+                if (jsonObj["data"].is_object() && (jsonObj["data"]["from"].is_number() || jsonObj["data"]["to"].is_number()))
+                {
+                    useFilter = true;
+
+                    if (jsonObj["data"]["from"].is_number()) {
+                        filterFrom = jsonObj["data"]["from"];
+                    } else {
+                        filterFrom = now - (365 * 24 * 60 * 60);
+                    }
+                    if (jsonObj["data"]["to"].is_number()) {
+                        filterTo = jsonObj["data"]["to"];
+                    } else {
+                        filterTo = now;
+                    }
+                }
+
+                auto useNow = (useFilter ? filterFrom : now - (lastDays * 24 * 60 * 60));
 
                 auto day = nlohmann::json();
                 day = {
-                    { "day", 1432404865 },
+                    { "day", useNow },
                     { "machines", {
                         {
                             { "id", 1 },
@@ -219,14 +244,33 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                     { "stats", {} }
                 };
 
-                for(int i = 0; i < lastDays; ++i)
+                if (!useFilter)
                 {
-                    jsonObj["data"]["stats"][i] = day;
-                    jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
-                    jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"]) + (5 * (i % 2 == 1 ? -1 : 1));
-                    jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"]) + (5 * (i % 2 == 1 ? -1 : 1));
-                    jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"]) + (2 * (i % 2 == 0 ? -1 : 1));
-                    jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                    for(int i = 0; i < lastDays; ++i)
+                    {
+                        jsonObj["data"]["stats"][i] = day;
+                        jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
+                        jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                    }
+                }
+                else
+                {
+                    unsigned int i = 0;
+                    unsigned int t = filterFrom;
+                    while(t < filterTo)
+                    {
+                        jsonObj["data"]["stats"][i] = day;
+                        jsonObj["data"]["stats"][i]["day"] = ((int) jsonObj["data"]["stats"][i]["day"]) + (i * 24 * 60 * 60);
+                        jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["out"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][0]["traffic"]["in"]) + (5 * (i % 2 == 1 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["out"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                        jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"] = ((int) jsonObj["data"]["stats"][i]["machines"][1]["traffic"]["in"]) + (2 * (i % 2 == 0 ? -1 : 1));
+                        i++;
+                        t += 24 * 60 * 60;
+                    }
                 }
             }
         }
