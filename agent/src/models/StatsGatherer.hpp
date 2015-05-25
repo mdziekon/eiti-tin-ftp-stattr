@@ -27,7 +27,7 @@ namespace tin { namespace agent { namespace models
         std::vector<tin::utils::Packet::ptr> capturedPackets;
         
         void incomingPacket(const tin::utils::Packet::ptr& packet);
-        void fetchPackets(const u_int32_t& requestorID);
+        void fetchPackets();
     public:
 
         StatsGatherer(

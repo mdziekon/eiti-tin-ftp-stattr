@@ -17,5 +17,5 @@ void StatsGathererVisitor::visit(const events::IncomingPacket& event)
 
 void StatsGathererVisitor::visit(const events::RequestPackets& event)
 {
-    this->statsGatherer.fetchPackets(event.requestorID);
+    this->statsGatherer.fetchPackets();
 }

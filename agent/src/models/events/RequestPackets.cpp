@@ -8,7 +8,3 @@ void tin::agent::models::events::RequestPackets::accept(tin::agent::models::Stat
 {
     visitor.visit(*this);
 }
-
-RequestPackets::RequestPackets(const u_int32_t& requestorID):
-requestorID(requestorID)
-{}

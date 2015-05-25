@@ -15,13 +15,13 @@ void StatsGatherer::incomingPacket(const tin::utils::Packet::ptr& packet)
     }
 }
 
-void StatsGatherer::fetchPackets(const u_int32_t& requestorID)
+void StatsGatherer::fetchPackets()
 {   
     nlohmann::json reply;
-    reply["requestor_id"] = requestorID;
+    u_int32_t loopIndex = 0;
         
     for(auto& packet: this->capturedPackets) {
-        reply["data"][packet->no] = packet->serialize();
+        reply["data"][loopIndex++] = packet->serialize();
     }
     
     std::cout << "[Agent][Internal] Sending " << this->capturedPackets.size() << " packets to the network\r\n"; 

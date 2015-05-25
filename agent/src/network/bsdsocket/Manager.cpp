@@ -25,4 +25,5 @@ controllerQueue(controllerQueue)
             EventPtr(new events::MessageReceived(msg))
         );
     });
+
 }

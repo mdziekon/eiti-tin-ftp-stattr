@@ -1,8 +1,6 @@
 #ifndef TIN_SUPERVISOR_SRC_MODELS_STATS_HPP
 #define TIN_SUPERVISOR_SRC_MODELS_STATS_HPP
 
-#include <atomic>
-#include <list>
 #include <json/src/json.hpp>
 #include <sys/types.h>
 
@@ -18,9 +16,6 @@ namespace tin { namespace supervisor { namespace models
     >
     {
         friend class tin::supervisor::models::StatsVisitor;
-
-        static std::atomic<u_int32_t> maxID;
-        u_int32_t id;
         
         tin::controllers::main::ControllerQueue& controllerQueue;
         

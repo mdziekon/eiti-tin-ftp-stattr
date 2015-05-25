@@ -9,9 +9,11 @@
 tin::controllers::main::MainModule::MainModule(
     tin::controllers::main::ControllerQueue &incomingQueue,
     tin::network::bsdsocket::ManagerQueue &networkManagerQueue,
-    tin::agent::models::StatsGathererQueue& statsGathererQueue
+    tin::agent::models::StatsGathererQueue& statsGathererQueue,
+    tin::network::sniffer::ManagerQueue& snifferManagerQueue
 ):
 QueueThread(incomingQueue, MainVisitor(*this)),
 networkManagerQueue(networkManagerQueue),
-statsGathererQueue(statsGathererQueue)
+statsGathererQueue(statsGathererQueue),
+snifferManagerQueue(snifferManagerQueue)
 {}

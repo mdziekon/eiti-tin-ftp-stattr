@@ -20,7 +20,8 @@ int main()
     tin::controllers::main::MainModule mainCtrl(
         ctrlQueue, 
         netManagerQueue,
-        statsGathererQueue
+        statsGathererQueue,
+        snifferManagerQueue
     );
     tin::network::bsdsocket::Manager networkManager(netManagerQueue, ctrlQueue, 3333);
     tin::network::sniffer::Manager sniffManager(

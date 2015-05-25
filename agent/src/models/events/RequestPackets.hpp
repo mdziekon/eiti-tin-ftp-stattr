@@ -12,12 +12,8 @@ namespace tin { namespace agent { namespace models
 namespace tin { namespace agent { namespace models { namespace events
 {
     struct RequestPackets: public tin::agent::models::Event
-    {
-        const u_int32_t requestorID;
-        
+    {       
         void accept(tin::agent::models::StatsGathererVisitor& visitor);
-        
-        RequestPackets(const u_int32_t& requestorID);
     };
 }}}}
 
