@@ -195,6 +195,7 @@
 
     Backbone.sync = function (method, object, options) {
         options = options || {};
+        options.flashOptions = options.flashOptions || {};
 
         var type;
         switch (method) {
@@ -251,14 +252,14 @@
         if (options.submitElement) {
             $button = app.getJQElement(options.submitElement);
             promise.done(function () {
-                app.flashButton($button, "complete", 750).done(function () {
+                app.flashButton($button, "complete", 750, options.flashOptions.complete).done(function () {
                     if (options.submitElementFlashDfd) {
                         options.submitElementFlashDfd.resolve();
                     }
                 });
             });
             promise.fail(function () {
-                app.flashButton($button, "error", 750).done(function () {
+                app.flashButton($button, "error", 750, options.flashOptions.error).done(function () {
                     if (options.submitElementFlashDfd) {
                         options.submitElementFlashDfd.resolve();
                     }

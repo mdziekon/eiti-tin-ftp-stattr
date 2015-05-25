@@ -110,26 +110,35 @@ window.webapp = {
 
         if (enable) {
             $button.data("loading-old-classes", $button.attr("class"));
+            $button.data("loading-old-html", $button.html());
             $button.data("is-loading", "true");
 
             $button.button("load");
             $button.addClass("disabled");
         } else {
             $button.attr("class", $button.data("loading-old-classes"));
-            $button.button("reset");
+            $button.html($button.data("loading-old-html"));
 
-            $.removeData($button, "loading-old-classes");
-            $.removeData($button, "is-loading");
+            $button.removeData("loading-old-classes");
+            $button.removeData("loading-old-html");
+            $button.removeData("is-loading");
         }
     },
 
-    flashButton: function ($button, state, durance) {
+    flashButton: function ($button, state, durance, options) {
         var dfd = new $.Deferred();
+        options = options || {};
 
         webapp.buttonToggleLoading($button, false);
 
-        $button.button(state);
+        if (_.isFunction(options.beforeFlash)) {
+            options.beforeFlash($button, state);
+        }
+
         $button.data("flashing-old-classes", $button.attr("class"));
+        $button.data("flashing-old-html", $button.html());
+
+        $button.button(state);
         $button.addClass("disabled");
 
         if (state === "complete" || state === "error") {
@@ -145,16 +154,19 @@ window.webapp = {
         if (durance >= 0) {
             window.setTimeout(function () {
                 $button.attr("class", $button.data("flashing-old-classes"));
-                $button.button("reset");
+                $button.html($button.data("flashing-old-html"));
 
-                $.removeData($button, "flashing-old-classes");
+                $button.removeData("flashing-old-classes");
+                $button.removeData("flashing-old-html");
 
                 dfd.resolve();
             }, durance);
         } else {
             $button.attr("class", $button.data("flashing-old-classes"));
+            $button.html($button.data("flashing-old-html"));
 
-            $.removeData($button, "flashing-old-classes");
+            $button.removeData("flashing-old-classes");
+            $button.removeData("flashing-old-html");
 
             dfd.resolve();
         }
