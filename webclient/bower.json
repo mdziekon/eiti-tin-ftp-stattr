@@ -15,7 +15,8 @@
     "flot.tooltip": "~0.8.5",
     "flot.curvedlines": "~1.1.1",
     "datatables": "~1.10.7",
-    "datatables-bootstrap3": "*"
+    "datatables-bootstrap3": "*",
+    "eonasdan-bootstrap-datetimepicker": "~4.7.14"
   },
   "devDependencies": {}
 }
