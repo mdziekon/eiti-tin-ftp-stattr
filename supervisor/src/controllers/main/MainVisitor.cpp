@@ -74,7 +74,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
             {
                 const std::string response = temp["error"]["response"]; 
                 if(response == "sniffing")
-                    m.status("sniffing");
+                    m.status.assign("sniffing");
                 if(response == "stand-by")
                     m.status.assign("stand-by");
             }
