@@ -13,7 +13,9 @@
     "moment": "~2.10.3",
     "flot": "~0.8.3",
     "flot.tooltip": "~0.8.5",
-    "flot.curvedlines": "~1.1.1"
+    "flot.curvedlines": "~1.1.1",
+    "datatables": "~1.10.7",
+    "datatables-bootstrap3": "*"
   },
   "devDependencies": {}
 }
