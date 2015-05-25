@@ -9,7 +9,6 @@
 #include "events/CmdReceived.hpp"
 #include "events/PacketReceived.hpp"
 #include "events/NetworkReply.hpp"
-#include "events/PacketsRequestReceived.hpp"
 #include "../../network/sniffer/events/ChangeFilter.hpp"
 
 #include "../../network/bsdsocket/events/ResponseRequest.hpp"
@@ -89,7 +88,11 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
         );
     }
     else if(cmd == "fetch_packets") {
-        return;
+        if((*event.jsonPtr)["cmd"].get<std::string>() == "fetch_packets") {
+            this->controller.statsGathererQueue.push(
+                std::make_shared<tin::agent::models::events::RequestPackets>()
+            );
+        }
     }
     else
     {
@@ -117,16 +120,5 @@ void tin::controllers::main::MainVisitor::visit(events::NetworkReply& event)
             std::make_shared<nlohmann::json>(event.reply)
         )
     );
-}
-
-void tin::controllers::main::MainVisitor::visit(events::PacketsRequestReceived& event)
-{
-    if(event.jsonPtr->find("cmd") != event.jsonPtr->end()) {
-        if((*event.jsonPtr)["cmd"].get<std::string>() == "fetch_packets") {
-            this->controller.statsGathererQueue.push(
-                std::make_shared<tin::agent::models::events::RequestPackets>()
-            );
-        }
-    }
 }
 

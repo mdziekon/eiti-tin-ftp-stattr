@@ -11,7 +11,6 @@ namespace tin { namespace controllers { namespace main
         struct CmdReceived;
         struct PacketReceived;
         struct NetworkReply;
-        struct PacketsRequestReceived;
     }
 
     class MainVisitor
@@ -27,7 +26,6 @@ namespace tin { namespace controllers { namespace main
         void visit(tin::controllers::main::events::CmdReceived &event);
         void visit(tin::controllers::main::events::PacketReceived &event);
         void visit(tin::controllers::main::events::NetworkReply &event);
-        void visit(tin::controllers::main::events::PacketsRequestReceived &event);
     };
 }}}
 

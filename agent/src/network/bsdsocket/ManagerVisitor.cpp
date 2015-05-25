@@ -10,7 +10,6 @@
 #include "events/ConnectionTerminationRequest.hpp"
 
 #include "../../controllers/main/events/CmdReceived.hpp"
-#include "../../controllers/main/events/PacketsRequestReceived.hpp"
 
 using tin::network::bsdsocket::ManagerVisitor;
 namespace events = tin::network::bsdsocket::events;
@@ -30,12 +29,6 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     this->manager.controllerQueue.push(
         tin::controllers::main::EventPtr(
             new mainCtrlEvents::CmdReceived(tin::utils::json::makeSharedInstance(evt.message))
-        )
-    );
-    
-    this->manager.controllerQueue.push(
-        tin::controllers::main::EventPtr(
-            new mainCtrlEvents::PacketsRequestReceived(tin::utils::json::makeSharedInstance(evt.message))
         )
     );
 }
