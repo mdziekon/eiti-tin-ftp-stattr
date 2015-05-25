@@ -6,6 +6,9 @@
 #include "network/sniffer/Manager.hpp"
 
 #include "network/sniffer/events/ChangeFilter.hpp"
+#include "network/sniffer/events/StopSniffing.hpp"
+#include "network/sniffer/events/StartSniffing.hpp"
+#include "network/sniffer/events/IsSniffing.hpp"
 
 int main()
 {
