@@ -64,6 +64,20 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
             return $.when.apply($, ajaxReq);
         },
 
+        afterRender: function () {
+            this.$(".table-stats-machine-daily").DataTable({
+                responsive: false,
+                paging: false,
+                searching: false,
+                info: false,
+                "aoColumns": [
+                    { "orderable": false },
+                    { "orderable": true },
+                    { "orderable": true, "sType": "numeric" }
+                ]
+            });
+        },
+
         changePeriod: function (evt) {
             evt.preventDefault();
 

@@ -52,56 +52,56 @@
     </div>
     <!-- /.panel-heading -->
     <div class="panel-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover table-striped">
-                <thead>
+        <table class="table table-bordered table-hover table-striped table-stats-machine-per-connection">
+            <thead>
+                <tr>
+                    <th>Connection</th>
+                    <th>Last Time</th>
+                    <th>Traffic</th>
+                    <th>Packets</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (!connections.length) { %>
                     <tr>
-                        <th>Connection</th>
-                        <th>Last Time</th>
-                        <th>Traffic</th>
-                        <th>Packets</th>
+                        <td colspan="4" class="text-center">
+                            <strong class="text-muted">No data for selected period</strong>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <% if (!connections.length) { %>
+                <% } %>
+                <% _.each(connections, function (connection) { %>
+                    <tr>
+                        <td>
+                            <%- connection.ip %>:<%- connection.port %>
+                        </td>
+                        <td title="<%- moment(connection.lastTime).format("MMMM Do YYYY, h:mm:ss a") %>">
+                            <%- _.capitalize(moment(connection.lastTime).fromNow()) %>
+                        </td>
+                        <td>
+                            <%- connection.traffic %> MB
+                        </td>
+                        <td>
+                            <%- connection.packets %>
+                        </td>
+                    </tr>
+                <% }); %>
+                <% if (connections.length) { %>
+                    <tfoot>
                         <tr>
-                            <td colspan="4" class="text-center">
-                                <strong class="text-muted">No data for selected period</strong>
-                            </td>
-                        </tr>
-                    <% } %>
-                    <% _.each(connections, function (connection) { %>
-                        <tr>
-                            <td>
-                                <%- connection.ip %>:<%- connection.port %>
-                            </td>
-                            <td title="<%- moment(connection.lastTime).format("MMMM Do YYYY, h:mm:ss a") %>">
-                                <%- _.capitalize(moment(connection.lastTime).fromNow()) %>
-                            </td>
-                            <td>
-                                <%- connection.traffic %> MB
-                            </td>
-                            <td>
-                                <%- connection.packets %>
-                            </td>
-                        </tr>
-                    <% }); %>
-                    <% if (connections.length) { %>
-                        <tr>
-                            <td class="text-right" colspan="2">
+                            <th class="text-right" colspan="2">
                                 <strong class="text-muted">Total</strong>
-                            </td>
-                            <td>
+                            </th>
+                            <th>
                                 <%- _.reduce(connections, function (total, connection) { return total + connection.traffic; }, 0) %> MB
-                            </td>
-                            <td>
+                            </th>
+                            <th>
                                 <%- _.reduce(connections, function (total, connection) { return total + connection.packets; }, 0) %>
-                            </td>
+                            </th>
                         </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
+                    </tfoot>
+                <% } %>
+            </tbody>
+        </table>
         <!-- /.table-responsive -->
     </div>
     <!-- /.panel-body -->

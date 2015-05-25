@@ -64,6 +64,20 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             return $.when.apply($, ajaxReq);
         },
 
+        afterRender: function () {
+            this.$(".table-stats-per-machine").DataTable({
+                responsive: false,
+                paging: false,
+                searching: false,
+                info: false,
+                "aoColumns": [
+                    { "orderable": false },
+                    { "orderable": false },
+                    { "orderable": true }
+                ]
+            });
+        },
+
         changePeriod: function (evt) {
             evt.preventDefault();
 
