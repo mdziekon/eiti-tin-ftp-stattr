@@ -39,6 +39,9 @@ webapp.Views.Stats = webapp.Views.Stats || {};
                 new webapp.Views.Stats.Machine.Daily({
                     machineID: this.options.machineID
                 }),
+                new webapp.Views.Stats.Machine.PerHour({
+                    machineID: this.options.machineID
+                }),
                 new webapp.Views.Stats.Machine.PerConnection({
                     machineID: this.options.machineID
                 })
