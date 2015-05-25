@@ -6,11 +6,11 @@
 
 namespace tin { namespace controllers { namespace main { namespace events
 {
-    struct WebClientResponseReceived: public tin::controllers::main::Event
+    struct WebClientRequestReceived: public tin::controllers::main::Event
     {
         const tin::utils::json::ptr jsonPtr;
-        
-        WebClientResponseReceived(const tin::utils::json::ptr& jsonPtr);
+
+        WebClientRequestReceived(const tin::utils::json::ptr& jsonPtr);
 
         virtual void accept(tin::controllers::main::MainVisitor& visitor);
     };
