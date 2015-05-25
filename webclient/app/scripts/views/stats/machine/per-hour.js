@@ -64,14 +64,14 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
         },
 
         afterRender: function () {
-            this.createCharts("last7");
+            this.createCharts();
         },
 
-        createCharts: function (period) {
-            this.createDailyTrafficChart(period);
+        createCharts: function () {
+            this.createDailyTrafficChart();
         },
 
-        createDailyTrafficChart: function (period) {
+        createDailyTrafficChart: function () {
             var view = this;
             var data = {
                 traffic: [],
@@ -153,13 +153,12 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
             view.fetchStats({
                 data: {
                     lastDays: parseInt(period.replace("last", ""), 10)
-                }
+                },
+                submitElement: view.$(".btn-change-period .btn")
             }).done(function () {
                 view.$(".btn-change-period .dropdown-toggle .text").text($el.text());
 
-                view.createCharts(period);
-            }).fail(function () {
-                console.error("Refetch Failure");
+                view.createCharts();
             });
         },
 

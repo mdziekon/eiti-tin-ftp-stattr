@@ -62,14 +62,14 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
         },
 
         afterRender: function () {
-            this.createCharts("last7");
+            this.createCharts();
         },
 
-        createCharts: function (period) {
-            this.createDailyTrafficChart(period);
+        createCharts: function () {
+            this.createDailyTrafficChart();
         },
 
-        createDailyTrafficChart: function (period) {
+        createDailyTrafficChart: function () {
             var view = this;
             var data = [];
             var machines = {};
@@ -131,14 +131,13 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             view.fetchStats({
                 data: {
                     lastDays: parseInt(period.replace("last", ""), 10)
-                }
+                },
+                submitElement: view.$(".btn-change-period .btn")
             }).done(function () {
                 view.$(".btn-change-period .dropdown-toggle .text").text($el.text());
                 view.$("#stats-chart-daily-traffic").empty();
 
-                view.createCharts(period);
-            }).fail(function () {
-                console.error("Refetch Failure");
+                view.createCharts();
             });
         },
 
@@ -149,8 +148,10 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             var $el = $(evt.currentTarget);
             var trafficMode = $el.data("traffic-mode");
 
+            view.$("#stats-chart-daily-traffic").empty();
+
             view.trafficMode = trafficMode;
-            view.render();
+            view.createCharts();
         }
     });
 
