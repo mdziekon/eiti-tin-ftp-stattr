@@ -18,6 +18,8 @@ void StatsGatherer::incomingPacket(const tin::utils::Packet::ptr& packet)
 void StatsGatherer::fetchPackets()
 {   
     nlohmann::json reply;
+    reply["cmd"] = "sync";
+    reply["data"] = nlohmann::json::array();
     u_int32_t loopIndex = 0;
         
     for(auto& packet: this->capturedPackets) {

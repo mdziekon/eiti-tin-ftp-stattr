@@ -7,11 +7,16 @@
 
 #include "events/Terminate.hpp"
 #include "events/CmdReceived.hpp"
+#include "events/SnifferStatus.hpp"
 #include "events/PacketReceived.hpp"
 #include "events/NetworkReply.hpp"
-#include "../../network/sniffer/events/ChangeFilter.hpp"
 
 #include "../../network/bsdsocket/events/ResponseRequest.hpp"
+#include "../../network/bsdsocket/events/ConnectionTerminationRequest.hpp"
+#include "../../network/sniffer/events/ChangeFilter.hpp"
+#include "../../network/sniffer/events/StartSniffing.hpp"
+#include "../../network/sniffer/events/StopSniffing.hpp"
+#include "../../network/sniffer/events/IsSniffing.hpp"
 #include "../../models/events/IncomingPacket.hpp"
 #include "../../models/events/RequestPackets.hpp"
 
@@ -46,14 +51,44 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 
     if (cmd == "sync")
     {
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
-                )
-            )
+        this->controller.statsGathererQueue.push(
+            std::make_shared<tin::agent::models::events::RequestPackets>()
         );
     }
+
+    else if (cmd == "ping")
+    {
+        this->controller.lastCMD = "ping";
+
+        this->controller.snifferManagerQueue.push(
+            std::make_shared<snifferEvents::IsSniffing>()
+        );
+    }
+
+    else if (cmd == "startsniffing")
+    {
+        std::cout << "[MainCtrl] Received startsniffing" << std::endl;
+
+        this->controller.lastCMD = "startsniffing";
+
+        this->controller.snifferManagerQueue.push(
+            std::make_shared<snifferEvents::StartSniffing>()
+        );
+    }
+
+    else if (cmd == "stopsniffing")
+    {
+        std::cout << "[MainCtrl] Received startsniffing" << std::endl;
+
+        this->controller.lastCMD = "stopsniffing";
+
+        this->controller.snifferManagerQueue.push(
+            std::make_shared<snifferEvents::StopSniffing>()
+        );
+    }
+
+
+
     else if (cmd == "change_filter")
     {
         if (temp.find("device") == temp.end() || temp.find("expression") == temp.end() || !temp["device"].is_string() || !temp["expression"].is_string())
@@ -73,26 +108,13 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 
         std::cout << "[MainCtrl] Received change_filter, changing to: " << temp["device"] << " / " << temp["expression"] << std::endl;
 
+        this->controller.lastCMD = "change_filter";
+
         this->controller.snifferManagerQueue.push(
             std::make_shared<snifferEvents::ChangeFilter>(
                 temp["device"], temp["expression"]
             )
         );
-
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"cmd\": \"change_filter\", \"success\": true }")
-                )
-            )
-        );
-    }
-    else if(cmd == "fetch_packets") {
-        if((*event.jsonPtr)["cmd"].get<std::string>() == "fetch_packets") {
-            this->controller.statsGathererQueue.push(
-                std::make_shared<tin::agent::models::events::RequestPackets>()
-            );
-        }
     }
     else
     {
@@ -122,3 +144,59 @@ void tin::controllers::main::MainVisitor::visit(events::NetworkReply& event)
     );
 }
 
+void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::SnifferStatus &event)
+{
+    std::string response;
+
+    if (this->controller.lastCMD == "ping")
+    {
+        if (event.is)
+        {
+            response = "{ \"cmd\": \"ping\", \"response\": \"sniffing\" }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"ping\", \"response\": \"stand-by\" }";
+        }
+    }
+    else if (this->controller.lastCMD == "startsniffing")
+    {
+        if (event.is)
+        {
+            response = "{ \"cmd\": \"startsniffing\", \"success\": true }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"startsniffing\", \"error\": true }";
+        }
+    }
+    else if (this->controller.lastCMD == "stopsniffing")
+    {
+        if (!event.is)
+        {
+            response = "{ \"cmd\": \"stopsniffing\", \"success\": true }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"stopsniffing\", \"error\": true }";
+        }
+    }
+    else if (this->controller.lastCMD == "change_filter")
+    {
+        if (event.is)
+        {
+            response = "{ \"cmd\": \"change_filter\", \"success\": true, \"data\": { \"status\": \"sniffing\" } }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"change_filter\", \"success\": true, \"data\": { \"status\": \"stand-by\" } }";
+        }
+    }
+
+    this->controller.networkManagerQueue.push(
+        std::make_shared<bsdsocketEvents::ResponseRequest>(
+            std::make_shared<json>(json::parse(response))
+        )
+    );
+
+}

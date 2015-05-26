@@ -103,7 +103,7 @@ typedef struct tcp_header
         void stopSniffing();
         void changeConfig(const std::string& device, const std::string& expression);
 
-        void run();
+        bool run();
         unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler);
         unsigned int attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>&& handler);
 
@@ -114,11 +114,13 @@ typedef struct tcp_header
 
         unsigned long long packetCounter = 0;
         pcap_t* pcapHandle = nullptr;
+        struct bpf_program compiledFilter;
 
         std::thread snifferThread;
 
         tin::utils::HandlersContainer<void(const tin::utils::Packet::ptr&)> packetReceivedHandlers;
         void runPacketReceivedHandlers(const tin::utils::Packet::ptr& packetPtr);
+        bool initSniff();
         void sniff();
     };
 }}}

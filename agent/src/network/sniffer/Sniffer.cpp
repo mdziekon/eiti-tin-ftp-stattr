@@ -2,6 +2,8 @@
 
 using namespace tin::network::sniffer;
 
+#include <iostream>
+
 void pcap_trampoline(u_char *param, const struct pcap_pkthdr *pkt_header, const u_char *pkt_data)
 {
     Sniffer* obj = reinterpret_cast<Sniffer*>(param);
@@ -40,7 +42,10 @@ void Sniffer::stopSniffing()
 
     pcap_breakloop(this->pcapHandle);
 
-    this->snifferThread.join();
+    if (this->snifferThread.joinable())
+    {
+        this->snifferThread.join();
+    }
 }
 
 void Sniffer::changeConfig(const std::string& device, const std::string& expression)
@@ -132,12 +137,28 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
     // pac->printData();
 }
 
-void Sniffer::run()
+bool Sniffer::run()
 {
-	this->snifferThread = std::thread(
-        &Sniffer::sniff,
-        std::ref(*this)
-    );
+    if (this->isSniffing())
+    {
+        return false;
+    }
+    if (this->snifferThread.joinable())
+    {
+        this->snifferThread.join();
+    }
+
+    if (this->initSniff())
+    {
+    	this->snifferThread = std::thread(
+            &Sniffer::sniff,
+            std::ref(*this)
+        );
+
+        return true;
+    }
+
+    return false;
 }
 
 unsigned int Sniffer::attachPacketReceivedHandler(std::function<void(const tin::utils::Packet::ptr&)>& handler)
@@ -160,15 +181,15 @@ void Sniffer::runPacketReceivedHandlers(const tin::utils::Packet::ptr& packetPtr
     }
 }
 
-void Sniffer::sniff()
+bool Sniffer::initSniff()
 {
     if (this->isSniffing())
     {
-        return;
+        return false;
     }
 
     char errbuf[PCAP_ERRBUF_SIZE]; // error buffer
-    struct bpf_program fp;         // compiled filter program (expression)
+    auto& fp = this->compiledFilter;
     bpf_u_int32 mask;              // subnet mask
     bpf_u_int32 net;               // ip
     int num_packets = -1;          // number of packets to capture (-1 means till error) */
@@ -180,7 +201,8 @@ void Sniffer::sniff()
     if (dev == NULL)
     {
         // Throw an error (Couldn't find default device)
-        return;
+        std::cout << "[Sniffer] Could not start sniffer" << std::endl;
+        return false;
     }
 
 
@@ -197,20 +219,21 @@ void Sniffer::sniff()
 
     // open capture device
     this->pcapHandle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
-    auto handle = this->pcapHandle;
+    auto& handle = this->pcapHandle;
 
     if (handle == NULL)
     {
         // Throw an error (Couldn't open device: $device)
         // errbuf contains error data
-        return;
+        std::cout << "[Sniffer] Could not start sniffer, no \"sudo\"?" << std::endl;
+        return false;
     }
 
     // make sure we're capturing on an Ethernet device [2]
     if (pcap_datalink(handle) != DLT_EN10MB)
     {
         // throw an error ($device is not an Ethernet)
-        return;
+        return false;
     }
 
     // compile the filter
@@ -218,7 +241,7 @@ void Sniffer::sniff()
     {
         // throw an error (Could not parse filter: $expression)
         // pcap_geterr(handle)
-        return;
+        return false;
     }
 
     // apply the filter
@@ -226,10 +249,19 @@ void Sniffer::sniff()
     {
         // throw an error (Could not parse filter: $expression)
         // pcap_geterr(handle)
-        return;
+        return false;
     }
 
+    return true;
+}
+
+void Sniffer::sniff()
+{
     // capturing packets
+    auto& handle = this->pcapHandle;
+    auto& fp = this->compiledFilter;
+    int num_packets = -1;
+
     pcap_loop(handle, num_packets, pcap_trampoline, reinterpret_cast<u_char*>(this));
 
     // cleanup

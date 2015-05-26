@@ -15,8 +15,6 @@ QueueThread(incomingQueue, ManagerVisitor(*this)),
 sniffer(device, expression),
 controllerQueue(controllerQueue)
 {
-    this->sniffer.run();
-
     this->sniffer.attachPacketReceivedHandler([this](const tin::utils::Packet::ptr& packet) {
         this->controllerQueue.push(
             tin::controllers::main::EventPtr(new tin::controllers::main::events::PacketReceived(packet))
