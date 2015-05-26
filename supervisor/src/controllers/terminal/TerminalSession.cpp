@@ -1,6 +1,7 @@
 #include "TerminalSession.hpp"
 #include "../main/events/CmdResponseReceived.hpp"
 
+
 tin::controllers::terminal::TerminalSession::TerminalSession(
         tin::controllers::main::ControllerQueue &controllerQueue,
         tcp::socket socket) :
@@ -11,39 +12,65 @@ tin::controllers::terminal::TerminalSession::TerminalSession(
 
 void tin::controllers::terminal::TerminalSession::start()
 {
-	do_read();
+	do_read_header();
 }
 
-void tin::controllers::terminal::TerminalSession::do_read()
+void tin::controllers::terminal::TerminalSession::do_read_header()
 {
 	auto self(shared_from_this());
-	socket_.async_read_some(boost::asio::buffer(data_, max_length),
-		[this, self](boost::system::error_code ec, int length)
-		{
-			if(!ec)
+	socket_.async_read_some(boost::asio::buffer(msg_.data(), terminal_message::header_length),
+		[this, self](boost::system::error_code ec, int)
+		{				
+			if(!ec && msg_.decode_header())
 			{
-				controllerQueue.push(
+				do_read_body();
+			} else {
+				socket_.close();
+			}
+				/*controllerQueue.push(
             	std::make_shared<tin::controllers::main::events::CmdResponseReceived>(
 	                "localhost", 4321,
 	                std::make_shared<nlohmann::json>(
-	                    nlohmann::json::parse("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
+	                    nlohmann::json::parse("{\"testMessage\": \"" + std::string(data_) + "\"}")
 	                )
-            	));
-				//std::cout << "Terminal sent command: " << data_ << std::endl;
-				do_write(length);
-			}
+            	));*/
+			
 		});
 }
 
-void tin::controllers::terminal::TerminalSession::do_write(int length)
+void tin::controllers::terminal::TerminalSession::do_read_body()
 {
 	auto self(shared_from_this());
-	boost::asio::async_write(socket_, boost::asio::buffer(data_, length),
+	socket_.async_read_some(boost::asio::buffer(msg_.body(), msg_.body_length()),
+		[this, self](boost::system::error_code ec, int)
+		{
+			if(!ec)
+			{
+				std::cout << "> Accepted message." << std::endl;
+				std::cout.write(msg_.body(), msg_.body_length());
+				std::cout << std::endl;
+				do_write("OK");
+				do_read_header();
+			} else {
+				socket_.close();
+			}
+		});	
+}
+
+void tin::controllers::terminal::TerminalSession::do_write(const char* message)
+{
+	terminal_message msg;
+	msg.body_length(std::strlen(message));
+	std::memcpy(msg.body(), message, msg.body_length());
+	msg.encode_header();
+
+	auto self(shared_from_this());
+	boost::asio::async_write(socket_, boost::asio::buffer(msg.data(), msg.length()),
 		[this, self](boost::system::error_code ec, int /*length*/)
 		{
 			if(!ec)
 			{
-				do_read();
+				std::cout << "> Responded to terminal." << std::endl;
 			}
 		});
 }

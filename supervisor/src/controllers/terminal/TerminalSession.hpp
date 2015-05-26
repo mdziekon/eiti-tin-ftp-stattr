@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 #include "../main/typedefs.hpp"
+#include "../../../../terminal/src/terminal_message.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -18,12 +19,11 @@ namespace tin { namespace controllers { namespace terminal
         void start();
     private:
         tin::controllers::main::ControllerQueue& controllerQueue;
-    	void do_read();
-    	void do_write(int length);
-
+    	void do_read_header();
+        void do_read_body();
+    	void do_write(const char* message);
     	tcp::socket socket_;
-    	enum { max_length = 1024 };
-    	char data_[max_length];
+        terminal_message msg_;
     };
 }}}
 
