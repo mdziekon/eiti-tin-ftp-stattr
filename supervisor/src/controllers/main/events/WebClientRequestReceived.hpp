@@ -9,8 +9,9 @@ namespace tin { namespace controllers { namespace main { namespace events
     struct WebClientRequestReceived: public tin::controllers::main::Event
     {
         const tin::utils::json::ptr jsonPtr;
+        unsigned int connectionID;
 
-        WebClientRequestReceived(const tin::utils::json::ptr& jsonPtr);
+        WebClientRequestReceived(const tin::utils::json::ptr& jsonPtr, unsigned int connectionID);
 
         virtual void accept(tin::controllers::main::MainVisitor& visitor);
     };

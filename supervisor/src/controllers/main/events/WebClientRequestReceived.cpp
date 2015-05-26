@@ -4,8 +4,8 @@
 
 using tin::controllers::main::events::WebClientRequestReceived;
 
-WebClientRequestReceived::WebClientRequestReceived(const tin::utils::json::ptr& jsonPtr):
-jsonPtr(jsonPtr)
+WebClientRequestReceived::WebClientRequestReceived(const tin::utils::json::ptr& jsonPtr, unsigned int connectionID):
+jsonPtr(jsonPtr), connectionID(connectionID)
 {}
 
 void WebClientRequestReceived::accept(tin::controllers::main::MainVisitor& visitor)
