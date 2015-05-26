@@ -15,6 +15,8 @@
 
 #include "../../network/bsdsocket/events/MessageRequest.hpp"
 
+#include "../../models/events/RequestAnalytics.hpp"
+
 namespace events = tin::controllers::main::events;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
@@ -31,7 +33,11 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
     std::cout << "[Supervisor] [MainCtrl] Received response: " << evt.jsonPtr->dump() << std::endl;
     std::cout << "                        Source: " << evt.ip << ":" << evt.port << std::endl;
     
-    
+    if(evt.jsonPtr->find("route") != evt.jsonPtr->end() &&
+       evt.jsonPtr->find("type") != evt.jsonPtr->end() &&
+       evt.jsonPtr->find("uid") != evt.jsonPtr->end()) {
+        this->controller.statsQueue.push(std::make_shared<tin::supervisor::models::events::RequestAnalytics>(evt.ip, evt.port, evt.jsonPtr));
+    }
 }
 
 void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)

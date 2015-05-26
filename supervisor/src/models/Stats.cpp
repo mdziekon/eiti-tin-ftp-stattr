@@ -1,6 +1,8 @@
 #include "Stats.hpp"
 
+#include <ctime>
 #include <arpa/inet.h>
+#include <unordered_map>
 
 #include "StatsVisitor.hpp"
 #include "../controllers/main/events/NetworkRequest.hpp"
@@ -20,6 +22,115 @@ void Stats::updateDataset()
             std::make_shared<nlohmann::json>(json)
         )
     );
+}
+
+const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::ptr& requestorData) const
+{
+    tin::utils::json::ptr reply;
+    std::unordered_map<u_int32_t, u_int32_t> machineStats;
+
+    (*reply)["route"] = (*requestorData)["route"];
+    (*reply)["type"] = "POST";
+    (*reply)["uid"] = (*requestorData)["uid"];
+    
+    struct tm packetDay;
+    int64_t beginTime = this->packetsByTimestamp.begin()->first;
+    struct tm currentDay = *localtime(&beginTime);
+    u_int32_t arrayIndex = 0;
+    
+    for(auto connectionDataPair: this->packetsByTimestamp) 
+    {
+        auto& connectionData = connectionDataPair.second;
+        u_int32_t sourceIP = (*connectionData)["sourceIP"];
+        u_int32_t destinationIP = (*connectionData)["destinationIP"];
+        
+        if(machineStats.find(sourceIP) != machineStats.end()) {
+            machineStats[sourceIP]++;
+        }
+        else {
+            machineStats[sourceIP] = 1;
+        }
+        if(machineStats.find(destinationIP) != machineStats.end()) {
+            machineStats[destinationIP]++;
+        }
+        else {
+            machineStats[destinationIP] = 1;
+        }
+
+        int64_t temporaryTimeStorage = connectionDataPair.first;
+        packetDay = *localtime(&temporaryTimeStorage);
+        
+        if(packetDay.tm_mday > currentDay.tm_mday ||
+            packetDay.tm_year > currentDay.tm_year)
+        {
+            u_int32_t innerMachineID = 0;
+            
+            for(auto stat: machineStats) 
+            {
+                (*reply)["data"]["stats"][arrayIndex]["day"] = mktime(&currentDay);
+                (*reply)["data"]["stats"][arrayIndex]["machines"][innerMachineID]["id"] = innerMachineID;
+                (*reply)["data"]["stats"][arrayIndex]["machines"][innerMachineID]["name"] = stat.first;
+                (*reply)["data"]["stats"][arrayIndex]["machines"][innerMachineID]["traffic"] = stat.second;
+                innerMachineID++;
+            }
+            currentDay = packetDay;
+            arrayIndex++;
+        }
+    }
+    u_int32_t innerMachineID = 0;
+    
+    for(auto stat: machineStats) 
+    {
+        (*reply)["data"]["stats"][arrayIndex]["day"] = mktime(&currentDay);
+        (*reply)["data"]["stats"][arrayIndex]["machines"][innerMachineID]["id"] = innerMachineID;
+        (*reply)["data"]["stats"][arrayIndex]["machines"][innerMachineID]["name"] = stat.first;
+        (*reply)["data"]["stats"][arrayIndex]["machines"][innerMachineID]["traffic"] = stat.second;
+        innerMachineID++;
+    }
+    
+    return reply;
+}
+
+const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json::ptr& requestorData) const
+{
+    tin::utils::json::ptr reply;
+    std::unordered_map<u_int32_t, u_int32_t> machineStats;
+
+    (*reply)["route"] = (*requestorData)["route"];
+    (*reply)["type"] = "POST";
+    (*reply)["uid"] = (*requestorData)["uid"];
+    
+    for(auto connectionDataPair: this->packetsByTimestamp) 
+    {
+        auto& connectionData = connectionDataPair.second;
+        u_int32_t sourceIP = (*connectionData)["sourceIP"];
+        u_int32_t destinationIP = (*connectionData)["destinationIP"];
+        
+        if(machineStats.find(sourceIP) != machineStats.end()) {
+            machineStats[sourceIP] += (*connectionData)["payoadSize"].get<u_int32_t>();
+        }
+        else {
+            machineStats[sourceIP] = (*connectionData)["payoadSize"].get<u_int32_t>();
+        }
+        if(machineStats.find(destinationIP) != machineStats.end()) {
+            machineStats[destinationIP] += (*connectionData)["payoadSize"].get<u_int32_t>();
+        }
+        else {
+            machineStats[destinationIP] = (*connectionData)["payoadSize"].get<u_int32_t>();
+        }
+    }
+    
+    u_int32_t innerMachineID = 1;
+    
+    for(auto stat: machineStats) 
+    {
+        (*reply)["data"]["stats"][innerMachineID]["id"] = innerMachineID;
+        (*reply)["data"]["stats"][innerMachineID]["name"] = stat.first;
+        (*reply)["data"]["stats"][innerMachineID]["traffic"] = stat.second;
+        innerMachineID++;
+    }
+    
+    return reply;
 }
 
 Stats::Stats(

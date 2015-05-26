@@ -4,10 +4,11 @@
 namespace tin { namespace supervisor { namespace models 
 {
     class Stats;
-
+    
     namespace events
     {
-
+        struct ReceivePackets;
+        struct RequestAnalytics;
     }
 
     class StatsVisitor
@@ -19,7 +20,8 @@ namespace tin { namespace supervisor { namespace models
         StatsVisitor(tin::supervisor::models::Stats& stats);
         
     public:
-        void visit();
+        void visit(tin::supervisor::models::events::ReceivePackets& event);
+        void visit(tin::supervisor::models::events::RequestAnalytics& event);
     };
 }}}
 
