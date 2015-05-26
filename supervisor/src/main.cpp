@@ -17,7 +17,7 @@ int main()
     tin::supervisor::models::StatsQueue statsQueue;
     tin::controllers::terminal::TerminalQueue terminalQueue;
 
-    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, bsdManagerQueue, statsQueue);
+    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, bsdManagerQueue, statsQueue, terminalQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 9001);
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
     tin::supervisor::models::Stats stats(statsQueue, ctrlQueue);

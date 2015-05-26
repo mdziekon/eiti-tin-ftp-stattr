@@ -8,7 +8,7 @@
 #include "../../utils/typedefs.hpp"
 
 #include "../../utils/QueueThread.hpp"
-
+#include <boost/shared_ptr.hpp>
 #include "Event.hpp"
 #include "TerminalVisitor.hpp"
 #include "TerminalServer.hpp"
@@ -29,9 +29,10 @@ namespace tin { namespace controllers { namespace terminal
             tin::controllers::main::ControllerQueue &controllerQueue,
             boost::asio::io_service& io_service
         );
+
+        void send_message(const char* message);
     private:
-        // tin::controllers::main::ControllerQueue& controllerQueue;
-        tin::controllers::terminal::TerminalServer* terminalServer_;
+        std::shared_ptr<tin::controllers::terminal::TerminalServer> terminalServerPtr_;
     };
 }}}
 

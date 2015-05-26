@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "typedefs.hpp"
+#include "../terminal/typedefs.hpp"
 #include "../../models/typedefs.hpp"
 #include "../../utils/typedefs.hpp"
 #include "../../network/websocket/typedefs.hpp"
@@ -28,12 +29,14 @@ namespace tin { namespace controllers { namespace main
             tin::controllers::main::ControllerQueue &incomingQueue,
             tin::network::websocket::ManagerQueue &networkManagerQueue,
             tin::network::bsdsocket::ManagerQueue& bsdManagerQueue,
-            tin::supervisor::models::StatsQueue& statsQueue
+            tin::supervisor::models::StatsQueue& statsQueue,
+            tin::controllers::terminal::TerminalQueue& terminalQueue
         );
 
     private:
         tin::network::websocket::ManagerQueue& networkManagerQueue;
         tin::network::bsdsocket::ManagerQueue& bsdManagerQueue;
+        tin::controllers::terminal::TerminalQueue& terminalQueue;
     };
 }}}
 

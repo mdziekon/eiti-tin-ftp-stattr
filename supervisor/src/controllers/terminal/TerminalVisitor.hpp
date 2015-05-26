@@ -8,6 +8,7 @@ namespace tin { namespace controllers { namespace terminal
     namespace events
     {
         struct Terminate;
+        struct SendMessage;
     }
 
     class TerminalVisitor
@@ -20,6 +21,7 @@ namespace tin { namespace controllers { namespace terminal
 
     public:
         void visit(tin::controllers::terminal::events::Terminate &evt);
+        void visit(tin::controllers::terminal::events::SendMessage &evt);
     };
 }}}
 

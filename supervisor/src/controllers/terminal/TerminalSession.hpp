@@ -17,11 +17,11 @@ namespace tin { namespace controllers { namespace terminal
             tin::controllers::main::ControllerQueue &controllerQueue,
             tcp::socket socket);
         void start();
+        void do_write(const char* message);
     private:
         tin::controllers::main::ControllerQueue& controllerQueue;
     	void do_read_header();
         void do_read_body();
-    	void do_write(const char* message);
     	tcp::socket socket_;
         terminal_message msg_;
     };

@@ -27,13 +27,6 @@ void tin::controllers::terminal::TerminalSession::do_read_header()
 			} else {
 				socket_.close();
 			}
-				/*controllerQueue.push(
-            	std::make_shared<tin::controllers::main::events::CmdResponseReceived>(
-	                "localhost", 4321,
-	                std::make_shared<nlohmann::json>(
-	                    nlohmann::json::parse("{\"testMessage\": \"" + std::string(data_) + "\"}")
-	                )
-            	));*/
 			
 		});
 }
@@ -46,10 +39,19 @@ void tin::controllers::terminal::TerminalSession::do_read_body()
 		{
 			if(!ec)
 			{
-				std::cout << "> Accepted message." << std::endl;
+				std::cout << "> Message from terminal: ";
 				std::cout.write(msg_.body(), msg_.body_length());
 				std::cout << std::endl;
-				do_write("OK");
+
+
+				controllerQueue.push(
+            	std::make_shared<tin::controllers::main::events::CmdResponseReceived>(
+	                "localhost", 4321,
+	                std::make_shared<nlohmann::json>(
+	                    nlohmann::json::parse("{\"testMessage\": \"" + std::string(msg_.body()) + "\"}")
+	                )
+            	));
+
 				do_read_header();
 			} else {
 				socket_.close();
@@ -70,7 +72,7 @@ void tin::controllers::terminal::TerminalSession::do_write(const char* message)
 		{
 			if(!ec)
 			{
-				std::cout << "> Responded to terminal." << std::endl;
+				std::cout << "> Sending data to terminal... " << std::endl;
 			}
 		});
 }

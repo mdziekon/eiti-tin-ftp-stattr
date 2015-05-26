@@ -15,6 +15,9 @@
 
 #include "../../network/bsdsocket/events/MessageRequest.hpp"
 
+#include "../terminal/events/SendMessage.hpp"
+#include "../../utils/JSON.hpp"
+
 namespace events = tin::controllers::main::events;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
@@ -31,7 +34,9 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
     std::cout << "[Supervisor] [MainCtrl] Received response: " << evt.jsonPtr->dump() << std::endl;
     std::cout << "                        Source: " << evt.ip << ":" << evt.port << std::endl;
     
-    
+    this->controller.terminalQueue.push(
+    	std::make_shared<tin::controllers::terminal::events::SendMessage>(
+    		tin::utils::json::makeSharedInstance("{ \"Message\" : \"OK\" }")));
 }
 
 void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)

@@ -10,5 +10,14 @@ tin::controllers::terminal::TerminalModule::TerminalModule(
 	boost::asio::io_service& io_service) :	
 		QueueThread(incomingQueue, TerminalVisitor(*this))
 {
-	terminalServer_ = new tin::controllers::terminal::TerminalServer(controllerQueue, io_service, 4321);
+	terminalServerPtr_.reset(
+		new tin::controllers::terminal::TerminalServer(
+			controllerQueue,
+			io_service,
+			4321));
+}
+
+void tin::controllers::terminal::TerminalModule::send_message(const char* message)
+{
+	terminalServerPtr_->send_message(message);
 }

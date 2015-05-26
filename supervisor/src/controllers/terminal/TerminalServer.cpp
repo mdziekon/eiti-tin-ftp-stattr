@@ -1,5 +1,4 @@
 #include "TerminalServer.hpp"
-#include "TerminalSession.hpp"
 #include <thread>
 
 tin::controllers::terminal::TerminalServer::TerminalServer(
@@ -20,9 +19,15 @@ void tin::controllers::terminal::TerminalServer::do_accept()
 		{
 			if(!ec)
 			{
-        std::make_shared<TerminalSession>(controllerQueue, std::move(socket_))->start();
+        		terminalSessionPtr_.reset(new TerminalSession(controllerQueue, std::move(socket_)));
+        		terminalSessionPtr_->start();
 			}
       
 			do_accept();
 		});
+}
+
+void tin::controllers::terminal::TerminalServer::send_message(const char* message)
+{
+	terminalSessionPtr_->do_write(message);
 }
