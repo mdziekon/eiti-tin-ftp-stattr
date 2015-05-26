@@ -206,7 +206,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
 
                     temp["data"] = {{ "success", true }};
                 }
-                else if (action == "sync" && type == "POST")
+                else if (action == "ping" && type == "POST")
                 {
                     this->controller.pingsQueue.insert({
                         std::pair<std::string, unsigned int>(machine.ip, machine.port),
@@ -221,7 +221,9 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                             true
                         )
                     );
-
+                }
+                else if (action == "sync" && type == "POST")
+                {
                     // Do synchronization
 
                     // auto ms = std::chrono::duration_cast<std::chrono::seconds>(
