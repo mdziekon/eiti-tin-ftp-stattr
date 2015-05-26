@@ -39,18 +39,21 @@ void StatsVisitor::visit(events::ReceivePackets& event)
 
 void StatsVisitor::visit(events::RequestAnalytics& event)
 {
+    tin::utils::json::ptr computedStats;
     if((*event.requestData)["route"].get<std::string>() == "stats-per-day") {
-        auto computedStats = this->stats.computeStatsPerDay(event.requestData);
-        this->stats.controllerQueue.push(
-            std::make_shared<tin::controllers::main::events::NetworkRequest>(
-                event.ip,
-                event.port,
-                computedStats
-            )
-        );
+        computedStats = this->stats.computeStatsPerDay(event.requestData);
     }
-    if((*event.requestData)["route"].get<std::string>() == "traffic-per-machine") {
+    else if((*event.requestData)["route"].get<std::string>() == "traffic-per-machine") {
+        computedStats = this->stats.computeIndividualUsage(event.requestData);
     }
+    
+    this->stats.controllerQueue.push(
+        std::make_shared<tin::controllers::main::events::NetworkRequest>(
+            event.ip,
+            event.port,
+            computedStats
+        )
+    );
 }
 
 StatsVisitor::StatsVisitor(tin::supervisor::models::Stats& stats):
