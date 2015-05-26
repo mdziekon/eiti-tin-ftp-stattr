@@ -9,7 +9,7 @@
 
 #include "events/Terminate.hpp"
 #include "events/CmdResponseReceived.hpp"
-#include "events/WebClientRequestReceived.hpp"
+#include "events/JSONRequestReceived.hpp"
 #include "events/NetworkRequest.hpp"
 #include "../../utils/Machine.hpp"
 
@@ -27,6 +27,7 @@ namespace events = tin::controllers::main::events;
 namespace main = tin::controllers::main;
 namespace websocket = tin::network::websocket;
 namespace bsdsocket = tin::network::bsdsocket;
+namespace terminal = tin::controllers::terminal;
 using nlohmann::json;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
@@ -63,12 +64,10 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
             if (queueIt != this->controller.syncQueue.end())
             {
-                auto& tempResp = *(queueIt->second.second);
+                auto& tempResp = *(std::get<2>(queueIt->second));
                 tempResp["data"] = {{ "success", true }};
 
-                this->controller.networkManagerQueue.push(
-                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
-                );
+                this->resendDelayed(queueIt->second);
 
                 this->controller.syncQueue.erase(queueIt);
             }
@@ -89,12 +88,10 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
             if (queueIt != this->controller.pingsQueue.end())
             {
-                auto& temp = *(queueIt->second.second);
+                auto& temp = *(std::get<2>(queueIt->second));
                 temp["data"] = {{ "success", true }};
 
-                this->controller.networkManagerQueue.push(
-                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
-                );
+                this->resendDelayed(queueIt->second);
 
                 this->controller.pingsQueue.erase(queueIt);
             }
@@ -116,7 +113,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
             if (queueIt != this->controller.pingsQueue.end())
             {
-                auto& tempJSON = *(queueIt->second.second);
+                auto& tempJSON = *(std::get<2>(queueIt->second));
                 if (success)
                 {
                     tempJSON["data"] = {{ "success", true }};
@@ -126,9 +123,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
                     tempJSON["error"] = {{ "success", false }};
                 }
 
-                this->controller.networkManagerQueue.push(
-                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
-                );
+                this->resendDelayed(queueIt->second);
 
                 this->controller.snifferToggleQueue.erase(queueIt);
             }
@@ -142,7 +137,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
             if (queueIt != this->controller.pingsQueue.end())
             {
-                auto& tempJSON = *(queueIt->second.second);
+                auto& tempJSON = *(std::get<2>(queueIt->second));
 
                 if (temp["success"])
                 {
@@ -164,9 +159,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
                     tempJSON["error"] = {{ "success", false }};
                 }
 
-                this->controller.networkManagerQueue.push(
-                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
-                );
+                this->resendDelayed(queueIt->second);
 
                 this->controller.filterChangeQueue.erase(queueIt);
             }
@@ -179,7 +172,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
 }
 
-void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived &evt)
+void tin::controllers::main::MainVisitor::visit(events::JSONRequestReceived &evt)
 {
     std::cout << "[Supervisor] WebClient Request Received, processing" << std::endl;
 
@@ -334,7 +327,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
 
                             this->controller.filterChangeQueue.insert({
                                 std::pair<std::string, unsigned int>(machine.ip, machine.port),
-                                std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                                std::tuple<bool, unsigned int, tin::utils::json::ptr>(evt.fromTerminal, evt.connectionID, evt.jsonPtr)
                             });
 
                             this->controller.bsdManagerQueue.push(
@@ -368,7 +361,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                 {
                     this->controller.pingsQueue.insert({
                         std::pair<std::string, unsigned int>(machine.ip, machine.port),
-                        std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                        std::tuple<bool, unsigned int, tin::utils::json::ptr>(evt.fromTerminal, evt.connectionID, evt.jsonPtr)
                     });
 
                     this->controller.bsdManagerQueue.push(
@@ -388,7 +381,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
 
                     this->controller.syncQueue.insert({
                         std::pair<std::string, unsigned int>(machine.ip, machine.port),
-                        std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                        std::tuple<bool, unsigned int, tin::utils::json::ptr>(evt.fromTerminal, evt.connectionID, evt.jsonPtr)
                     });
 
                     this->controller.bsdManagerQueue.push(
@@ -430,7 +423,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
 
                     this->controller.snifferToggleQueue.insert({
                         std::pair<std::string, unsigned int>(machine.ip, machine.port),
-                        std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                        std::tuple<bool, unsigned int, tin::utils::json::ptr>(evt.fromTerminal, evt.connectionID, evt.jsonPtr)
                     });
 
                     this->controller.bsdManagerQueue.push(
@@ -463,11 +456,36 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
     this->resendEvent(evt);
 }
 
-void tin::controllers::main::MainVisitor::resendEvent(events::WebClientRequestReceived &evt)
+void tin::controllers::main::MainVisitor::resendEvent(events::JSONRequestReceived &evt)
 {
-    this->controller.networkManagerQueue.push(
-        std::make_shared<websocket::events::MessageSendRequest>(evt.connectionID, evt.jsonPtr)
-    );
+    if (!evt.fromTerminal)
+    {
+        this->controller.networkManagerQueue.push(
+            std::make_shared<websocket::events::MessageSendRequest>(evt.connectionID, evt.jsonPtr)
+        );
+    }
+    else
+    {
+        this->controller.terminalQueue.push(
+            std::make_shared<terminal::events::SendMessage>(evt.jsonPtr)
+        );
+    }
+}
+
+void tin::controllers::main::MainVisitor::resendDelayed(std::tuple<bool, unsigned int, tin::utils::json::ptr> obj)
+{
+    if (!std::get<0>(obj))
+    {
+        this->controller.networkManagerQueue.push(
+            std::make_shared<websocket::events::MessageSendRequest>(std::get<1>(obj), std::get<2>(obj))
+        );
+    }
+    else
+    {
+        this->controller.terminalQueue.push(
+            std::make_shared<terminal::events::SendMessage>(std::get<2>(obj))
+        );
+    }
 }
 
 void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)

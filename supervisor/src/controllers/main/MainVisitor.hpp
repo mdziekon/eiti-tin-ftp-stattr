@@ -1,6 +1,8 @@
 #ifndef TIN_CONTROLLERS_MAIN_MAINVISITOR_HPP
 #define	TIN_CONTROLLERS_MAIN_MAINVISITOR_HPP
 
+#include <tuple>
+#include "../../utils/JSON.hpp"
 
 namespace tin { namespace controllers { namespace main
 {
@@ -10,7 +12,7 @@ namespace tin { namespace controllers { namespace main
     {
         struct Terminate;
         struct CmdResponseReceived;
-        struct WebClientRequestReceived;
+        struct JSONRequestReceived;
         struct NetworkRequest;
     }
 
@@ -25,11 +27,12 @@ namespace tin { namespace controllers { namespace main
     public:
         void visit(tin::controllers::main::events::Terminate &evt);
         void visit(tin::controllers::main::events::CmdResponseReceived &evt);
-        void visit(tin::controllers::main::events::WebClientRequestReceived &evt);
+        void visit(tin::controllers::main::events::JSONRequestReceived &evt);
         void visit(tin::controllers::main::events::NetworkRequest &evt);
 
     private:
-        void resendEvent(events::WebClientRequestReceived &evt);
+        void resendEvent(events::JSONRequestReceived &evt);
+        void resendDelayed(std::tuple<bool, unsigned int, tin::utils::json::ptr> obj);
     };
 }}}
 

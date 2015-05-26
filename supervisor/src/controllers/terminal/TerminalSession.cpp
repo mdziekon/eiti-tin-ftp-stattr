@@ -1,5 +1,5 @@
 #include "TerminalSession.hpp"
-#include "../main/events/CmdResponseReceived.hpp"
+#include "../main/events/JSONRequestReceived.hpp"
 
 
 tin::controllers::terminal::TerminalSession::TerminalSession(
@@ -40,11 +40,12 @@ void tin::controllers::terminal::TerminalSession::do_read_body()
 			if(!ec)
 			{
 				controllerQueue.push(
-            	std::make_shared<tin::controllers::main::events::CmdResponseReceived>(
-	                "localhost", 4321,
+            	std::make_shared<tin::controllers::main::events::JSONRequestReceived>(
+	                true,
 	                std::make_shared<nlohmann::json>(
 	                    nlohmann::json::parse(msg_.body())
-	                )
+	                ),
+	                0
             	));
 
 				do_read_header();
