@@ -15,10 +15,12 @@
 #include "../../network/websocket/typedefs.hpp"
 #include "../../network/websocket/events/MessageSendRequest.hpp"
 #include "../../network/websocket/events/MessageBroadcastRequest.hpp"
+#include "../../network/bsdsocket/events/MessageRequest.hpp"
 
 namespace events = tin::controllers::main::events;
 namespace main = tin::controllers::main;
 namespace websocket = tin::network::websocket;
+namespace bsdsocket = tin::network::bsdsocket;
 using nlohmann::json;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
@@ -51,13 +53,26 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
         }
         else if (cmd == "ping")
         {
+            auto queueIt = this->controller.pingsQueue.find(std::pair<std::string, unsigned int>(evt.ip, evt.port));
+
             if (temp["error"].is_object() && temp["error"]["notConnected"].is_boolean() && temp["error"]["notConnected"])
             {
                 machine.status = "offline";
             }
-            else if (temp["response"].is_string() && temp["response"] == std::string("pong"))
+            else if (temp["response"].is_string())
             {
-                machine.status = "stand-by";
+                std::string tt = temp["response"];
+                machine.status = tt;
+            }
+
+            if (queueIt != this->controller.pingsQueue.end())
+            {
+                auto& temp = *(queueIt->second.second);
+                temp["data"] = {{ "success", true }};
+
+                this->controller.networkManagerQueue.push(
+                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
+                );
             }
         }
 
@@ -191,15 +206,30 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                 }
                 else if (action == "sync" && type == "POST")
                 {
-                    // Do synchronization
+                    this->controller.pingsQueue.insert({
+                        std::pair<std::string, unsigned int>(machine.ip, machine.port),
+                        std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                    });
 
-                    auto ms = std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::system_clock::now().time_since_epoch()
+                    this->controller.bsdQueue.push(
+                        std::make_shared<bsdsocket::events::MessageRequest>(
+                            machine.ip,
+                            machine.port,
+                            tin::utils::json::makeSharedInstance("{ \"cmd\": \"ping\" }"),
+                            true
+                        )
                     );
 
-                    machine.lastSynchronization = ms.count();
+                    // Do synchronization
 
-                    temp["data"] = {{ "success", true }};
+                    // auto ms = std::chrono::duration_cast<std::chrono::seconds>(
+                    //     std::chrono::system_clock::now().time_since_epoch()
+                    // );
+
+                    // machine.lastSynchronization = ms.count();
+
+                    // temp["data"] = {{ "success", true }};
+                    return;
                 }
                 else if (action == "toggle-sniffer" && type == "POST")
                 {
