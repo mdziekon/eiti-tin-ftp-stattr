@@ -175,6 +175,88 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
     return reply;
 }
 
+const tin::utils::json::ptr Stats::computeMachinesPerDay(const tin::utils::json::ptr& requestorData, int machineID) const
+{
+    tin::utils::json::ptr reply(new nlohmann::json);
+    try
+    {
+        std::unordered_map<u_int32_t, u_int32_t> machineStats;
+
+        (*reply)["route"] = (*requestorData)["route"];
+        (*reply)["type"] = "GET";
+        (*reply)["uid"] = (*requestorData)["uid"];
+        (*reply)["data"] = { {"stats", nlohmann::json::array() }};
+
+        tin::utils::Machine& machine = this->machines.getMachine(machineID);
+        std::unordered_map<int, nlohmann::json> dStats;
+
+        for(auto& it: this->packets)
+        {
+            int dayTimestamp = it.timestamp;
+            dayTimestamp -= dayTimestamp % (24 * 60 * 60);
+
+            if (machine.ip == it.getSourceIP() && machine.port == it.sourcePort)
+            {
+                if (dStats.count(dayTimestamp) == 0)
+                {
+                    dStats.insert({ dayTimestamp, nlohmann::json::object() });
+                    dStats.at(dayTimestamp) = {
+                        { "day", dayTimestamp },
+                        { "traffic", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }},
+                        { "packets", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }}
+                    };
+                }
+                auto& jsObj = dStats.at(dayTimestamp);
+
+                jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
+                jsObj["packets"]["out"] = (jsObj["packets"]["out"].get<int>() + 1);
+            }
+            else if (machine.ip == it.getDestinationIP() && machine.port == it.destinationPort)
+            {
+                if (dStats.count(dayTimestamp) == 0)
+                {
+                    dStats.insert({ dayTimestamp, nlohmann::json::object() });
+                    dStats.at(dayTimestamp) = {
+                        { "day", dayTimestamp },
+                        { "traffic", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }},
+                        { "packets", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }}
+                    };
+                }
+                auto& jsObj = dStats.at(dayTimestamp);
+
+                jsObj["traffic"]["in"] = (jsObj["traffic"]["in"].get<int>() + it.payloadSize);
+                jsObj["packets"]["in"] = (jsObj["packets"]["in"].get<int>() + 1);
+            }
+        }
+
+        for(auto& itt: dStats)
+        {
+            (*reply)["data"]["stats"][(*reply)["data"]["stats"].size()] = itt.second;
+        }
+    }
+    catch (std::exception& e)
+    {
+        (*reply)["route"] = (*requestorData)["route"];
+        (*reply)["type"] = "GET";
+        (*reply)["uid"] = (*requestorData)["uid"];
+        (*reply)["error"] = { {"unknown", true }};
+    }
+
+    return reply;
+}
+
 std::thread Stats::createRequestorThread(
     const u_int32_t& intervalMilliseconds, 
     tin::controllers::main::ControllerQueue& controlerQueue

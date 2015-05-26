@@ -43,13 +43,57 @@ void StatsVisitor::visit(events::ReceivePackets& event)
 void StatsVisitor::visit(events::RequestAnalytics& event)
 {
     tin::utils::json::ptr computedStats;
-    if((*event.requestData)["route"].get<std::string>() == "stats-per-day") {
+
+    std::string route = (*event.requestData)["route"].get<std::string>();
+    std::string type = (*event.requestData)["type"].get<std::string>();
+
+    if(route == "stats-per-day") {
         computedStats = this->stats.computeStatsPerDay(event.requestData);
     }
-    else if((*event.requestData)["route"].get<std::string>() == "stats-per-machine") {
+    else if(route == "stats-per-machine") {
         computedStats = this->stats.computeIndividualUsage(event.requestData);
     }
-    else {
+    else if (route.substr(0, 22) == "stats-machine-per-day/")
+    {
+        computedStats = event.requestData;
+
+        auto routeRest = route.substr(22);
+        auto action = std::string("");
+        if (routeRest.find("/") != std::string::npos)
+        {
+            action = routeRest.substr(routeRest.find("/") + 1);
+            routeRest = routeRest.substr(0, routeRest.find("/"));
+        }
+
+        unsigned int machineID;
+        try
+        {
+            machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+            auto& machine = this->stats.machines.getMachine(machineID);
+
+            if (action == "" && type == "GET")
+            {
+                computedStats = this->stats.computeMachinesPerDay(event.requestData, machineID);
+            }
+            else
+            {
+                (*computedStats)["error"] = {{ "invalid", { {"action", action} } }};
+            }
+        }
+        catch (std::invalid_argument& e)
+        {
+            (*computedStats)["error"] = {{ "invalid", { {"routeID", true} } }};
+        }
+        catch (std::out_of_range& e)
+        {
+            (*computedStats)["error"] = {{ "notFound", { {"machine", machineID} } }};
+        }
+    }
+    else
+    {
+        computedStats = event.requestData;
+        (*computedStats)["error"] = {{ "invalid", { {"action", true } } }};
         std::cout << "[Supervisor] Invalid or unknown analytics request received" << std::endl;
     }
     

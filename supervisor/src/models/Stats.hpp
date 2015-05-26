@@ -33,6 +33,7 @@ namespace tin { namespace supervisor { namespace models
     public:
         const tin::utils::json::ptr computeStatsPerDay(const tin::utils::json::ptr& requestorData) const;
         const tin::utils::json::ptr computeIndividualUsage(const tin::utils::json::ptr& requestorData) const;
+        const tin::utils::json::ptr computeMachinesPerDay(const tin::utils::json::ptr& requestorData, int machineID) const;
 
         std::thread createRequestorThread(
             const u_int32_t& intervalMilliseconds,
