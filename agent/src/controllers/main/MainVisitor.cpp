@@ -108,17 +108,11 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 
         std::cout << "[MainCtrl] Received change_filter, changing to: " << temp["device"] << " / " << temp["expression"] << std::endl;
 
+        this->controller.lastCMD = "change_filter";
+
         this->controller.snifferManagerQueue.push(
             std::make_shared<snifferEvents::ChangeFilter>(
                 temp["device"], temp["expression"]
-            )
-        );
-
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"cmd\": \"change_filter\", \"success\": true }")
-                )
             )
         );
     }
@@ -176,6 +170,17 @@ void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::
         else
         {
             response = "{ \"cmd\": \"stopsniffing\", \"error\": true }";
+        }
+    }
+    else if (this->controller.lastCMD == "change_filter")
+    {
+        if (event.is)
+        {
+            response = "{ \"cmd\": \"change_filter\", \"success\": true, \"data\": { \"status\": \"sniffing\" } }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"change_filter\", \"success\": true, \"data\": { \"status\": \"stand-by\" } }";
         }
     }
 

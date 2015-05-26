@@ -37,6 +37,7 @@ namespace tin { namespace controllers { namespace main
         tin::models::MachinesStorage machines;
         std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> pingsQueue;
         std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> snifferToggleQueue;
+        std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> filterChangeQueue;
 
     private:
         tin::network::websocket::ManagerQueue &networkManagerQueue;

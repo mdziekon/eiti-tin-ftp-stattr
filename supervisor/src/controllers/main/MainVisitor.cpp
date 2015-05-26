@@ -47,6 +47,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
         if (cmd == "sync")
         {
+            // NOT READY YET
             auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::system_clock::now().time_since_epoch());
             machine.lastSynchronization = ms.count();
@@ -94,14 +95,14 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
             if (queueIt != this->controller.pingsQueue.end())
             {
-                auto& temp = *(queueIt->second.second);
+                auto& tempJSON = *(queueIt->second.second);
                 if (success)
                 {
-                    temp["data"] = {{ "success", true }};
+                    tempJSON["data"] = {{ "success", true }};
                 }
                 else
                 {
-                    temp["error"] = {{ "success", false }};
+                    tempJSON["error"] = {{ "success", false }};
                 }
 
                 this->controller.networkManagerQueue.push(
@@ -113,9 +114,41 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
         }
         else if (cmd == "change_filter")
         {
-        	const std::string expr = temp["expression"];
-        	machine.filter = expr;
-        	machine.status = "sniffing";
+            auto queueIt = this->controller.filterChangeQueue.find(std::pair<std::string, unsigned int>(evt.ip, evt.port));
+
+            std::string t = temp["data"]["status"];
+        	machine.status = t;
+
+            if (queueIt != this->controller.pingsQueue.end())
+            {
+                auto& tempJSON = *(queueIt->second.second);
+
+                if (temp["success"])
+                {
+                    if (tempJSON["data"]["filterDevice"].is_string())
+                    {
+                        std::string tmp = tempJSON["data"]["filterDevice"];
+                        machine.filterDevice = tmp;
+                    }
+                    if (tempJSON["data"]["filterExpression"].is_string())
+                    {
+                        std::string tmp = tempJSON["data"]["filterExpression"];
+                        machine.filterExpression = tmp;
+                    }
+
+                    tempJSON["data"] = {{ "success", true }};
+                }
+                else
+                {
+                    tempJSON["error"] = {{ "success", false }};
+                }
+
+                this->controller.networkManagerQueue.push(
+                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
+                );
+
+                this->controller.filterChangeQueue.erase(queueIt);
+            }
         }
     }
     else
@@ -160,7 +193,9 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                     { "ip", it.second.ip },
                     { "port", it.second.port },
                     { "status", it.second.status },
-                    { "lastSync", it.second.lastSynchronization }
+                    { "lastSync", it.second.lastSynchronization },
+                    { "filterDevice", it.second.filterDevice },
+                    { "filterExpression", it.second.filterExpression }
                 };
             }
         }
@@ -208,12 +243,22 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                         { "ip", machine.ip },
                         { "port", machine.port },
                         { "status", machine.status },
-                        { "lastSync", machine.lastSynchronization }
+                        { "lastSync", machine.lastSynchronization },
+                        { "filterDevice", machine.filterDevice },
+                        { "filterExpression", machine.filterExpression }
                     };
                 }
                 else if (action == "" && type == "PATCH")
                 {
-                    if(!temp["data"].is_object() || !temp["data"]["ip"].is_string() || !temp["data"]["name"].is_string() || !temp["data"]["port"].is_number())
+                    if(!temp["data"].is_object() ||
+                        (
+                            !temp["data"]["ip"].is_string() &&
+                            !temp["data"]["name"].is_string() &&
+                            !temp["data"]["port"].is_number() &&
+                            !temp["data"]["filterDevice"].is_string() &&
+                            !temp["data"]["filterExpression"].is_string()
+                        )
+                    )
                     {
                         std::cout << "[Supervisor] No data in PATCH" << std::endl;
 
@@ -223,13 +268,72 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                         return;
                     }
 
-                    std::string name = temp["data"]["name"];
-                    std::string ip = temp["data"]["ip"];
-                    unsigned int port = temp["data"]["port"];
+                    bool filterChange = false;
+                    if (temp["data"]["ip"].is_string())
+                    {
+                        std::string tmp = temp["data"]["ip"];
+                        if (tmp.length() > 0)
+                        {
+                            machine.ip = tmp;
+                        }
+                    }
+                    if (temp["data"]["name"].is_string())
+                    {
+                        std::string tmp = temp["data"]["name"];
+                        if (tmp.length() > 0)
+                        {
+                            machine.name = tmp;
+                        }
+                    }
+                    if (temp["data"]["port"].is_number())
+                    {
+                        unsigned int tmp = temp["data"]["port"];
+                        if (tmp > 0)
+                        {
+                            machine.port = tmp;
+                        }
+                    }
+                    if (temp["data"]["filterDevice"].is_string() || temp["data"]["filterExpression"].is_string())
+                    {
+                        std::string tmpDevice = machine.filterDevice;
+                        std::string tmpExpression = machine.filterExpression;
 
-                    machine.name = name;
-                    machine.ip = ip;
-                    machine.port = port;
+                        if (temp["data"]["filterDevice"].is_string())
+                        {
+                            tmpDevice = temp["data"]["filterDevice"].get<std::string>();
+                        }
+                        if (temp["data"]["filterExpression"].is_string())
+                        {
+                            tmpExpression = temp["data"]["filterExpression"].get<std::string>();
+                        }
+
+                        if (tmpDevice != machine.filterDevice || tmpExpression != machine.filterExpression)
+                        {
+                            filterChange = true;
+
+                            this->controller.filterChangeQueue.insert({
+                                std::pair<std::string, unsigned int>(machine.ip, machine.port),
+                                std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                            });
+
+                            this->controller.bsdQueue.push(
+                                std::make_shared<bsdsocket::events::MessageRequest>(
+                                    machine.ip,
+                                    machine.port,
+                                    tin::utils::json::makeSharedInstance(
+                                        std::string("{ \"cmd\": \"change_filter\", \"device\": \"")
+                                        .append(tmpDevice)
+                                        .append("\", \"expression\": \"")
+                                        .append(tmpExpression)
+                                        .append(std::string("\" }"))
+                                    ),
+                                    true
+                                )
+                            );
+
+                            return;
+                        }
+                    }
 
                     temp["data"] = {{ "success", true }};
                 }
@@ -289,8 +393,6 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                         return;
                     }
 
-                    std::cout << "sending" << std::endl;
-
                     this->controller.snifferToggleQueue.insert({
                         std::pair<std::string, unsigned int>(machine.ip, machine.port),
                         std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
@@ -305,8 +407,6 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                         )
                     );
 
-                    std::cout << " - sent" << std::endl;
-
                     return;
                 }
                 else
@@ -314,9 +414,9 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                     temp["error"] = {{ "invalid", { { "action", action } } }};
                 }
             }
-            catch (std::invalid_argument& e)
+            catch (std::out_of_range& e)
             {
-                temp["error"] = {{ "invalid", { {"routeID", true} } }};
+                temp["error"] = {{ "invalid", { {"machineID", true} } }};
             }
         }
     }

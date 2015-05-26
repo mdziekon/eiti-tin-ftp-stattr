@@ -13,9 +13,10 @@ namespace tin { namespace utils
         std::string name;
     	std::string ip;
         unsigned int port;
-        std::string filter; 
-        std::string status;
-        int lastSynchronization;
+        std::string filterDevice = "lo";
+        std::string filterExpression = "";
+        std::string status = "offline";
+        int lastSynchronization = 0;
     };
 }}
 
