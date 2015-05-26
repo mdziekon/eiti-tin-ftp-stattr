@@ -188,6 +188,10 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
                 this->controller.filterChangeQueue.erase(queueIt);
             }
         }
+        else
+        {
+            std::cout << "Invalid command response received" << std::endl;
+        }
     }
     else
     {
