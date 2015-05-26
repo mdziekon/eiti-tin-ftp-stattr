@@ -10,6 +10,7 @@ namespace tin { namespace controllers { namespace main
         struct Terminate;
         struct CmdResponseReceived;
         struct NetworkRequest;
+        struct WebsocketBroadcastRequest;
     }
 
     class MainVisitor
@@ -24,6 +25,7 @@ namespace tin { namespace controllers { namespace main
         void visit(tin::controllers::main::events::Terminate &evt);
         void visit(tin::controllers::main::events::CmdResponseReceived &evt);
         void visit(tin::controllers::main::events::NetworkRequest &evt);
+        void visit(tin::controllers::main::events::WebsocketBroadcastRequest &evt);
     };
 }}}
 

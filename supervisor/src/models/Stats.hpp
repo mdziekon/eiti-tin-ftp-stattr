@@ -3,6 +3,7 @@
 
 #include <map>
 #include <json/src/json.hpp>
+#include <thread>
 #include <sys/types.h>
 
 #include "../utils/QueueThread.hpp"
@@ -24,16 +25,23 @@ namespace tin { namespace supervisor { namespace models
         std::map<int64_t, tin::utils::json::ptr> packetsByTimestamp;
         std::map<u_int32_t, tin::utils::json::ptr> packetsBySourceIP;
         std::map<u_int32_t, tin::utils::json::ptr> packetsByDestinationIP;
-        
+
+        bool requestorsActive = true;
     public:
         void updateDataset();
         const tin::utils::json::ptr computeStatsPerDay(const tin::utils::json::ptr& requestorData) const;
         const tin::utils::json::ptr computeIndividualUsage(const tin::utils::json::ptr& requestorData) const;
-        
+
+        std::thread createRequestorThread(
+            const u_int32_t& intervalMilliseconds,
+            tin::controllers::main::ControllerQueue& controlerQueue
+        );
+
         Stats(
             tin::supervisor::models::StatsQueue& statsQueue,
             tin::controllers::main::ControllerQueue& controllerQueue
         );
+        ~Stats();
     };
 }}}
 #endif

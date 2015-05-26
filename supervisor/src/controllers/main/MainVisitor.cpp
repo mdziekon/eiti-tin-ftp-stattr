@@ -7,6 +7,7 @@
 #include "events/Terminate.hpp"
 #include "events/CmdResponseReceived.hpp"
 #include "events/NetworkRequest.hpp"
+#include "events/WebsocketBroadcastRequest.hpp"
 
 #include "../../network/websocket/typedefs.hpp"
 #include "../../network/websocket/events/MessageSendRequest.hpp"
@@ -42,5 +43,21 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
 void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)
 {
-    this->controller.bsdManagerQueue.push(std::make_shared<tin::network::bsdsocket::events::MessageRequest>(evt.ip, evt.port, evt.jsonPtr, true));
+    this->controller.bsdManagerQueue.push(
+        std::make_shared<tin::network::bsdsocket::events::MessageRequest>(
+            evt.ip,
+            evt.port,
+            evt.jsonPtr,
+            false
+        )
+    );
+}
+
+void tin::controllers::main::MainVisitor::visit(events::WebsocketBroadcastRequest& evt)
+{
+    this->controller.networkManagerQueue.push(
+        std::make_shared<tin::network::websocket::events::MessageBroadcastRequest>(
+            evt.jsonPtr->dump()
+        )
+    );
 }

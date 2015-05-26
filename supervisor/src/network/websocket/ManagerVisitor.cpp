@@ -63,7 +63,7 @@ void ManagerVisitor::visit(events::MessageSendMultiRequest& evt)
 void ManagerVisitor::visit(events::MessageBroadcastRequest& evt)
 {
     this->manager.server.broadcastMessage(
-        "empty"
+        evt.message
     );
 }
 

@@ -10,6 +10,7 @@
 #include "events/RequestAnalytics.hpp"
 
 #include "../controllers/main/events/NetworkRequest.hpp"
+#include "../controllers/main/events/WebsocketBroadcastRequest.hpp"
 
 using namespace tin::supervisor::models;
 
@@ -48,9 +49,7 @@ void StatsVisitor::visit(events::RequestAnalytics& event)
     }
     
     this->stats.controllerQueue.push(
-        std::make_shared<tin::controllers::main::events::NetworkRequest>(
-            event.ip,
-            event.port,
+        std::make_shared<tin::controllers::main::events::WebsocketBroadcastRequest>(
             computedStats
         )
     );

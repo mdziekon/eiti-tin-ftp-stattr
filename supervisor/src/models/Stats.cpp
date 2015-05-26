@@ -1,6 +1,7 @@
 #include "Stats.hpp"
 
 #include <ctime>
+#include <iostream>
 #include <arpa/inet.h>
 #include <unordered_map>
 
@@ -26,7 +27,7 @@ void Stats::updateDataset()
 
 const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::ptr& requestorData) const
 {
-    tin::utils::json::ptr reply;
+    tin::utils::json::ptr reply(new nlohmann::json);
     std::unordered_map<u_int32_t, u_int32_t> machineStats;
 
     (*reply)["route"] = (*requestorData)["route"];
@@ -93,7 +94,7 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
 
 const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json::ptr& requestorData) const
 {
-    tin::utils::json::ptr reply;
+    tin::utils::json::ptr reply(new nlohmann::json);
     std::unordered_map<u_int32_t, u_int32_t> machineStats;
 
     (*reply)["route"] = (*requestorData)["route"];
@@ -133,6 +134,28 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
     return reply;
 }
 
+std::thread Stats::createRequestorThread(
+    const u_int32_t& intervalMilliseconds, 
+    tin::controllers::main::ControllerQueue& controlerQueue
+)
+{
+    return std::thread([&]() {
+        while(1) {
+            std::cout << "Helper thread active\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            tin::utils::json::ptr requestJson(new nlohmann::json);
+            (*requestJson)["cmd"] = "fetch-packets";
+            controllerQueue.push(
+                std::make_shared<tin::controllers::main::events::NetworkRequest>(
+                    "localhost",
+                    3333,
+                    requestJson
+                )
+            );
+        }
+    });
+}
+
 Stats::Stats(
     tin::supervisor::models::StatsQueue& statsQueue,
     tin::controllers::main::ControllerQueue& controllerQueue
@@ -140,3 +163,8 @@ Stats::Stats(
 QueueThread< tin::supervisor::models::Event, tin::supervisor::models::StatsVisitor >(statsQueue, StatsVisitor(*this)),
 controllerQueue(controllerQueue)
 {}
+
+Stats::~Stats()
+{
+    this->requestorsActive = false;
+}

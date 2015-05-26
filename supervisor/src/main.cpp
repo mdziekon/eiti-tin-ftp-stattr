@@ -26,7 +26,7 @@ int main()
     auto netManager = networkManager.createThread();
     auto bsdManagerThread = bsdManager.createThread();
     auto statsThread = stats.createThread();
-    
+    auto statsRequestorThread = stats.createRequestorThread(250, ctrlQueue);
     /*
     
     stats.updateDataset(); 
@@ -119,10 +119,11 @@ int main()
         netManager.join();
         bsdManagerThread.join();
         statsThread.join();
+        statsRequestorThread.join();
     }
     catch (std::system_error& e)
     {
-        // Could not join one of the threads
+        std::cout << e.what();
     }
 
     return 0;
