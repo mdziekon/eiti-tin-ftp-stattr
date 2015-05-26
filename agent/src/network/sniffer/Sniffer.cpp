@@ -42,7 +42,10 @@ void Sniffer::stopSniffing()
 
     pcap_breakloop(this->pcapHandle);
 
-    this->snifferThread.join();
+    if (this->snifferThread.joinable())
+    {
+        this->snifferThread.join();
+    }
 }
 
 void Sniffer::changeConfig(const std::string& device, const std::string& expression)
