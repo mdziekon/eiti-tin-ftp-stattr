@@ -10,7 +10,7 @@
 #include "events/RequestAnalytics.hpp"
 
 #include "../controllers/main/events/NetworkRequest.hpp"
-#include "../controllers/main/events/WebsocketBroadcastRequest.hpp"
+#include "../controllers/main/events/WebClientSendRequest.hpp"
 
 using namespace tin::supervisor::models;
 
@@ -44,7 +44,7 @@ void StatsVisitor::visit(events::RequestAnalytics& event)
     if((*event.requestData)["route"].get<std::string>() == "stats-per-day") {
         computedStats = this->stats.computeStatsPerDay(event.requestData);
     }
-    else if((*event.requestData)["route"].get<std::string>() == "traffic-per-machine") {
+    else if((*event.requestData)["route"].get<std::string>() == "stats-per-machine") {
         computedStats = this->stats.computeIndividualUsage(event.requestData);
     }
     else {
@@ -52,8 +52,9 @@ void StatsVisitor::visit(events::RequestAnalytics& event)
     }
     
     this->stats.controllerQueue.push(
-        std::make_shared<tin::controllers::main::events::WebsocketBroadcastRequest>(
-            computedStats
+        std::make_shared<tin::controllers::main::events::WebClientSendRequest>(
+            computedStats,
+            event.connectionID
         )
     );
 }

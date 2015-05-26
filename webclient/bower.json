@@ -1,0 +1,22 @@
+{
+  "name": "tin",
+  "version": "0.0.0",
+  "dependencies": {
+    "bootstrap": "~3.3.1",
+    "font-awesome": "~4.0.0",
+    "jquery": "~2.1.0",
+    "lodash": "~2.4.1",
+    "backbone": "~1.1.0",
+    "modernizr": "~2.7.1",
+    "spinjs": "~2.0.2",
+    "backbone-fetch-cache": "~1.5.5",
+    "moment": "~2.10.3",
+    "flot": "~0.8.3",
+    "flot.tooltip": "~0.8.5",
+    "flot.curvedlines": "~1.1.1",
+    "datatables": "~1.10.7",
+    "datatables-bootstrap3": "*",
+    "eonasdan-bootstrap-datetimepicker": "~4.7.14"
+  },
+  "devDependencies": {}
+}

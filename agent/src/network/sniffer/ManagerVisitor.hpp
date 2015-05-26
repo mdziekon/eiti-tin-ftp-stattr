@@ -9,6 +9,9 @@ namespace tin { namespace network { namespace sniffer
     {
         struct Terminate;
         struct ChangeFilter;
+        struct StartSniffing;
+        struct StopSniffing;
+        struct IsSniffing;
     }
 
     class ManagerVisitor
@@ -18,6 +21,9 @@ namespace tin { namespace network { namespace sniffer
     public:
         void visit(tin::network::sniffer::events::Terminate& evt);
         void visit(tin::network::sniffer::events::ChangeFilter& evt);
+        void visit(tin::network::sniffer::events::StartSniffing& evt);
+        void visit(tin::network::sniffer::events::StopSniffing& evt);
+        void visit(tin::network::sniffer::events::IsSniffing& evt);
 
     private:
         tin::network::sniffer::Manager& manager;

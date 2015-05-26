@@ -11,11 +11,15 @@ namespace tin { namespace supervisor { namespace models { namespace events
 {
     struct RequestAnalytics: public tin::supervisor::models::Event
     {
+        const u_int32_t connectionID;
         const tin::utils::json::ptr requestData;
         
         virtual void accept(tin::supervisor::models::StatsVisitor& visitor);
         
-        RequestAnalytics(const tin::utils::json::ptr& requestData);
+        RequestAnalytics(
+            const u_int32_t& connectionID,
+            const tin::utils::json::ptr& requestData
+        );
     };
 }}}}
 
