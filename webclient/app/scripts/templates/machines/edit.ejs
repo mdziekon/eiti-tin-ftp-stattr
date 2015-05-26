@@ -30,6 +30,16 @@
                                 <label>Port</label>
                                 <input class="form-control" placeholder="3333" name="port" value="<%- machine.port %>">
                             </div>
+                            <hr>
+                            <div class="form-group">
+                                <label>Sniffing - device</label>
+                                <input class="form-control" placeholder="lo" name="filterDevice" value="<%- machine.filterDevice %>">
+                            </div>
+                            <div class="form-group">
+                                <label>Sniffing - additional filter</label>
+                                <input class="form-control" placeholder="" name="filterExpression" value="<%- machine.filterExpression %>">
+                            </div>
+                            <hr>
                             <div class="pull-right">
                                 <button type="reset" class="btn btn-default">
                                     <i class="fa fa-eraser"></i> Clear
