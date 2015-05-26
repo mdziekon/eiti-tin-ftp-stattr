@@ -31,6 +31,14 @@ void ManagerVisitor::visit(events::ChangeFilter& evt)
     {
         this->manager.sniffer.run();
     }
+
+    this->manager.controllerQueue.push(
+        tin::controllers::main::EventPtr(
+            new tin::controllers::main::events::SnifferStatus(
+                this->manager.sniffer.isSniffing()
+            )
+        )
+    );
 }
 
 void ManagerVisitor::visit(events::StopSniffing& evt)
@@ -38,6 +46,14 @@ void ManagerVisitor::visit(events::StopSniffing& evt)
     std::cout << "[Sniffer] Stop sniffing" << std::endl;
 
     this->manager.sniffer.stopSniffing();
+
+    this->manager.controllerQueue.push(
+        tin::controllers::main::EventPtr(
+            new tin::controllers::main::events::SnifferStatus(
+                this->manager.sniffer.isSniffing()
+            )
+        )
+    );
 }
 
 void ManagerVisitor::visit(events::StartSniffing& evt)
@@ -45,15 +61,27 @@ void ManagerVisitor::visit(events::StartSniffing& evt)
     std::cout << "[Sniffer] Start sniffing" << std::endl;
 
     this->manager.sniffer.run();
+
+    this->manager.controllerQueue.push(
+        tin::controllers::main::EventPtr(
+            new tin::controllers::main::events::SnifferStatus(
+                this->manager.sniffer.isSniffing()
+            )
+        )
+    );
 }
 
 void ManagerVisitor::visit(events::IsSniffing& evt)
 {
     std::cout << "[Sniffer] IsSniffing" << std::endl;
 
-    this->manager.controllerQueue.push
-    (tin::controllers::main::EventPtr(new tin::controllers::main::events::SnifferStatus
-    	(this->manager.sniffer.isSniffing())));
+    this->manager.controllerQueue.push(
+        tin::controllers::main::EventPtr(
+            new tin::controllers::main::events::SnifferStatus(
+                this->manager.sniffer.isSniffing()
+            )
+        )
+    );
 }
 
 

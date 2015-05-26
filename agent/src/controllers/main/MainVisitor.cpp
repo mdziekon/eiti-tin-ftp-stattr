@@ -58,6 +58,8 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 
     else if (cmd == "ping")
     {
+        this->controller.lastCMD = "ping";
+
         this->controller.snifferManagerQueue.push(
             std::make_shared<snifferEvents::IsSniffing>()
         );
@@ -67,16 +69,10 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
     {
         std::cout << "[MainCtrl] Received startsniffing" << std::endl;
 
+        this->controller.lastCMD = "startsniffing";
+
         this->controller.snifferManagerQueue.push(
             std::make_shared<snifferEvents::StartSniffing>()
-        );
-
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"cmd\": \"startsniffing\", \"success\": true }")
-                )
-            )
         );
     }
 
@@ -84,16 +80,10 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
     {
         std::cout << "[MainCtrl] Received startsniffing" << std::endl;
 
+        this->controller.lastCMD = "stopsniffing";
+
         this->controller.snifferManagerQueue.push(
             std::make_shared<snifferEvents::StopSniffing>()
-        );
-
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"cmd\": \"stopsniffing\", \"success\": true }")
-                )
-            )
         );
     }
 
@@ -153,27 +143,46 @@ void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::
 
 void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::SnifferStatus &event)
 {
-    bool a = event.is;
+    std::string response;
 
-    if(a == true)
+    if (this->controller.lastCMD == "ping")
     {
-     this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"cmd\": \"ping\", \"response\": \"sniffing\" }")
-                )
-            )
-        );
+        if (event.is)
+        {
+            response = "{ \"cmd\": \"ping\", \"response\": \"sniffing\" }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"ping\", \"response\": \"stand-by\" }";
+        }
     }
-    else
+    else if (this->controller.lastCMD == "startsniffing")
     {
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"cmd\": \"ping\", \"response\": \"stand-by\" }")
-                )
-            )
-        );
+        if (event.is)
+        {
+            response = "{ \"cmd\": \"startsniffing\", \"success\": true }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"startsniffing\", \"error\": true }";
+        }
     }
+    else if (this->controller.lastCMD == "stopsniffing")
+    {
+        if (!event.is)
+        {
+            response = "{ \"cmd\": \"stopsniffing\", \"success\": true }";
+        }
+        else
+        {
+            response = "{ \"cmd\": \"stopsniffing\", \"error\": true }";
+        }
+    }
+
+    this->controller.networkManagerQueue.push(
+        std::make_shared<bsdsocketEvents::ResponseRequest>(
+            std::make_shared<json>(json::parse(response))
+        )
+    );
 
 }

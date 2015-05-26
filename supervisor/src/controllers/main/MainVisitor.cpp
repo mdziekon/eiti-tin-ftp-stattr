@@ -77,7 +77,40 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
                 this->controller.pingsQueue.erase(queueIt);
             }
         }
+        else if (cmd == "startsniffing" || cmd == "stopsniffing")
+        {
+            auto queueIt = this->controller.snifferToggleQueue.find(std::pair<std::string, unsigned int>(evt.ip, evt.port));
+            bool success = false;
 
+            if (temp["error"].is_object() && temp["error"]["notConnected"].is_boolean() && temp["error"]["notConnected"])
+            {
+                machine.status = "offline";
+            }
+            else if (temp["success"].is_boolean())
+            {
+                machine.status = (cmd == "startsniffing") ? "sniffing" : "stand-by";
+                success = true;
+            }
+
+            if (queueIt != this->controller.pingsQueue.end())
+            {
+                auto& temp = *(queueIt->second.second);
+                if (success)
+                {
+                    temp["data"] = {{ "success", true }};
+                }
+                else
+                {
+                    temp["error"] = {{ "success", false }};
+                }
+
+                this->controller.networkManagerQueue.push(
+                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
+                );
+
+                this->controller.snifferToggleQueue.erase(queueIt);
+            }
+        }
         else if (cmd == "change_filter")
         {
         	const std::string expr = temp["expression"];
@@ -221,6 +254,8 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                             true
                         )
                     );
+
+                    return;
                 }
                 else if (action == "sync" && type == "POST")
                 {
@@ -238,21 +273,41 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                 else if (action == "toggle-sniffer" && type == "POST")
                 {
                     // Toggle sniffer
-
+                    std::string cmdJson;
                     if (machine.status == "sniffing")
                     {
-                        machine.status = "stand-by";
-                        temp["data"] = {{ "success", true }};
+                        cmdJson = "{ \"cmd\": \"stopsniffing\" }";
                     }
                     else if (machine.status == "stand-by")
                     {
-                        machine.status = "sniffing";
-                        temp["data"] = {{ "success", true }};
+                        cmdJson = "{ \"cmd\": \"startsniffing\" }";
                     }
                     else
                     {
                         temp["error"] = {{ "invalid", { {"status", machine.status} } }};
+                        this->resendEvent(evt);
+                        return;
                     }
+
+                    std::cout << "sending" << std::endl;
+
+                    this->controller.snifferToggleQueue.insert({
+                        std::pair<std::string, unsigned int>(machine.ip, machine.port),
+                        std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                    });
+
+                    this->controller.bsdQueue.push(
+                        std::make_shared<bsdsocket::events::MessageRequest>(
+                            machine.ip,
+                            machine.port,
+                            tin::utils::json::makeSharedInstance(cmdJson),
+                            true
+                        )
+                    );
+
+                    std::cout << " - sent" << std::endl;
+
+                    return;
                 }
                 else
                 {

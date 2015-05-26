@@ -2,6 +2,8 @@
 
 using namespace tin::network::sniffer;
 
+#include <iostream>
+
 void pcap_trampoline(u_char *param, const struct pcap_pkthdr *pkt_header, const u_char *pkt_data)
 {
     Sniffer* obj = reinterpret_cast<Sniffer*>(param);

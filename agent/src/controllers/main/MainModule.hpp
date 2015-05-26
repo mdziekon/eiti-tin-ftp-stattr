@@ -29,6 +29,8 @@ namespace tin { namespace controllers { namespace main
     private:
         tin::network::bsdsocket::ManagerQueue &networkManagerQueue;
         tin::network::sniffer::ManagerQueue &snifferManagerQueue;
+
+        std::string lastCMD;
     };
 }}}
 
