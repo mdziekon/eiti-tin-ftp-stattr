@@ -154,7 +154,8 @@ bool parse_command(char* data)
 		std::cout << "  -quit - to exit terminal\n"
 			<< "  -test - to get test response from the supervisor\n"
 			<< "  -add <name> <ip> <port> - to get test response from the supervisor\n"
-			<< "  -remove <id> - to get test response from the supervisor\n";
+			<< "  -remove <id> - to get test response from the supervisor\n"
+			<< "  -get <id> - to get info about machine\n";
 	}
 	else if(tokenList[0].compare("-add") == 0)
 	{
@@ -174,22 +175,28 @@ bool parse_command(char* data)
 	} 
 	else if(tokenList[0].compare("-remove") == 0)
 	{
-	
 		if(tokenList.size() != 2)
 			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 1.\n";
 		else
 		{
-			/*std::string message = "{
-				\"route\":\"machine\",
-				\"type\":\"POST\",
-				\"data\" {
-					\"name\":\""+ std::string(tokenList[1])+"\",
-					\"ip\":\""+ std::string(tokenList[2])+"\",
-					\"port\":\""+ std::string(tokenList[3])+"\"
-				}}";
-			
-			clientPtr->write(message);
-			*/
+			nlohmann::json temp;
+			temp["route"] = "machine/" + tokenList[1];
+			temp["type"] = "DELETE";
+		
+			clientPtr->write(temp.dump().c_str());
+		}
+	}
+	else if(tokenList[0].compare("-get") == 0)
+	{
+		if(tokenList.size() != 2)
+			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 1.\n";
+		else
+		{
+			nlohmann::json temp;
+			temp["route"] = "machine/" + tokenList[1];
+			temp["type"] = "GET";
+		
+			clientPtr->write(temp.dump().c_str());
 		}
 	}
 	else
