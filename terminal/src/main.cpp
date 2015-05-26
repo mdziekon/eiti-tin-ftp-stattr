@@ -162,17 +162,14 @@ bool parse_command(char* data)
 			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 3.\n";
 		else
 		{
-			std::string message = "";
-			message += "{";
-			message += 	"\"route\":\"machine\",";
-			message += 	"\"type\":\"POST\",";
-			message += 	"\"data\":{";
-			message += 		"\"name\":\""+tokenList[1]+"\",";
-			message += 		"\"ip\":\""+tokenList[2]+"\",";
-			message += 		"\"port\":"+tokenList[3];
-			message += 	"}}";
+			nlohmann::json temp;
+			temp["route"] = "machine";
+			temp["type"] = "POST";
+			temp["data"]["name"] = tokenList[1];
+			temp["data"]["ip"] = tokenList[2];
+			temp["data"]["port"] = atoi(tokenList[3].c_str());
 
-			clientPtr->write(message.c_str());
+			clientPtr->write(temp.dump().c_str());
 		}
 	} 
 	else if(tokenList[0].compare("-remove") == 0)
