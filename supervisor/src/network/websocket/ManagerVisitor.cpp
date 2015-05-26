@@ -45,8 +45,8 @@ void ManagerVisitor::visit(events::ServerConnectionClosed& evt)
 
 void ManagerVisitor::visit(events::MessageReceived& evt)
 {
-    static unsigned int lastID = 0;
-    static std::map<unsigned int, std::tuple<std::string, std::string, unsigned int, std::string, unsigned int>> machines;
+    //static unsigned int lastID = 0;
+    //static std::map<unsigned int, std::tuple<std::string, std::string, unsigned int, std::string, unsigned int>> machines;
 
     std::cout << "[WebSockets] Received message: " << std::endl;
     std::cout << evt.message << std::endl;
@@ -65,33 +65,19 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
         std::string route = jsonObj["route"];
         std::string type = jsonObj["type"];
+
+        nlohmann::json temp;
+        temp["route"] = route;
+        temp["type"] = type;
+
         if (route == "machine")
         {
-            nlohmann::json temp;
-            temp["route"] = route;
-            temp["type"] = type;
-
             if (type == "GET")
             {
-                /*jsonObj["data"] = {
-                    { "machines", {} }
-                };*/
-
                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
                     new tin::controllers::main::events::WebClientRequestReceived
-                    (tin::utils::json::makeSharedInstance(temp))));
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
-                /*for(auto& it: machines)
-                {
-                    jsonObj["data"]["machines"][jsonObj["data"]["machines"].size()] = {
-                        { "id", it.first },
-                        { "name", std::get<0>(it.second) },
-                        { "ip", std::get<1>(it.second) },
-                        { "port", std::get<2>(it.second) },
-                        { "status", std::get<3>(it.second) },
-                        { "lastSync", std::get<4>(it.second) }
-                    };
-                }*/
             }
             else if (type == "POST")
             {
@@ -105,11 +91,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
                     new tin::controllers::main::events::WebClientRequestReceived
-                    (tin::utils::json::makeSharedInstance(temp))));
-
-                /*auto tup = std::tuple<std::string, std::string, unsigned int, std::string, unsigned int>(name, ip, port, "stand-by", 0);
-
-                machines.insert({lastID++, tup});*/
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
             }
         }
         else if (route.substr(0, 8) == "machine/")
@@ -125,50 +107,74 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
             unsigned int machineID;
             try
             {
-                machineID = static_cast<unsigned int>(std::stoul(routeRest));
+               machineID = static_cast<unsigned int>(std::stoul(routeRest));
 
-                auto& machine = machines.at(machineID);
+               // auto& machine = machines.at(machineID);
 
                 if (action == "" && type == "GET")
                 {
-                    jsonObj["data"] = {
+                    this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
+                    new tin::controllers::main::events::WebClientRequestReceived
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
+
+                    /*jsonObj["data"] = {
                         { "id", machineID },
                         { "name", std::get<0>(machine) },
                         { "ip", std::get<1>(machine) },
                         { "port", std::get<2>(machine) },
                         { "status", std::get<3>(machine) },
-                        { "lastSync", std::get<4>(machine) }
-                    };
+                        { "lastSync", std::get<4>(machine) }*/
+                    
                 }
                 else if (action == "" && type == "PATCH")
                 {
+                    this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
+                    new tin::controllers::main::events::WebClientRequestReceived
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
+
                     std::string name = jsonObj["data"]["name"];
                     std::string ip = jsonObj["data"]["ip"];
                     unsigned int port = jsonObj["data"]["port"];
 
+                    temp["data"]["name"] = name;
+                    temp["data"]["ip"] = ip;
+                    temp["data"]["port"] = port;
+
+                    /*
                     std::get<0>(machine) = name;
                     std::get<1>(machine) = ip;
                     std::get<2>(machine) = port;
 
-                    jsonObj["data"] = {{ "success", true }};
+                    jsonObj["data"] = {{ "success", true }};*/
                 }
                 else if (action == "" && type == "DELETE")
                 {
-                    machines.erase(machineID);
-                    jsonObj["data"] = {{ "success", true }};
+                    this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
+                    new tin::controllers::main::events::WebClientRequestReceived
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
+                    
+                    //jsonObj["data"] = {{ "success", true }};
                 }
                 else if (action == "sync" && type == "POST")
                 {
-                    auto ms = std::chrono::duration_cast<std::chrono::seconds>(
+                    /*auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::system_clock::now().time_since_epoch()
                     );
 
-                    std::get<4>(machine) = ms.count();
+                    std::get<4>(machine) = ms.count();*/
+                    this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
+                    new tin::controllers::main::events::WebClientRequestReceived
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
-                    jsonObj["data"] = {{ "success", true }};
+                    //jsonObj["data"] = {{ "success", true }};
                 }
                 else if (action == "toggle-sniffer" && type == "POST")
                 {
+                    this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
+                    new tin::controllers::main::events::WebClientRequestReceived
+                    (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
+
+                    /*
                     if (std::get<3>(machine) == "sniffing")
                     {
                         std::get<3>(machine) = "stand-by";
@@ -182,7 +188,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                     else
                     {
                         jsonObj["error"] = {{ "invalid", { {"status", std::get<3>(machine)} } }};
-                    }
+                    } */
                 }
                 else
                 {
@@ -198,7 +204,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
                 jsonObj["error"] = {{ "notFound", { {"machine", machineID} } }};
             }
         }
-        else if (route == "stats-per-day")
+        /*else if (route == "stats-per-day")
         {
             if (type == "GET")
             {
@@ -454,13 +460,13 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
         else
         {
             jsonObj["error"] = {{ "invalid", { {"route", route} } }};
-        }
+        }*/
     }
+    
     catch(std::exception& e)
     {
         jsonObj["error"] = {{ "unknown", true }};
     }
-
 
     this->manager.server.sendMessage(evt.serverConnectionID, jsonObj.dump());
 }
