@@ -2,15 +2,24 @@
 #define TIN_CONTROLLERS_MAIN_MAINMODULE_HPP
 
 #include <vector>
+#include <map>
+#include <utility>
+#include <string>
 
 #include "typedefs.hpp"
+#include "../../models/typedefs.hpp"
 #include "../../utils/typedefs.hpp"
 #include "../../network/websocket/typedefs.hpp"
+#include "../../network/bsdsocket/typedefs.hpp"
 
 #include "../../utils/QueueThread.hpp"
+#include "../../utils/Machine.hpp"
+#include "../../utils/JSON.hpp"
 
 #include "Event.hpp"
 #include "MainVisitor.hpp"
+
+#include "../../models/MachinesStorage.hpp"
 
 namespace tin { namespace controllers { namespace main
 {
@@ -19,14 +28,25 @@ namespace tin { namespace controllers { namespace main
     {
         friend class tin::controllers::main::MainVisitor;
 
+        tin::supervisor::models::StatsQueue& statsQueue;
+        
     public:
         MainModule(
             tin::controllers::main::ControllerQueue &incomingQueue,
-            tin::network::websocket::ManagerQueue &networkManagerQueue
+            tin::network::websocket::ManagerQueue &networkManagerQueue,
+            tin::network::bsdsocket::ManagerQueue& bsdManagerQueue,
+            tin::supervisor::models::StatsQueue& statsQueue
         );
 
+        tin::models::MachinesStorage machines;
+        std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> pingsQueue;
+        std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> snifferToggleQueue;
+        std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> filterChangeQueue;
+        std::map<std::pair<std::string, unsigned int>, std::pair<unsigned int, tin::utils::json::ptr>> syncQueue;
+
     private:
-        tin::network::websocket::ManagerQueue &networkManagerQueue;
+        tin::network::websocket::ManagerQueue& networkManagerQueue;
+        tin::network::bsdsocket::ManagerQueue& bsdManagerQueue;
     };
 }}}
 
