@@ -208,6 +208,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                     evt.jsonPtr
                 )
             );
+            return;
         }
         else if (route == "machine" && type == "GET")
         {

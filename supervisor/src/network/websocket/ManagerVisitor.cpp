@@ -483,10 +483,14 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
 void ManagerVisitor::visit(events::MessageSendRequest& evt)
 {
-    /*this->manager.server.sendMessage(
+    // std::cout << "---- SENDING ----: " << evt.jsonPtr->dump() << std::endl << std::endl;
+    // std::cout << evt.jsonPtr->dump() << std::endl;
+    // std::cout << std::endl << std::endl;
+
+    this->manager.server.sendMessage(
         evt.serverConnectionID,
         evt.jsonPtr->dump()
-    );*/
+    );
 }
 
 void ManagerVisitor::visit(events::MessageSendMultiRequest& evt)

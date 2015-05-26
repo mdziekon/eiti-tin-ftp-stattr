@@ -19,7 +19,9 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
     (*reply)["route"] = (*requestorData)["route"];
     (*reply)["type"] = "GET";
     (*reply)["uid"] = (*requestorData)["uid"];
+    (*reply)["data"] = { {"stats", nlohmann::json::array() }};
     
+
     if(this->packetsByTimestamp.size() > 0)
     {
         struct tm packetDay;
@@ -77,8 +79,12 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
         }
     }
     else {
-        (*reply)["data"] = nullptr;
+        (*reply)["data"] = { {"stats", nlohmann::json::array() }};
     }
+
+    // std::cout << "---- COMPUTE1 ---- " << std::endl;
+    // std::cout << (*reply).dump() << std::endl;
+    // std::cout << "---- COMPUTE ---- " << std::endl;
 
     return reply;
 }
@@ -89,8 +95,9 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
     std::unordered_map<u_int32_t, u_int32_t> machineStats;
 
     (*reply)["route"] = (*requestorData)["route"];
-    (*reply)["type"] = "POST";
+    (*reply)["type"] = "GET";
     (*reply)["uid"] = (*requestorData)["uid"];
+    (*reply)["data"] = { {"machines", nlohmann::json::array() }};
     
     for(auto connectionDataPair: this->packetsByTimestamp) 
     {
@@ -112,16 +119,20 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
         }
     }
     
-    u_int32_t innerMachineID = 1;
+    u_int32_t innerMachineID = 0;
     
     for(auto stat: machineStats) 
     {
-        (*reply)["data"]["stats"][innerMachineID]["id"] = innerMachineID;
-        (*reply)["data"]["stats"][innerMachineID]["name"] = stat.first;
-        (*reply)["data"]["stats"][innerMachineID]["traffic"] = stat.second;
+        (*reply)["data"]["machines"][innerMachineID]["id"] = innerMachineID;
+        (*reply)["data"]["machines"][innerMachineID]["name"] = stat.first;
+        (*reply)["data"]["machines"][innerMachineID]["traffic"] = stat.second;
         innerMachineID++;
     }
     
+    // std::cout << "---- COMPUTE2 ---- " << std::endl;
+    // std::cout << (*reply).dump() << std::endl;
+    // std::cout << "---- COMPUTE ---- " << std::endl;
+
     return reply;
 }
 
