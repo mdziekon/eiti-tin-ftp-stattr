@@ -1,0 +1,14 @@
+node_modules
+dist
+test/temp
+.sass-cache
+app/bower_components
+.tmp
+test/bower_components/
+
+# We are using .less, so remove all .css files
+*.css
+*.css.map
+
+# Fonts are includes from bower_components, so remove them too
+app/fonts

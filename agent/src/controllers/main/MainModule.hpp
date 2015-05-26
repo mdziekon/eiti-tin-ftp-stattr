@@ -33,6 +33,8 @@ namespace tin { namespace controllers { namespace main
         tin::network::bsdsocket::ManagerQueue& networkManagerQueue;
         tin::agent::models::StatsGathererQueue& statsGathererQueue;
         tin::network::sniffer::ManagerQueue& snifferManagerQueue;
+
+        std::string lastCMD;
     };
 }}}
 

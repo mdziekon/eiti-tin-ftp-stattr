@@ -10,8 +10,10 @@ namespace tin { namespace controllers { namespace main
         struct Terminate;
         struct CmdReceived;
         struct PacketReceived;
+        struct SnifferStatus;
         struct NetworkReply;
     }
+
 
     class MainVisitor
     {
@@ -25,6 +27,7 @@ namespace tin { namespace controllers { namespace main
         void visit(tin::controllers::main::events::Terminate &event);
         void visit(tin::controllers::main::events::CmdReceived &event);
         void visit(tin::controllers::main::events::PacketReceived &event);
+        void visit(tin::controllers::main::events::SnifferStatus &event);
         void visit(tin::controllers::main::events::NetworkReply &event);
     };
 }}}

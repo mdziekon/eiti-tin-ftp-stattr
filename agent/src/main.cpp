@@ -7,6 +7,9 @@
 #include "models/StatsGatherer.hpp"
 
 #include "network/sniffer/events/ChangeFilter.hpp"
+#include "network/sniffer/events/StopSniffing.hpp"
+#include "network/sniffer/events/StartSniffing.hpp"
+#include "network/sniffer/events/IsSniffing.hpp"
 #include "network/bsdsocket/events/MessageReceived.hpp"
 #include "models/events/IncomingPacket.hpp"
 

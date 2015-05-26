@@ -1,0 +1,105 @@
+<div class="panel panel-default">
+     <div class="panel-heading clearfix">
+        <i class="fa fa-bar-chart-o fa-fw"></i> Daily Traffic
+        <div class="pull-right">
+            <div class="btn-group btn-change-traffic-mode">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <span class="text">
+                        <% if (trafficMode === "both") { %>
+                            Incoming &amp; Outcoming
+                        <% } else if (trafficMode === "in") { %>
+                            Incoming
+                        <% } else if (trafficMode === "out") { %>
+                            Outcoming
+                        <% } %>
+                    </span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="#" data-traffic-mode="in">Incoming</a>
+                    </li>
+                    <li>
+                        <a href="#" data-traffic-mode="out">Outcoming</a>
+                    </li>
+                    <li>
+                        <a href="#" data-traffic-mode="both">Incoming &amp; Outcoming</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="btn-group btn-change-period">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <span class="text">Last <%- lastDays %> days</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="#" data-period="last3">Last 3 days</a>
+                    </li>
+                    <li>
+                        <a href="#" data-period="last7">Last 7 days</a>
+                    </li>
+                    <li>
+                        <a href="#" data-period="last30">Last 30 days</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#" data-period="last90">Last 3 months</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <table class="table table-bordered table-hover table-striped table-stats-machine-daily">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Traffic</th>
+                    <th>Packets</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (!stats.length) { %>
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <strong class="text-muted">No data for selected period</strong>
+                        </td>
+                    </tr>
+                <% } %>
+                <% _.each(stats, function (statRow) { %>
+                    <tr>
+                        <td>
+                            <%- moment(statRow.day).format("MMMM Do") %>
+                        </td>
+                        <td>
+                            <%- statRow.traffic %> MB
+                        </td>
+                        <td>
+                            <%- statRow.packets %>
+                        </td>
+                    </tr>
+                <% }); %>
+                <% if (stats.length) { %>
+                    <tfoot>
+                        <tr>
+                            <th class="text-right">
+                                <strong class="text-muted">Total</strong>
+                            </th>
+                            <th>
+                                <%- _.reduce(stats, function (total, statRow) { return total + statRow.traffic; }, 0) %> MB
+                            </th>
+                            <th>
+                                <%- _.reduce(stats, function (total, statRow) { return total + statRow.packets; }, 0) %>
+                            </th>
+                        </tr>
+                    </tfoot>
+                <% } %>
+            </tbody>
+        </table>
+        <!-- /.table-responsive -->
+    </div>
+    <!-- /.panel-body -->
+</div>
+<!-- /.panel -->
