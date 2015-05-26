@@ -8,6 +8,8 @@
 #include "events/Terminate.hpp"
 #include "events/CmdReceived.hpp"
 #include "events/SnifferStatus.hpp"
+#include "events/PacketReceived.hpp"
+#include "events/NetworkReply.hpp"
 
 #include "../../network/bsdsocket/events/ResponseRequest.hpp"
 #include "../../network/bsdsocket/events/ConnectionTerminationRequest.hpp"
@@ -15,6 +17,8 @@
 #include "../../network/sniffer/events/StartSniffing.hpp"
 #include "../../network/sniffer/events/StopSniffing.hpp"
 #include "../../network/sniffer/events/IsSniffing.hpp"
+#include "../../models/events/IncomingPacket.hpp"
+#include "../../models/events/RequestPackets.hpp"
 
 namespace events = tin::controllers::main::events;
 namespace bsdsocketEvents = tin::network::bsdsocket::events;
@@ -35,7 +39,7 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 {
     std::cout << "[MainCtrl] Command Received, processing" << std::endl;
 
-	json& temp = *(event.jsonPtr);
+    json& temp = *(event.jsonPtr);
 
     if (temp.find("cmd") == temp.end() || !temp["cmd"].is_string())
     {
@@ -47,12 +51,8 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
 
     if (cmd == "sync")
     {
-        this->controller.networkManagerQueue.push(
-            std::make_shared<bsdsocketEvents::ResponseRequest>(
-                std::make_shared<json>(
-                    json::parse("{ \"testMessage\": \"testResponse\", \"testTable\": { \"testArray\": [ 1, 2, 3 ], \"test\": true } }")
-                )
-            )
+        this->controller.statsGathererQueue.push(
+            std::make_shared<tin::agent::models::events::RequestPackets>()
         );
     }
 
@@ -130,9 +130,18 @@ void tin::controllers::main::MainVisitor::visit(events::CmdReceived &event)
     }
 }
 
-void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::PacketReceived &event)
+void tin::controllers::main::MainVisitor::visit(events::PacketReceived& event)
 {
+    this->controller.statsGathererQueue.push(std::make_shared<tin::agent::models::events::IncomingPacket>(event.pac));
+}
 
+void tin::controllers::main::MainVisitor::visit(events::NetworkReply& event)
+{
+    this->controller.networkManagerQueue.push(
+        std::make_shared<tin::network::bsdsocket::events::ResponseRequest>(
+            std::make_shared<nlohmann::json>(event.reply)
+        )
+    );
 }
 
 void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::SnifferStatus &event)

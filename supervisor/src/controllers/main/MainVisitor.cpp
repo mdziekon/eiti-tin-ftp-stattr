@@ -10,11 +10,14 @@
 #include "events/Terminate.hpp"
 #include "events/CmdResponseReceived.hpp"
 #include "events/WebClientRequestReceived.hpp"
+#include "events/NetworkRequest.hpp"
 #include "../../utils/Machine.hpp"
 
 #include "../../network/websocket/typedefs.hpp"
 #include "../../network/websocket/events/MessageSendRequest.hpp"
 #include "../../network/websocket/events/MessageBroadcastRequest.hpp"
+#include "../../network/bsdsocket/events/MessageRequest.hpp"
+
 #include "../../network/bsdsocket/events/MessageRequest.hpp"
 
 namespace events = tin::controllers::main::events;
@@ -34,7 +37,7 @@ void tin::controllers::main::MainVisitor::visit(events::Terminate &evt)
 
 void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt)
 {
-    std::cout << "[Supervisor] [MainCtrl] Received response: " << evt.jsonPtr->dump() << std::endl;
+    std::cout << "[Supervisor] [MainCtrl] Received response: " << evt.jsonPtr->dump().substr(0, 150) << std::endl;
     std::cout << "                        Source: " << evt.ip << ":" << evt.port << std::endl;
 
     auto& machine = this->controller.machines.getMachine(evt.ip, evt.port);
@@ -47,10 +50,25 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
 
         if (cmd == "sync")
         {
-            // NOT READY YET
+            std::cout << "[Sync] " << "Received " << temp["data"].size() << " packets" << std::endl;
+
             auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::system_clock::now().time_since_epoch());
             machine.lastSynchronization = ms.count();
+
+            auto queueIt = this->controller.syncQueue.find(std::pair<std::string, unsigned int>(evt.ip, evt.port));
+
+            if (queueIt != this->controller.syncQueue.end())
+            {
+                auto& tempResp = *(queueIt->second.second);
+                tempResp["data"] = {{ "success", true }};
+
+                this->controller.networkManagerQueue.push(
+                    std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
+                );
+
+                this->controller.syncQueue.erase(queueIt);
+            }
         }
         else if (cmd == "ping")
         {
@@ -316,7 +334,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                                 std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
                             });
 
-                            this->controller.bsdQueue.push(
+                            this->controller.bsdManagerQueue.push(
                                 std::make_shared<bsdsocket::events::MessageRequest>(
                                     machine.ip,
                                     machine.port,
@@ -350,7 +368,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                         std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
                     });
 
-                    this->controller.bsdQueue.push(
+                    this->controller.bsdManagerQueue.push(
                         std::make_shared<bsdsocket::events::MessageRequest>(
                             machine.ip,
                             machine.port,
@@ -364,6 +382,20 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                 else if (action == "sync" && type == "POST")
                 {
                     // Do synchronization
+
+                    this->controller.syncQueue.insert({
+                        std::pair<std::string, unsigned int>(machine.ip, machine.port),
+                        std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
+                    });
+
+                    this->controller.bsdManagerQueue.push(
+                        std::make_shared<bsdsocket::events::MessageRequest>(
+                            machine.ip,
+                            machine.port,
+                            tin::utils::json::makeSharedInstance("{ \"cmd\": \"sync\" }"),
+                            true
+                        )
+                    );
 
                     // auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                     //     std::chrono::system_clock::now().time_since_epoch()
@@ -398,7 +430,7 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
                         std::pair<unsigned int, tin::utils::json::ptr>(evt.connectionID, evt.jsonPtr)
                     });
 
-                    this->controller.bsdQueue.push(
+                    this->controller.bsdManagerQueue.push(
                         std::make_shared<bsdsocket::events::MessageRequest>(
                             machine.ip,
                             machine.port,
@@ -433,4 +465,9 @@ void tin::controllers::main::MainVisitor::resendEvent(events::WebClientRequestRe
     this->controller.networkManagerQueue.push(
         std::make_shared<websocket::events::MessageSendRequest>(evt.connectionID, evt.jsonPtr)
     );
+}
+
+void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)
+{
+    this->controller.bsdManagerQueue.push(std::make_shared<tin::network::bsdsocket::events::MessageRequest>(evt.ip, evt.port, evt.jsonPtr, true));
 }

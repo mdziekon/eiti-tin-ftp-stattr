@@ -11,6 +11,7 @@ namespace tin { namespace controllers { namespace main
         struct Terminate;
         struct CmdResponseReceived;
         struct WebClientRequestReceived;
+        struct NetworkRequest;
     }
 
     class MainVisitor
@@ -25,6 +26,7 @@ namespace tin { namespace controllers { namespace main
         void visit(tin::controllers::main::events::Terminate &evt);
         void visit(tin::controllers::main::events::CmdResponseReceived &evt);
         void visit(tin::controllers::main::events::WebClientRequestReceived &evt);
+        void visit(tin::controllers::main::events::NetworkRequest &evt);
 
     private:
         void resendEvent(events::WebClientRequestReceived &evt);

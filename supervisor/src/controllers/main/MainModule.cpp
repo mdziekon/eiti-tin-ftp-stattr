@@ -10,9 +10,11 @@
 tin::controllers::main::MainModule::MainModule(
     tin::controllers::main::ControllerQueue &incomingQueue,
     tin::network::websocket::ManagerQueue &networkManagerQueue,
-    tin::network::bsdsocket::ManagerQueue &bsdQueue
+    tin::network::bsdsocket::ManagerQueue& bsdManagerQueue,
+    tin::supervisor::models::StatsQueue& statsQueue
 ):
 QueueThread(incomingQueue, MainVisitor(*this)),
+statsQueue(statsQueue),
 networkManagerQueue(networkManagerQueue),
-bsdQueue(bsdQueue)
+bsdManagerQueue(bsdManagerQueue)
 {}
