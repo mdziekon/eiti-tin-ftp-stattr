@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 #include "terminal_message.hpp"
+#include "../../supervisor/src/utils/JSON.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -33,6 +34,16 @@ public:
 	}
 
 	void write(char* data)
+	{
+		terminal_message msg;
+		msg.body_length(std::strlen(data));
+		std::memcpy(msg.body(), data, msg.body_length());
+		msg.encode_header();
+
+		boost::asio::write(socket_, boost::asio::buffer(msg.data(), msg.length()));
+	}
+
+	void write(const char* data)
 	{
 		terminal_message msg;
 		msg.body_length(std::strlen(data));
@@ -129,6 +140,7 @@ bool parse_command(char* data)
 	std::string s(data);
 	boost::split(tokenList, s, boost::is_any_of("\t "));
 
+
 	if(tokenList[0].compare("-quit") == 0)
 	{
 		return false;
@@ -150,7 +162,17 @@ bool parse_command(char* data)
 			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 3.\n";
 		else
 		{
+			std::string message = "";
+			message += "{";
+			message += 	"\"route\":\"machine\",";
+			message += 	"\"type\":\"POST\",";
+			message += 	"\"data\":{";
+			message += 		"\"name\":\""+tokenList[1]+"\",";
+			message += 		"\"ip\":\""+tokenList[2]+"\",";
+			message += 		"\"port\":\""+tokenList[3]+"\"";
+			message += 	"}}";
 
+			clientPtr->write(message.c_str());
 		}
 	} 
 	else if(tokenList[0].compare("-remove") == 0)
@@ -160,7 +182,17 @@ bool parse_command(char* data)
 			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 1.\n";
 		else
 		{
-
+			/*std::string message = "{
+				\"route\":\"machine\",
+				\"type\":\"POST\",
+				\"data\" {
+					\"name\":\""+ std::string(tokenList[1])+"\",
+					\"ip\":\""+ std::string(tokenList[2])+"\",
+					\"port\":\""+ std::string(tokenList[3])+"\"
+				}}";
+			
+			clientPtr->write(message);
+			*/
 		}
 	}
 	else
