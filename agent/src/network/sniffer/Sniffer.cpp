@@ -134,6 +134,15 @@ void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packe
 
 void Sniffer::run()
 {
+    if (this->isSniffing())
+    {
+        return;
+    }
+    if (this->snifferThread.joinable())
+    {
+        this->snifferThread.join();
+    }
+
 	this->snifferThread = std::thread(
         &Sniffer::sniff,
         std::ref(*this)
@@ -180,6 +189,7 @@ void Sniffer::sniff()
     if (dev == NULL)
     {
         // Throw an error (Couldn't find default device)
+        std::cout << "[Sniffer] Could not start sniffer" << std::endl;
         return;
     }
 
@@ -203,6 +213,7 @@ void Sniffer::sniff()
     {
         // Throw an error (Couldn't open device: $device)
         // errbuf contains error data
+        std::cout << "[Sniffer] Could not start sniffer, no \"sudo\"?" << std::endl;
         return;
     }
 

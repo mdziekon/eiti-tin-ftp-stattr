@@ -23,9 +23,14 @@ void ManagerVisitor::visit(events::ChangeFilter& evt)
 {
     std::cout << "[Sniffer] Changing config" << std::endl;
 
+    bool wasRunning = this->manager.sniffer.isSniffing();
+
     this->manager.sniffer.stopSniffing();
     this->manager.sniffer.changeConfig(evt.device, evt.expression);
-    this->manager.sniffer.run();
+    if (wasRunning)
+    {
+        this->manager.sniffer.run();
+    }
 }
 
 void ManagerVisitor::visit(events::StopSniffing& evt)
@@ -39,8 +44,7 @@ void ManagerVisitor::visit(events::StartSniffing& evt)
 {
     std::cout << "[Sniffer] Start sniffing" << std::endl;
 
-    if(!this->manager.sniffer.isSniffing())
-    	this->manager.sniffer.run();
+    this->manager.sniffer.run();
 }
 
 void ManagerVisitor::visit(events::IsSniffing& evt)
