@@ -169,7 +169,7 @@ bool parse_command(char* data)
 			message += 	"\"data\":{";
 			message += 		"\"name\":\""+tokenList[1]+"\",";
 			message += 		"\"ip\":\""+tokenList[2]+"\",";
-			message += 		"\"port\":\""+tokenList[3]+"\"";
+			message += 		"\"port\":"+tokenList[3];
 			message += 	"}}";
 
 			clientPtr->write(message.c_str());
