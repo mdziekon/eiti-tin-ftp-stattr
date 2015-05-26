@@ -28,6 +28,14 @@ webapp.Models = webapp.Models || {};
             }, options));
         },
 
+        pingMachine: function (options) {
+            return this.sync("create", this, _.defaults({
+                patch: true,
+                url: this.url() + "/ping",
+                noData: true
+            }, options));
+        },
+
         toggleSniffer: function (options) {
             return this.sync("create", this, _.defaults({
                 patch: true,

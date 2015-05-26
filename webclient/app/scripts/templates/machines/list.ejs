@@ -33,7 +33,7 @@
                                 <th>Status</th>
                                 <th>Last Sync</th>
                                 <th>Stats</th>
-                                <th class="text-right" style="width: 420px;">Actions</th>
+                                <th class="text-right" style="width: 500px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -81,9 +81,13 @@
 
                                         <% if (machine.status === "sniffing" || machine.status === "stand-by") { %>
                                             <a class="btn btn-primary btn-sync" data-machine-id="<%- machine.id %>" data-load-text="Syncing..." data-complete-text="Completed" data-error-text="Error">
-                                                <i class="fa fa-refresh"></i> Sync Now
+                                                <i class="fa fa-refresh"></i> Sync
                                             </a>
                                         <% } %>
+
+                                        <a class="btn btn-primary btn-ping" data-machine-id="<%- machine.id %>" data-load-text="Pinging..." data-complete-text="Completed" data-error-text="Error">
+                                            <i class="fa fa-signal"></i> Ping
+                                        </a>
 
                                         <a href="machines/<%- machine.id %>/edit" class="btn btn-primary">
                                             <i class="fa fa-pencil"></i> Edit

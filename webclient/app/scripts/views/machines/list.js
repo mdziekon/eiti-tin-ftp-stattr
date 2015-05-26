@@ -13,6 +13,7 @@ webapp.Views = webapp.Views || {};
 
         events: {
             "click .btn-sync": "syncMachine",
+            "click .btn-ping": "pingMachine",
             "click .btn-delete": "deleteMachine",
             "click .btn-toggle-sniffer": "toggleSniffer"
         },
@@ -51,6 +52,29 @@ webapp.Views = webapp.Views || {};
 
             var promises = [
                 syncPromise,
+                flashDfd.promise()
+            ];
+
+            $.when.apply($, promises).done(function () {
+                view.render();
+            });
+        },
+
+        pingMachine: function (evt) {
+            var view = this;
+            var $el = $(evt.currentTarget);
+            var flashDfd = new $.Deferred();
+
+            var machineID = $el.data("machine-id");
+
+            var machine = view.machines.get(machineID);
+            var pingPromise = machine.pingMachine({
+                submitElement: $el,
+                submitElementFlashDfd: flashDfd
+            });
+
+            var promises = [
+                pingPromise,
                 flashDfd.promise()
             ];
 
