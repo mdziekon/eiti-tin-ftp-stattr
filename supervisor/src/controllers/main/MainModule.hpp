@@ -16,6 +16,7 @@
 #include "Event.hpp"
 #include "MainVisitor.hpp"
 
+#include "../../models/MachinesStorage.hpp"
 
 namespace tin { namespace controllers { namespace main
 {
@@ -30,8 +31,7 @@ namespace tin { namespace controllers { namespace main
             tin::network::websocket::ManagerQueue &networkManagerQueue
         );
 
-        std::map<std::pair<std::string, unsigned int>, int> ipPortIdMap;
-        std::map<int, utils::Machine> idMachineMap;
+        tin::models::MachinesStorage machines;
 
     private:
         tin::network::websocket::ManagerQueue &networkManagerQueue;

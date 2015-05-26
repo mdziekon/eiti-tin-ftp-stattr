@@ -1,6 +1,7 @@
 #ifndef TIN_CONTROLLERS_MAIN_MAINVISITOR_HPP
 #define	TIN_CONTROLLERS_MAIN_MAINVISITOR_HPP
 
+
 namespace tin { namespace controllers { namespace main
 {
     class MainModule;
@@ -24,6 +25,9 @@ namespace tin { namespace controllers { namespace main
         void visit(tin::controllers::main::events::Terminate &evt);
         void visit(tin::controllers::main::events::CmdResponseReceived &evt);
         void visit(tin::controllers::main::events::WebClientRequestReceived &evt);
+
+    private:
+        void resendEvent(events::WebClientRequestReceived &evt);
     };
 }}}
 
