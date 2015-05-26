@@ -127,7 +127,8 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
             }
     }
 
-    else if(route == "machines" && type == "POST")
+
+    if(route == "machines" && type == "POST")
     {
         if(temp.find("data") == temp.end())
         {
@@ -147,5 +148,92 @@ void tin::controllers::main::MainVisitor::visit(events::WebClientRequestReceived
         this->controller.idMachineMap.insert(std::pair<int, utils::Machine>(m.id, m));
 
     }
+
+
+    if (route.substr(0, 8) == "machine/")
+        {
+            auto routeRest = route.substr(8);
+            auto action = std::string("");
+            if (routeRest.find("/") != std::string::npos)
+            {
+                action = routeRest.substr(routeRest.find("/") + 1);
+                routeRest = routeRest.substr(0, routeRest.find("/"));
+            }
+
+            try
+            {
+               int machineID = static_cast<int>(std::stoul(routeRest));
+
+               utils::Machine& machine = this->controller.idMachineMap.at(machineID);
+
+                if (action == "" && type == "GET")
+                {
+                    temp["data"] = {
+                        { "id", machineID },
+                        { "name", machine.name },
+                        { "ip", machine.ip },
+                        { "port", machine.port },
+                        { "status", machine.status },
+                        { "lastSync", machine.lastSynchronization }};
+                    
+                }
+                else if (action == "" && type == "PATCH")
+                {
+
+                    std::string name = temp["data"]["name"];
+                    std::string ip = temp["data"]["ip"];
+                    unsigned int port = temp["data"]["port"];
+
+                    
+                    machine.name = name;
+                    machine.ip = ip;
+                    machine.port = port;
+
+                    temp["data"] = {{ "success", true }};
+                }
+                else if (action == "" && type == "DELETE")
+                {
+                    
+                    temp["data"] = {{ "success", true }};
+                }
+                else if (action == "sync" && type == "POST")
+                {
+                    auto ms = std::chrono::duration_cast<std::chrono::seconds>(
+                        std::chrono::system_clock::now().time_since_epoch()
+                    );
+
+                    machine.lastSynchronization = ms.count();
+
+                    temp["data"] = {{ "success", true }};
+                }
+                else if (action == "toggle-sniffer" && type == "POST")
+                {
+                    
+                    if (machine.status == "sniffing")
+                    {
+                        machine.status = "stand-by";
+                        temp["data"] = {{ "success", true }};
+                    }
+                    else if (machine.status == "stand-by")
+                    {
+                        machine.status = "sniffing";
+                        temp["data"] = {{ "success", true }};
+                    }
+                    else
+                    {
+                        temp["error"] = {{ "invalid", { {"status", machine.status} } }};
+                    } 
+                }
+                else
+                {
+                    temp["error"] = {{ "invalid", { {"action", action} } }};
+                }
+            }
+            catch (std::invalid_argument& e)
+            {
+                temp["error"] = {{ "invalid", { {"routeID", true} } }};
+            }
+        }
+
 
 }
