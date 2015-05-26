@@ -73,6 +73,8 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
                 this->controller.networkManagerQueue.push(
                     std::make_shared<websocket::events::MessageSendRequest>(queueIt->second.first, queueIt->second.second)
                 );
+
+                this->controller.pingsQueue.erase(queueIt);
             }
         }
 
