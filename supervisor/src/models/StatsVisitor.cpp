@@ -17,6 +17,8 @@ using namespace tin::supervisor::models;
 void StatsVisitor::visit(events::ReceivePackets& event)
 {
     for(auto jsonPtr: event.packets) {
+        this->stats.packets.push_back(tin::utils::Packet((*jsonPtr)));
+
         this->stats.packetsByTimestamp.insert(
             std::pair<u_int32_t, tin::utils::json::ptr>(
                 (*jsonPtr)["timestamp"].get<u_int32_t>(),

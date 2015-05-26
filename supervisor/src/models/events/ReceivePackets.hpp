@@ -14,7 +14,7 @@ namespace tin { namespace supervisor { namespace models { namespace events
         
         virtual void accept(tin::supervisor::models::StatsVisitor& visitor);
         
-        ReceivePackets(const std::vector<tin::utils::json::ptr>& packets) = delete;
+        ReceivePackets(const std::vector<tin::utils::json::ptr>& packets);
         ReceivePackets(const std::vector<tin::utils::json::ptr>&& packets);
     };
 }}}}

@@ -23,11 +23,13 @@
 #include "../../network/bsdsocket/events/MessageRequest.hpp"
 
 #include "../../models/events/RequestAnalytics.hpp"
+#include "../../models/events/ReceivePackets.hpp"
 
 namespace events = tin::controllers::main::events;
 namespace main = tin::controllers::main;
 namespace websocket = tin::network::websocket;
 namespace bsdsocket = tin::network::bsdsocket;
+namespace stats = tin::supervisor::models;
 using nlohmann::json;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
@@ -55,6 +57,20 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
         if (cmd == "sync")
         {
             std::cout << "[Sync] " << "Received " << temp["data"].size() << " packets" << std::endl;
+
+            std::vector<tin::utils::json::ptr> packets;
+            if (temp["data"].is_array())
+            {
+                for(auto& itt: temp["data"])
+                {
+                    packets.push_back(std::make_shared<nlohmann::json>(itt));
+                }
+            }
+
+            this->controller.statsQueue.push(
+                std::make_shared<stats::events::ReceivePackets>(packets)
+            );
+
 
             auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::system_clock::now().time_since_epoch());

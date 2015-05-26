@@ -10,6 +10,8 @@
 #include "../controllers/main/typedefs.hpp"
 #include "typedefs.hpp"
 #include "../utils/JSON.hpp"
+#include "../utils/Packet.hpp"
+#include "../models/MachinesStorage.hpp"
 
 namespace tin { namespace supervisor { namespace models
 {
@@ -22,6 +24,8 @@ namespace tin { namespace supervisor { namespace models
         
         tin::controllers::main::ControllerQueue& controllerQueue;
         
+        tin::models::MachinesStorage& machines;
+        std::vector<tin::utils::Packet> packets;
         std::map<int64_t, tin::utils::json::ptr> packetsByTimestamp;
         std::map<u_int32_t, tin::utils::json::ptr> packetsBySourceIP;
         std::map<u_int32_t, tin::utils::json::ptr> packetsByDestinationIP;
@@ -37,7 +41,8 @@ namespace tin { namespace supervisor { namespace models
 
         Stats(
             tin::supervisor::models::StatsQueue& statsQueue,
-            tin::controllers::main::ControllerQueue& controllerQueue
+            tin::controllers::main::ControllerQueue& controllerQueue,
+            tin::models::MachinesStorage& machines
         );
     };
 }}}
