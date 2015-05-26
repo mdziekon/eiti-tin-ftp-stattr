@@ -2,12 +2,11 @@
 #include <iostream>
 #include <thread>
 #include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
 #include "terminal_message.hpp"
 
 using boost::asio::ip::tcp;
 
-enum { max_length = 1024 };
-char data[max_length];
 
 class Client
 {
@@ -86,6 +85,12 @@ private:
 	boost::asio::io_service& io_service_;
 };
 
+bool parse_command(char* data);
+enum { max_length = 1024 };
+char data[max_length];
+std::shared_ptr<Client> clientPtr;
+
+
 int main(int argc, char* argv[])
 {
 	try
@@ -99,20 +104,68 @@ int main(int argc, char* argv[])
 
 		tcp::resolver resolver(io_service);
 		auto endpoint_iterator = resolver.resolve({ host, port });
-		Client c(io_service, endpoint_iterator);
+		clientPtr.reset(new Client(io_service, endpoint_iterator));
 
 		std::thread t([&io_service]() { io_service.run(); });
 		
 		while(std::cin.getline(data, max_length))
 		{
-			c.write(data);
+			if(!parse_command(data))
+				break;
 		}
 
-		c.close();
+		clientPtr->close();
 		t.join();
 	}
 	catch(std::exception& e)
 	{
 		std::cerr << "Exception: " << e.what() << "\n";
 	}
+}
+
+bool parse_command(char* data)
+{
+	std::vector <std::string> tokenList;
+	std::string s(data);
+	boost::split(tokenList, s, boost::is_any_of("\t "));
+
+	if(tokenList[0].compare("-quit") == 0)
+	{
+		return false;
+	}
+	else if (tokenList[0].compare("-test") == 0)
+	{
+		clientPtr->write(data);
+	}
+	else if (tokenList[0].compare("-help") == 0)
+	{
+		std::cout << "  -quit - to exit terminal\n"
+			<< "  -test - to get test response from the supervisor\n"
+			<< "  -add <name> <ip> <port> - to get test response from the supervisor\n"
+			<< "  -remove <id> - to get test response from the supervisor\n";
+	}
+	else if(tokenList[0].compare("-add") == 0)
+	{
+		if(tokenList.size() != 4)
+			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 3.\n";
+		else
+		{
+
+		}
+	} 
+	else if(tokenList[0].compare("-remove") == 0)
+	{
+	
+		if(tokenList.size() != 2)
+			std::cout << "ERROR. Prameters count: " << tokenList.size() - 1<< ", expected 1.\n";
+		else
+		{
+
+		}
+	}
+	else
+	{
+		std::cout << "Bad command. Type '-help' to display command list." << std::endl;
+	}
+	return true;
 }
