@@ -47,6 +47,9 @@ void StatsVisitor::visit(events::RequestAnalytics& event)
     else if((*event.requestData)["route"].get<std::string>() == "traffic-per-machine") {
         computedStats = this->stats.computeIndividualUsage(event.requestData);
     }
+    else {
+        std::cout << "[Supervisor] Invalid or unknown analytics request received" << std::endl;
+    }
     
     this->stats.controllerQueue.push(
         std::make_shared<tin::controllers::main::events::WebsocketBroadcastRequest>(

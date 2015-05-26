@@ -11,17 +11,11 @@ namespace tin { namespace supervisor { namespace models { namespace events
 {
     struct RequestAnalytics: public tin::supervisor::models::Event
     {
-        const std::string ip;
-        const u_int32_t port;
         const tin::utils::json::ptr requestData;
         
         virtual void accept(tin::supervisor::models::StatsVisitor& visitor);
         
-        RequestAnalytics(
-            const std::string& ip, 
-            const u_int32_t& port, 
-            const tin::utils::json::ptr& requestData
-        );
+        RequestAnalytics(const tin::utils::json::ptr& requestData);
     };
 }}}}
 

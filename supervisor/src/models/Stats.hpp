@@ -26,9 +26,7 @@ namespace tin { namespace supervisor { namespace models
         std::map<u_int32_t, tin::utils::json::ptr> packetsBySourceIP;
         std::map<u_int32_t, tin::utils::json::ptr> packetsByDestinationIP;
 
-        bool requestorsActive = true;
     public:
-        void updateDataset();
         const tin::utils::json::ptr computeStatsPerDay(const tin::utils::json::ptr& requestorData) const;
         const tin::utils::json::ptr computeIndividualUsage(const tin::utils::json::ptr& requestorData) const;
 
@@ -41,7 +39,6 @@ namespace tin { namespace supervisor { namespace models
             tin::supervisor::models::StatsQueue& statsQueue,
             tin::controllers::main::ControllerQueue& controllerQueue
         );
-        ~Stats();
     };
 }}}
 #endif

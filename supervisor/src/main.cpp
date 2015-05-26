@@ -7,6 +7,7 @@
 #include "network/bsdsocket/Manager.hpp"
 
 #include "network/bsdsocket/events/MessageRequest.hpp"
+#include "network/websocket/events/MessageReceived.hpp"
 
 int main()
 {
@@ -26,14 +27,14 @@ int main()
     auto netManager = networkManager.createThread();
     auto bsdManagerThread = bsdManager.createThread();
     auto statsThread = stats.createThread();
-    auto statsRequestorThread = stats.createRequestorThread(250, ctrlQueue);
+    auto statsRequestorThread = stats.createRequestorThread(2500, ctrlQueue);
     /*
     
     stats.updateDataset(); 
 
     */
-    
-    
+
+    netManagerQueue.push(std::make_shared<tin::network::websocket::events::MessageReceived>(1, "{\"route\":\"stats-per-day\",\"type\":\"POST\",\"uid\":1}"));
 
     try
     {

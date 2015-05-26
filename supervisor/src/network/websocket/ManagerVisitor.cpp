@@ -10,6 +10,9 @@
 #include "events/MessageSendMultiRequest.hpp"
 #include "events/MessageBroadcastRequest.hpp"
 
+#include "../../controllers/main/events/CmdResponseReceived.hpp"
+#include "../../controllers/main/events/WebsocketRequestReceived.hpp"
+
 using tin::network::websocket::ManagerVisitor;
 namespace events = tin::network::websocket::events;
 
@@ -38,10 +41,13 @@ void ManagerVisitor::visit(events::ServerConnectionClosed& evt)
 
 void ManagerVisitor::visit(events::MessageReceived& evt)
 {
-    // this->manager.controllerQueue.push(
-    //     tin::controllers::main::EventPtr(
-    //     )
-    // );
+    this->manager.controllerQueue.push(
+        tin::controllers::main::EventPtr(
+            std::make_shared<tin::controllers::main::events::WebsocketRequestReceived>(
+                std::make_shared<nlohmann::json>(nlohmann::json::parse(evt.message))
+            )
+        )
+    );
 }
 
 void ManagerVisitor::visit(events::MessageSendRequest& evt)

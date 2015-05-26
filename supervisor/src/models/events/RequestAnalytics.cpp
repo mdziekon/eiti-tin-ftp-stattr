@@ -9,12 +9,6 @@ void RequestAnalytics::accept(tin::supervisor::models::StatsVisitor& visitor)
     visitor.visit(*this);
 }
 
-RequestAnalytics::RequestAnalytics(
-    const std::string& ip,
-    const u_int32_t& port,
-    const tin::utils::json::ptr& requestData
-):
-ip(ip),
-port(port),
+RequestAnalytics::RequestAnalytics(const tin::utils::json::ptr& requestData):
 requestData(requestData)
 {}
