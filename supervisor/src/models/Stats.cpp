@@ -38,9 +38,9 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
 
             auto& thisMStats = mStats.at(dayTimestamp);
 
-            if (this->machines.hasMachine(it.getSourceIP(), it.sourcePort))
+            if (this->machines.hasMachine(it.getSourceIP()))
             {
-                auto& machine = this->machines.getMachine(it.getSourceIP(), it.sourcePort);
+                auto& machine = this->machines.getMachine(it.getSourceIP());
                 if (thisMStats.count(machine.id) == 0)
                 {
                     thisMStats.insert({ machine.id, nlohmann::json::object() });
@@ -57,9 +57,9 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
 
                 jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
             }
-            else if (this->machines.hasMachine(it.getDestinationIP(), it.destinationPort))
+            else if (this->machines.hasMachine(it.getDestinationIP()))
             {
-                auto& machine = this->machines.getMachine(it.getDestinationIP(), it.destinationPort);
+                auto& machine = this->machines.getMachine(it.getDestinationIP());
                 if (thisMStats.count(machine.id) == 0)
                 {
                     thisMStats.insert({ machine.id, nlohmann::json::object() });
@@ -120,9 +120,9 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
 
         for(auto& it: this->packets)
         {
-            if (this->machines.hasMachine(it.getSourceIP(), it.sourcePort))
+            if (this->machines.hasMachine(it.getSourceIP()))
             {
-                auto& machine = this->machines.getMachine(it.getSourceIP(), it.sourcePort);
+                auto& machine = this->machines.getMachine(it.getSourceIP());
                 if (mStats.count(machine.id) == 0)
                 {
                     mStats.insert({ machine.id, nlohmann::json::object() });
@@ -139,9 +139,9 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
 
                 jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
             }
-            else if (this->machines.hasMachine(it.getDestinationIP(), it.destinationPort))
+            else if (this->machines.hasMachine(it.getDestinationIP()))
             {
-                auto& machine = this->machines.getMachine(it.getDestinationIP(), it.destinationPort);
+                auto& machine = this->machines.getMachine(it.getDestinationIP());
                 if (mStats.count(machine.id) == 0)
                 {
                     mStats.insert({ machine.id, nlohmann::json::object() });
@@ -196,7 +196,7 @@ const tin::utils::json::ptr Stats::computeMachinesPerDay(const tin::utils::json:
             int dayTimestamp = it.timestamp;
             dayTimestamp -= dayTimestamp % (24 * 60 * 60);
 
-            if (machine.ip == it.getSourceIP() && machine.port == it.sourcePort)
+            if (machine.ip == it.getSourceIP())
             {
                 if (dStats.count(dayTimestamp) == 0)
                 {
@@ -218,7 +218,7 @@ const tin::utils::json::ptr Stats::computeMachinesPerDay(const tin::utils::json:
                 jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
                 jsObj["packets"]["out"] = (jsObj["packets"]["out"].get<int>() + 1);
             }
-            else if (machine.ip == it.getDestinationIP() && machine.port == it.destinationPort)
+            else if (machine.ip == it.getDestinationIP())
             {
                 if (dStats.count(dayTimestamp) == 0)
                 {
@@ -277,7 +277,7 @@ const tin::utils::json::ptr Stats::computeMachinesPerConnection(const tin::utils
         {
             std::string key;
 
-            if (machine.ip == it.getSourceIP() && machine.port == it.sourcePort)
+            if (machine.ip == it.getSourceIP())
             {
                 key = std::string(it.getDestinationIP()).append(std::to_string(it.destinationPort));
                 if (cStats.count(key) == 0)
@@ -306,7 +306,7 @@ const tin::utils::json::ptr Stats::computeMachinesPerConnection(const tin::utils
                 jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
                 jsObj["packets"]["out"] = (jsObj["packets"]["out"].get<int>() + 1);
             }
-            else if (machine.ip == it.getDestinationIP() && machine.port == it.destinationPort)
+            else if (machine.ip == it.getDestinationIP())
             {
                 key = std::string(it.getSourceIP()).append(std::to_string(it.sourcePort));
                 if (cStats.count(key) == 0)
@@ -380,7 +380,7 @@ const tin::utils::json::ptr Stats::computeMachinesPerHour(const tin::utils::json
             hourTimestamp /= (60 * 60);
             std::string key;
 
-            if (machine.ip == it.getSourceIP() && machine.port == it.sourcePort)
+            if (machine.ip == it.getSourceIP())
             {
                 if (cStats.count(hourTimestamp) == 0)
                 {
@@ -404,7 +404,7 @@ const tin::utils::json::ptr Stats::computeMachinesPerHour(const tin::utils::json
                 jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
                 jsObj["packets"]["out"] = (jsObj["packets"]["out"].get<int>() + 1);
             }
-            else if (machine.ip == it.getDestinationIP() && machine.port == it.destinationPort)
+            else if (machine.ip == it.getDestinationIP())
             {
                 if (cStats.count(hourTimestamp) == 0)
                 {

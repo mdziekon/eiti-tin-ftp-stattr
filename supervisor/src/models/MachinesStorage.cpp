@@ -44,6 +44,21 @@ Machine& MachinesStorage::getMachine(const std::string& ip, const unsigned int& 
     return this->idMachineMap.at(this->ipPortIdMap.at(std::make_pair(ip, port)));
 }
 
+Machine& MachinesStorage::getMachine(const std::string& ip)
+{
+    int machineID;
+    for(auto& it: this->ipPortIdMap)
+    {
+        if (it.first.first == ip)
+        {
+            machineID = it.second;
+            break;
+        }
+    }
+
+    return this->getMachine(machineID);
+}
+
 bool MachinesStorage::hasMachine(const std::string& ip, const unsigned int& port)
 {
     try
@@ -55,4 +70,17 @@ bool MachinesStorage::hasMachine(const std::string& ip, const unsigned int& port
     {
         return false;
     }
+}
+
+bool MachinesStorage::hasMachine(const std::string& ip)
+{
+    for(auto& it: this->ipPortIdMap)
+    {
+        if (it.first.first == ip)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
