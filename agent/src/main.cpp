@@ -31,7 +31,7 @@ int main()
         snifferManagerQueue,
         ctrlQueue,
         "lo",
-        "src 127.0.0.1"
+        ""
     );
     tin::agent::models::StatsGatherer statsGatherer(
         statsGathererQueue,

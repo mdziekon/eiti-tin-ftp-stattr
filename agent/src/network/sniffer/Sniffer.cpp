@@ -10,10 +10,10 @@ void pcap_trampoline(u_char *param, const struct pcap_pkthdr *pkt_header, const 
     obj->handlePacket(pkt_header, pkt_data);
 }
 
-Sniffer::Sniffer(const std::string& device, const std::string& expression):
-device(device.c_str()),
-expression(expression.c_str())
-{}
+Sniffer::Sniffer(const std::string& device, const std::string& expression)
+{
+    this->changeConfig(device, expression);
+}
 
 Sniffer::~Sniffer()
 {
@@ -55,8 +55,15 @@ void Sniffer::changeConfig(const std::string& device, const std::string& express
         return;
     }
 
+    std::string expressionBuilder = "(port ftp or port ftp-data)";
+
     this->device = std::string(device.c_str());
-    this->expression = std::string(expression.c_str());
+    if (expression.length() > 0)
+    {
+        expressionBuilder = expressionBuilder.append(std::string(" and (")).append(expression).append(")");
+    }
+
+    this->expression = std::string(expressionBuilder.c_str());
 }
 
 void Sniffer::handlePacket(const struct pcap_pkthdr *header, const u_char *packet)
