@@ -78,7 +78,7 @@
                             <%- _.capitalize(moment(connection.lastTime).fromNow()) %>
                         </td>
                         <td>
-                            <%- connection.traffic %> MB
+                            <%- connection.traffic %> B
                         </td>
                         <td>
                             <%- connection.packets %>
@@ -92,7 +92,7 @@
                                 <strong class="text-muted">Total</strong>
                             </th>
                             <th>
-                                <%- _.reduce(connections, function (total, connection) { return total + connection.traffic; }, 0) %> MB
+                                <%- _.reduce(connections, function (total, connection) { return total + connection.traffic; }, 0) %> B
                             </th>
                             <th>
                                 <%- _.reduce(connections, function (total, connection) { return total + connection.packets; }, 0) %>

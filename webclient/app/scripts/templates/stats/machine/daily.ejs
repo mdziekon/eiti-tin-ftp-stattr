@@ -74,7 +74,7 @@
                             <%- moment(statRow.day).format("MMMM Do") %>
                         </td>
                         <td>
-                            <%- statRow.traffic %> MB
+                            <%- statRow.traffic %> B
                         </td>
                         <td>
                             <%- statRow.packets %>
@@ -88,7 +88,7 @@
                                 <strong class="text-muted">Total</strong>
                             </th>
                             <th>
-                                <%- _.reduce(stats, function (total, statRow) { return total + statRow.traffic; }, 0) %> MB
+                                <%- _.reduce(stats, function (total, statRow) { return total + statRow.traffic; }, 0) %> B
                             </th>
                             <th>
                                 <%- _.reduce(stats, function (total, statRow) { return total + statRow.packets; }, 0) %>

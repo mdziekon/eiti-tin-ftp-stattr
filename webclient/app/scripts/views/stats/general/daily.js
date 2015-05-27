@@ -84,7 +84,7 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
                 hideHover: 'auto',
                 resize: true,
                 parseTime: false,
-                postUnits: "MB"
+                postUnits: "B"
             };
 
             if (view.statsPerDay.length == 0)
@@ -186,6 +186,7 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
             var trafficMode = $el.data("traffic-mode");
 
             view.$("#stats-chart-daily-traffic").empty();
+            view.$(".btn-change-traffic-mode .dropdown-toggle .text").text($el.text());
 
             view.trafficMode = trafficMode;
             view.createCharts();

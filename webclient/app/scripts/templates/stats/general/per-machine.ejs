@@ -76,7 +76,7 @@
                                 <%- machine.name %>
                             </a>
                         </td>
-                        <td><%- machine.traffic %> MB</td>
+                        <td><%- machine.traffic %> B</td>
                     </tr>
                 <% }); %>
                 <% if (machines.length) { %>
@@ -86,7 +86,7 @@
                                 <strong class="text-muted">Total</strong>
                             </th>
                             <th>
-                                <%- _.reduce(machines, function (total, machine) { return total + machine.traffic; }, 0) %> MB
+                                <%- _.reduce(machines, function (total, machine) { return total + machine.traffic; }, 0) %> B
                             </th>
                         </tr>
                     </tfoot>

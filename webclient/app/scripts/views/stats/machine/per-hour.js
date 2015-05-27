@@ -122,7 +122,7 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
                 }],
                 yaxes: [{
                     tickFormatter: function (v, axis) {
-                        return v.toFixed(axis.tickDecimals) + " MB";
+                        return v.toFixed(axis.tickDecimals) + " B";
                     }
                 }, {
                     // align if we are to the right
