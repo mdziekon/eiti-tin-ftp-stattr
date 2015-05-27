@@ -3,6 +3,7 @@
 
 #include "models/Stats.hpp"
 #include "controllers/main/MainModule.hpp"
+#include "controllers/terminal/TerminalModule.hpp"
 #include "network/websocket/Manager.hpp"
 #include "network/bsdsocket/Manager.hpp"
 
@@ -15,15 +16,23 @@ int main()
     tin::network::websocket::ManagerQueue netManagerQueue;
     tin::network::bsdsocket::ManagerQueue bsdManagerQueue;
     tin::supervisor::models::StatsQueue statsQueue;
+    tin::controllers::terminal::TerminalQueue terminalQueue;
 
-    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, bsdManagerQueue, statsQueue);
+    tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, bsdManagerQueue, statsQueue, terminalQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 3338);
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
     tin::supervisor::models::Stats stats(statsQueue, ctrlQueue, mainCtrl.machines);
 
+    // Terminal Server
+    boost::asio::io_service io_service;
+    boost::asio::io_service::work work(io_service);
+    std::thread terminalServiceThread([&io_service]() { io_service.run(); });
+    tin::controllers::terminal::TerminalModule terminalCtrl(terminalQueue, ctrlQueue, io_service);
+
     std::cout << "Hello supervisor!\n";
 
     auto mainCtrlThread = mainCtrl.createThread();
+    auto terminalCtrlThread = terminalCtrl.createThread();
     auto netManager = networkManager.createThread();
     auto bsdManagerThread = bsdManager.createThread();
     auto statsThread = stats.createThread();
@@ -115,6 +124,8 @@ int main()
         netManager.join();
         bsdManagerThread.join();
         statsThread.join();
+        terminalCtrlThread.join();
+        terminalServiceThread.join();
         // statsRequestorThread.join();
     }
     catch (std::system_error& e)

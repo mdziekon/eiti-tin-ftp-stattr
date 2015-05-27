@@ -9,12 +9,12 @@
 #include "events/MessageSendRequest.hpp"
 #include "events/MessageSendMultiRequest.hpp"
 #include "events/MessageBroadcastRequest.hpp"
-#include "../../controllers/main/events/WebClientRequestReceived.hpp"
+#include "../../controllers/main/events/JSONRequestReceived.hpp"
 
 #include "../../utils/JSON.hpp"
 
 #include "../../controllers/main/events/CmdResponseReceived.hpp"
-#include "../../controllers/main/events/WebClientRequestReceived.hpp"
+#include "../../controllers/main/events/JSONRequestReceived.hpp"
 
 using tin::network::websocket::ManagerVisitor;
 namespace events = tin::network::websocket::events;
@@ -55,7 +55,8 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     std::cout << evt.message << std::endl;
 
     this->manager.controllerQueue.push(
-        std::make_shared<tin::controllers::main::events::WebClientRequestReceived>(
+        std::make_shared<tin::controllers::main::events::JSONRequestReceived>(
+            false,
             std::make_shared<nlohmann::json>(nlohmann::json::parse(evt.message)),
             evt.serverConnectionID
         )
@@ -85,7 +86,8 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     //         if (type == "GET")
     //         {
     //             this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 false,
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
     //         }
@@ -100,7 +102,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     //             temp["data"]["port"] = port;
 
     //             this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
     //         }
     //     }
@@ -124,7 +126,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     //             if (action == "" && type == "GET")
     //             {
     //                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
     //                 /*jsonObj["data"] = {
@@ -139,7 +141,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     //             else if (action == "" && type == "PATCH")
     //             {
     //                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
     //                 std::string name = jsonObj["data"]["name"];
@@ -160,7 +162,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     //             else if (action == "" && type == "DELETE")
     //             {
     //                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
                     
     //                 //jsonObj["data"] = {{ "success", true }};
@@ -173,7 +175,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
     //                 std::get<4>(machine) = ms.count();*/
     //                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
     //                 //jsonObj["data"] = {{ "success", true }};
@@ -181,7 +183,7 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
     //             else if (action == "toggle-sniffer" && type == "POST")
     //             {
     //                 this->manager.controllerQueue.push(tin::controllers::main::EventPtr(
-    //                 new tin::controllers::main::events::WebClientRequestReceived
+    //                 new tin::controllers::main::events::JSONRequestReceived
     //                 (tin::utils::json::makeSharedInstance(temp), evt.serverConnectionID)));
 
     //                 /*
