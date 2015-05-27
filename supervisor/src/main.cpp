@@ -7,6 +7,7 @@
 #include "network/bsdsocket/Manager.hpp"
 
 #include "network/bsdsocket/events/MessageRequest.hpp"
+#include "network/websocket/events/MessageReceived.hpp"
 
 int main()
 {
@@ -18,7 +19,7 @@ int main()
     tin::controllers::main::MainModule mainCtrl(ctrlQueue, netManagerQueue, bsdManagerQueue, statsQueue);
     tin::network::websocket::Manager networkManager(netManagerQueue, ctrlQueue, 3338);
     tin::network::bsdsocket::Manager bsdManager(bsdManagerQueue, ctrlQueue);
-    tin::supervisor::models::Stats stats(statsQueue, ctrlQueue);
+    tin::supervisor::models::Stats stats(statsQueue, ctrlQueue, mainCtrl.machines);
 
     std::cout << "Hello supervisor!\n";
 
@@ -26,12 +27,9 @@ int main()
     auto netManager = networkManager.createThread();
     auto bsdManagerThread = bsdManager.createThread();
     auto statsThread = stats.createThread();
-    
-    /*
-    
-    stats.updateDataset(); 
+    // auto statsRequestorThread = stats.createRequestorThread(2500, ctrlQueue);
 
-    */
+    // netManagerQueue.push(std::make_shared<tin::network::websocket::events::MessageReceived>(1, "{\"route\":\"stats-per-day\",\"type\":\"POST\",\"uid\":1}"));
 
     try
     {
@@ -117,10 +115,11 @@ int main()
         netManager.join();
         bsdManagerThread.join();
         statsThread.join();
+        // statsRequestorThread.join();
     }
     catch (std::system_error& e)
     {
-        // Could not join one of the threads
+        std::cout << e.what();
     }
 
     return 0;

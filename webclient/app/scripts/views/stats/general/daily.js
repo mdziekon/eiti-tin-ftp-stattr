@@ -87,6 +87,12 @@ webapp.Views.Stats.General = webapp.Views.Stats.General || {};
                 postUnits: "MB"
             };
 
+            if (view.statsPerDay.length == 0)
+            {
+                view.$("#stats-chart-daily-traffic").html("<div class='text-center'>No data collected</div>");
+                return;
+            }
+
             view.statsPerDay.each(function (model) {
                 var modelData = model.forTemplate({ trafficMode: view.trafficMode });
                 var machinesData = {};

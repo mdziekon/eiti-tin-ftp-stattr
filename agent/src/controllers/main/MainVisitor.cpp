@@ -192,6 +192,10 @@ void tin::controllers::main::MainVisitor::visit(tin::controllers::main::events::
             response = "{ \"cmd\": \"change_filter\", \"success\": true, \"data\": { \"status\": \"stand-by\" } }";
         }
     }
+    else
+    {
+        response = "{ \"cmd\": \"unknown\", \"error\": true }";
+    }
 
     this->controller.networkManagerQueue.push(
         std::make_shared<bsdsocketEvents::ResponseRequest>(
