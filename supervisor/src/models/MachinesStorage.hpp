@@ -17,6 +17,7 @@ struct MachinesStorage
     bool removeMachine(const int& machineID);
     tin::utils::Machine& getMachine(const int& machineID);
     tin::utils::Machine& getMachine(const std::string& ip, const unsigned int& port);
+    bool hasMachine(const std::string& ip, const unsigned int& port);
 
 };
 

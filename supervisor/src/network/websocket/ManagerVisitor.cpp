@@ -13,6 +13,9 @@
 
 #include "../../utils/JSON.hpp"
 
+#include "../../controllers/main/events/CmdResponseReceived.hpp"
+#include "../../controllers/main/events/JSONRequestReceived.hpp"
+
 using tin::network::websocket::ManagerVisitor;
 namespace events = tin::network::websocket::events;
 
@@ -482,6 +485,10 @@ void ManagerVisitor::visit(events::MessageReceived& evt)
 
 void ManagerVisitor::visit(events::MessageSendRequest& evt)
 {
+    // std::cout << "---- SENDING ----: " << evt.jsonPtr->dump() << std::endl << std::endl;
+    // std::cout << evt.jsonPtr->dump() << std::endl;
+    // std::cout << std::endl << std::endl;
+
     this->manager.server.sendMessage(
         evt.serverConnectionID,
         evt.jsonPtr->dump()
@@ -499,7 +506,7 @@ void ManagerVisitor::visit(events::MessageSendMultiRequest& evt)
 void ManagerVisitor::visit(events::MessageBroadcastRequest& evt)
 {
     this->manager.server.broadcastMessage(
-        "empty"
+        evt.message
     );
 }
 

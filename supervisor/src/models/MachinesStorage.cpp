@@ -43,3 +43,16 @@ Machine& MachinesStorage::getMachine(const std::string& ip, const unsigned int& 
 {
     return this->idMachineMap.at(this->ipPortIdMap.at(std::make_pair(ip, port)));
 }
+
+bool MachinesStorage::hasMachine(const std::string& ip, const unsigned int& port)
+{
+    try
+    {
+        this->idMachineMap.at(this->ipPortIdMap.at(std::make_pair(ip, port)));
+        return true;
+    }
+    catch (std::exception& e)
+    {
+        return false;
+    }
+}

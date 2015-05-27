@@ -11,6 +11,8 @@
 #include "events/CmdResponseReceived.hpp"
 #include "events/JSONRequestReceived.hpp"
 #include "events/NetworkRequest.hpp"
+
+#include "events/WebClientSendRequest.hpp"
 #include "../../utils/Machine.hpp"
 
 #include "../../network/websocket/typedefs.hpp"
@@ -23,11 +25,15 @@
 #include "../terminal/events/SendMessage.hpp"
 #include "../../utils/JSON.hpp"
 
+#include "../../models/events/RequestAnalytics.hpp"
+#include "../../models/events/ReceivePackets.hpp"
+
 namespace events = tin::controllers::main::events;
 namespace main = tin::controllers::main;
 namespace websocket = tin::network::websocket;
 namespace bsdsocket = tin::network::bsdsocket;
 namespace terminal = tin::controllers::terminal;
+namespace stats = tin::supervisor::models;
 using nlohmann::json;
 
 tin::controllers::main::MainVisitor::MainVisitor(tin::controllers::main::MainModule& controller):
@@ -55,6 +61,20 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
         if (cmd == "sync")
         {
             std::cout << "[Sync] " << "Received " << temp["data"].size() << " packets" << std::endl;
+
+            std::vector<tin::utils::json::ptr> packets;
+            if (temp["data"].is_array())
+            {
+                for(auto& itt: temp["data"])
+                {
+                    packets.push_back(std::make_shared<nlohmann::json>(itt));
+                }
+            }
+
+            this->controller.statsQueue.push(
+                std::make_shared<stats::events::ReceivePackets>(packets)
+            );
+
 
             auto ms = std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::system_clock::now().time_since_epoch());
@@ -164,6 +184,10 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
                 this->controller.filterChangeQueue.erase(queueIt);
             }
         }
+        else
+        {
+            std::cout << "Invalid command response received" << std::endl;
+        }
     }
     else
     {
@@ -192,8 +216,17 @@ void tin::controllers::main::MainVisitor::visit(events::JSONRequestReceived &evt
 
         std::string route = temp["route"];
         std::string type = temp["type"];
-
-        if (route == "machine" && type == "GET")
+        if (route.substr(0, 5) == "stats")
+        {
+            this->controller.statsQueue.push(
+                std::make_shared<tin::supervisor::models::events::RequestAnalytics>(
+                    evt.connectionID,
+                    evt.jsonPtr
+                )
+            );
+            return;
+        }
+        else if (route == "machine" && type == "GET")
         {
             temp["data"] = {
                 { "machines", json::array() }
@@ -490,5 +523,22 @@ void tin::controllers::main::MainVisitor::resendDelayed(std::tuple<bool, unsigne
 
 void tin::controllers::main::MainVisitor::visit(events::NetworkRequest& evt)
 {
-    this->controller.bsdManagerQueue.push(std::make_shared<tin::network::bsdsocket::events::MessageRequest>(evt.ip, evt.port, evt.jsonPtr, true));
+    this->controller.bsdManagerQueue.push(
+        std::make_shared<tin::network::bsdsocket::events::MessageRequest>(
+            evt.ip,
+            evt.port,
+            evt.jsonPtr,
+            false
+        )
+    );
+}
+
+void tin::controllers::main::MainVisitor::visit(events::WebClientSendRequest& evt)
+{
+    this->controller.networkManagerQueue.push(
+        std::make_shared<tin::network::websocket::events::MessageSendRequest>(
+            evt.connectionID,
+            evt.jsonPtr
+        )
+    );
 }
