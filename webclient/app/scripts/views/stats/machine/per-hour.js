@@ -79,6 +79,12 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
             };
             var position = "right";
 
+            if (view.stats.length == 0)
+            {
+                view.$("#stats-chart-hourly-traffic").html("<div class='text-center'>No data collected</div>");
+                return;
+            }
+
             view.stats.each(function (model) {
                 var modelData = model.forTemplate({ trafficMode: view.trafficMode });
 

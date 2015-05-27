@@ -65,6 +65,10 @@ webapp.Views.Stats.Machine = webapp.Views.Stats.Machine || {};
         },
 
         afterRender: function () {
+            if (this.stats.length == 0)
+            {
+                return;
+            }
             this.$(".table-stats-machine-per-connection").DataTable({
                 responsive: false,
                 paging: false,
