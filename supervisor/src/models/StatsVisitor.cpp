@@ -90,6 +90,43 @@ void StatsVisitor::visit(events::RequestAnalytics& event)
             (*computedStats)["error"] = {{ "notFound", { {"machine", machineID} } }};
         }
     }
+    else if (route.substr(0, 29) == "stats-machine-per-connection/")
+    {
+        computedStats = event.requestData;
+
+        auto routeRest = route.substr(29);
+        auto action = std::string("");
+        if (routeRest.find("/") != std::string::npos)
+        {
+            action = routeRest.substr(routeRest.find("/") + 1);
+            routeRest = routeRest.substr(0, routeRest.find("/"));
+        }
+
+        unsigned int machineID;
+        try
+        {
+            machineID = static_cast<unsigned int>(std::stoul(routeRest));
+
+            auto& machine = this->stats.machines.getMachine(machineID);
+
+            if (action == "" && type == "GET")
+            {
+                computedStats = this->stats.computeMachinesPerConnection(event.requestData, machineID);
+            }
+            else
+            {
+                (*computedStats)["error"] = {{ "invalid", { {"action", action} } }};
+            }
+        }
+        catch (std::invalid_argument& e)
+        {
+            (*computedStats)["error"] = {{ "invalid", { {"routeID", true} } }};
+        }
+        catch (std::out_of_range& e)
+        {
+            (*computedStats)["error"] = {{ "notFound", { {"machine", machineID} } }};
+        }
+    }
     else
     {
         computedStats = event.requestData;
