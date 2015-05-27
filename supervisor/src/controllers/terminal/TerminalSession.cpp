@@ -39,14 +39,23 @@ void tin::controllers::terminal::TerminalSession::do_read_body()
 		{
 			if(!ec)
 			{
+				try
+				{
 				controllerQueue.push(
             	std::make_shared<tin::controllers::main::events::JSONRequestReceived>(
 	                true,
 	                std::make_shared<nlohmann::json>(
-	                    nlohmann::json::parse(msg_.body())
+	                    nlohmann::json::parse(std::string(msg_.body(), msg_.body_length()))
 	                ),
 	                0
             	));
+			}
+			catch(std::exception& e)
+			{
+				std::cout << "[[[[EXCEPTION]]]" << std::endl;
+					std::cout << msg_.body() << std::endl;
+					std::cout << msg_.body_length() << std::endl;
+			}
 
 				do_read_header();
 			} else {
