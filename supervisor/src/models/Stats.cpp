@@ -4,6 +4,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "StatsVisitor.hpp"
 #include "../controllers/main/events/NetworkRequest.hpp"
@@ -339,6 +340,103 @@ const tin::utils::json::ptr Stats::computeMachinesPerConnection(const tin::utils
         for(auto& itt: cStats)
         {
             (*reply)["data"]["connections"][(*reply)["data"]["connections"].size()] = itt.second;
+        }
+    }
+    catch (std::exception& e)
+    {
+        (*reply)["route"] = (*requestorData)["route"];
+        (*reply)["type"] = "GET";
+        (*reply)["uid"] = (*requestorData)["uid"];
+        (*reply)["error"] = { {"unknown", true }};
+    }
+
+    return reply;
+}
+
+const tin::utils::json::ptr Stats::computeMachinesPerHour(const tin::utils::json::ptr& requestorData, int machineID) const
+{
+    tin::utils::json::ptr reply(new nlohmann::json);
+    try
+    {
+        std::unordered_map<u_int32_t, u_int32_t> machineStats;
+
+        (*reply)["route"] = (*requestorData)["route"];
+        (*reply)["type"] = "GET";
+        (*reply)["uid"] = (*requestorData)["uid"];
+        (*reply)["data"] = { {"stats", nlohmann::json::array() }};
+
+        tin::utils::Machine& machine = this->machines.getMachine(machineID);
+        std::unordered_map<int, nlohmann::json> cStats;
+        std::unordered_map<int, std::unordered_set<int>> days;
+
+        for(auto& it: this->packets)
+        {
+            int dayTimestamp = it.timestamp;
+            dayTimestamp -= dayTimestamp % (24 * 60 * 60);
+
+            int hourTimestamp = it.timestamp;
+            hourTimestamp = hourTimestamp % (24 * 60 * 60);
+            hourTimestamp -= hourTimestamp % (60 * 60);
+            hourTimestamp /= (60 * 60);
+            std::string key;
+
+            if (machine.ip == it.getSourceIP() && machine.port == it.sourcePort)
+            {
+                if (cStats.count(hourTimestamp) == 0)
+                {
+                    days.insert({ hourTimestamp, std::unordered_set<int>() });
+                    cStats.insert({ hourTimestamp, nlohmann::json::object() });
+                    cStats.at(hourTimestamp) = {
+                        { "hour", hourTimestamp },
+                        { "traffic", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }},
+                        { "packets", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }}
+                    };
+                }
+                auto& jsObj = cStats.at(hourTimestamp);
+                days.at(hourTimestamp).insert(dayTimestamp);
+
+                jsObj["traffic"]["out"] = (jsObj["traffic"]["out"].get<int>() + it.payloadSize);
+                jsObj["packets"]["out"] = (jsObj["packets"]["out"].get<int>() + 1);
+            }
+            else if (machine.ip == it.getDestinationIP() && machine.port == it.destinationPort)
+            {
+                if (cStats.count(hourTimestamp) == 0)
+                {
+                    days.insert({ hourTimestamp, std::unordered_set<int>() });
+                    cStats.insert({ hourTimestamp, nlohmann::json::object() });
+                    cStats.at(hourTimestamp) = {
+                        { "hour", hourTimestamp },
+                        { "traffic", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }},
+                        { "packets", {
+                            { "in", 0 },
+                            { "out", 0 }
+                        }}
+                    };
+                }
+                auto& jsObj = cStats.at(hourTimestamp);
+                days.at(hourTimestamp).insert(dayTimestamp);
+
+                jsObj["traffic"]["in"] = (jsObj["traffic"]["in"].get<int>() + it.payloadSize);
+                jsObj["packets"]["in"] = (jsObj["packets"]["in"].get<int>() + 1);
+            }
+        }
+
+        for(auto& itt: cStats)
+        {
+            (*reply)["data"]["stats"][(*reply)["data"]["stats"].size()] = itt.second;
+            (*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["traffic"]["in"] = ((*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["traffic"]["in"].get<int>() / days.at(itt.first).size());
+            (*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["traffic"]["out"] = ((*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["traffic"]["out"].get<int>() / days.at(itt.first).size());
+            (*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["packets"]["in"] = ((*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["packets"]["in"].get<int>() / days.at(itt.first).size());
+            (*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["packets"]["out"] = ((*reply)["data"]["stats"][(*reply)["data"]["stats"].size() - 1]["packets"]["out"].get<int>() / days.at(itt.first).size());
         }
     }
     catch (std::exception& e)
