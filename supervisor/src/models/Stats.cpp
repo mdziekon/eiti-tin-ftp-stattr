@@ -11,12 +11,110 @@
 
 using namespace tin::supervisor::models;
 
+Stats::Stats(
+    tin::supervisor::models::StatsQueue& statsQueue,
+    tin::controllers::main::ControllerQueue& controllerQueue,
+    tin::models::MachinesStorage& machines
+):
+QueueThread< tin::supervisor::models::Event, tin::supervisor::models::StatsVisitor >(statsQueue, StatsVisitor(*this)),
+controllerQueue(controllerQueue),
+machines(machines)
+{
+    this->packetsFileOpen("packets.json");
+    this->packetsFileLoadData();
+}
+
+void Stats::packetsFileOpen(const std::string &filename)
+{
+    this->packetsFile.open(filename);
+    this->lastPacketsFile = filename;
+
+    if (!this->packetsFile)
+    {
+        this->packetsFile.open(filename, std::ios_base::out | std::ios_base::trunc);
+        this->packetsFile.close();
+        this->packetsFile.open(filename);
+    }
+
+    if (!this->packetsFile.is_open())
+    {
+        std::cout << "[Stats] Could not open packetsFile (" << filename << ")!!!" << std::endl;
+        this->lastPacketsFile = "";
+        return;
+    }
+}
+
+void Stats::packetsFileLoadData()
+{
+    if (!this->packetsFile.is_open())
+    {
+        return;
+    }
+
+    try
+    {
+        std::string fileContent;
+
+        this->packetsFile.seekg(0, std::ios::end);
+        fileContent.reserve(this->packetsFile.tellg());
+        this->packetsFile.seekg(0, std::ios::beg);
+
+        fileContent.assign(
+            (std::istreambuf_iterator<char>(this->packetsFile)),
+            std::istreambuf_iterator<char>()
+        );
+
+        nlohmann::json loadedJSON = nlohmann::json::parse(fileContent);
+
+        if (!loadedJSON.is_array())
+        {
+            std::cout << "[Stats] 'Not an array' in packetsFile (" << this->lastPacketsFile << ")!!!" << std::endl;
+            return;
+        }
+
+        for(auto& packetJSON: loadedJSON)
+        {
+            this->packets.push_back(tin::utils::Packet(packetJSON));
+        }
+    }
+    catch (std::exception& e)
+    {
+        std::cout << "[Stats] Invalid data in packetsFile (" << this->lastPacketsFile << ")!!!" << std::endl;
+    }
+}
+
+void Stats::packetsFileAppendData(nlohmann::json &packetsArray)
+{
+    if (!this->packetsFile.is_open())
+    {
+        return;
+    }
+
+    this->packetsFile.close();
+    this->packetsFile.open(this->lastPacketsFile, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+    if (!this->packetsFile.is_open())
+    {
+        std::cout << "[Stats] Could not reopen packetsFile (" << this->lastPacketsFile << ")!!!" << std::endl;
+        return;
+    }
+
+    nlohmann::json dataJSON = nlohmann::json::array();
+    for(auto& packet: this->packets)
+    {
+        dataJSON[dataJSON.size()] = packet.serialize();
+    }
+
+    this->packetsFile << dataJSON.dump();
+}
+
 void Stats::appendPackets(nlohmann::json &packetsArray)
 {
     for(auto& packetJSON: packetsArray)
     {
         this->packets.push_back(tin::utils::Packet(packetJSON));
     }
+
+    this->packetsFileAppendData(packetsArray);
 }
 
 const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::ptr& requestorData) const
@@ -479,13 +577,3 @@ std::thread Stats::createRequestorThread(
         }
     });
 }
-
-Stats::Stats(
-    tin::supervisor::models::StatsQueue& statsQueue,
-    tin::controllers::main::ControllerQueue& controllerQueue,
-    tin::models::MachinesStorage& machines
-): 
-QueueThread< tin::supervisor::models::Event, tin::supervisor::models::StatsVisitor >(statsQueue, StatsVisitor(*this)),
-controllerQueue(controllerQueue),
-machines(machines)
-{}

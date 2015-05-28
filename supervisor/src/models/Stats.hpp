@@ -6,6 +6,8 @@
 #include <thread>
 #include <sys/types.h>
 
+#include <fstream>
+
 #include "../utils/QueueThread.hpp"
 #include "../controllers/main/typedefs.hpp"
 #include "typedefs.hpp"
@@ -26,6 +28,13 @@ namespace tin { namespace supervisor { namespace models
 
         tin::models::MachinesStorage& machines;
         std::vector<tin::utils::Packet> packets;
+
+        std::fstream packetsFile;
+        std::string lastPacketsFile;
+
+        void packetsFileOpen(const std::string &filename);
+        void packetsFileLoadData();
+        void packetsFileAppendData(nlohmann::json &packetsArray);
 
         void appendPackets(nlohmann::json &packetsArray);
 
