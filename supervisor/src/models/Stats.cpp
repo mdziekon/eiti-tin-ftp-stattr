@@ -11,6 +11,14 @@
 
 using namespace tin::supervisor::models;
 
+void Stats::appendPackets(nlohmann::json &packetsArray)
+{
+    for(auto& packetJSON: packetsArray)
+    {
+        this->packets.push_back(tin::utils::Packet(packetJSON));
+    }
+}
+
 const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::ptr& requestorData) const
 {
     tin::utils::json::ptr reply(new nlohmann::json);

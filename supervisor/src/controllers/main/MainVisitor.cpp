@@ -62,22 +62,14 @@ void tin::controllers::main::MainVisitor::visit(events::CmdResponseReceived &evt
         {
             std::cout << "[Sync] " << "Received " << temp["data"].size() << " packets" << std::endl;
 
-            std::vector<tin::utils::json::ptr> packets;
-            if (temp["data"].is_array())
+            if (temp["data"].size() > 0)
             {
-                for(auto& itt: temp["data"])
-                {
-                    packets.push_back(std::make_shared<nlohmann::json>(itt));
-                }
+                this->controller.statsQueue.push(
+                    std::make_shared<stats::events::ReceivePackets>(std::make_shared<json>(temp["data"]))
+                );
             }
 
-            this->controller.statsQueue.push(
-                std::make_shared<stats::events::ReceivePackets>(packets)
-            );
-
-
-            auto ms = std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::system_clock::now().time_since_epoch());
+            auto ms = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
             machine.lastSynchronization = ms.count();
 
             auto queueIt = this->controller.syncQueue.find(std::pair<std::string, unsigned int>(evt.ip, evt.port));

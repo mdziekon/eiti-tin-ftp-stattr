@@ -27,6 +27,8 @@ namespace tin { namespace supervisor { namespace models
         tin::models::MachinesStorage& machines;
         std::vector<tin::utils::Packet> packets;
 
+        void appendPackets(nlohmann::json &packetsArray);
+
     public:
         const tin::utils::json::ptr computeStatsPerDay(const tin::utils::json::ptr& requestorData) const;
         const tin::utils::json::ptr computeIndividualUsage(const tin::utils::json::ptr& requestorData) const;

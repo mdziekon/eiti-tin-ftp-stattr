@@ -10,12 +10,11 @@ namespace tin { namespace supervisor { namespace models { namespace events
 {
     struct ReceivePackets: public tin::supervisor::models::Event
     {
-        std::vector<tin::utils::json::ptr> packets;
-        
+        tin::utils::json::ptr packetsArray;
+
         virtual void accept(tin::supervisor::models::StatsVisitor& visitor);
-        
-        ReceivePackets(const std::vector<tin::utils::json::ptr>& packets);
-        ReceivePackets(const std::vector<tin::utils::json::ptr>&& packets);
+
+        ReceivePackets(const tin::utils::json::ptr &packetsArray);
     };
 }}}}
 
