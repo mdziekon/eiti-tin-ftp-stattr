@@ -50,7 +50,7 @@ namespace tin { namespace utils
             return !(*this == rhs);
         }
 
-    private:
+    protected:
         T value;
 
         virtual T& getter()

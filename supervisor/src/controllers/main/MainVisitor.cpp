@@ -227,14 +227,14 @@ void tin::controllers::main::MainVisitor::visit(events::JSONRequestReceived &evt
             for(auto& it: this->controller.machines.idMachineMap)
             {
                 temp["data"]["machines"][temp["data"]["machines"].size()] = {
-                    { "id", it.second.id},
-                    { "name", it.second.name },
-                    { "ip", it.second.ip },
-                    { "port", it.second.port },
-                    { "status", it.second.status },
-                    { "lastSync", it.second.lastSynchronization },
-                    { "filterDevice", it.second.filterDevice },
-                    { "filterExpression", it.second.filterExpression }
+                    { "id", it.second.id() },
+                    { "name", it.second.name() },
+                    { "ip", it.second.ip() },
+                    { "port", it.second.port() },
+                    { "status", it.second.status() },
+                    { "lastSync", it.second.lastSynchronization() },
+                    { "filterDevice", it.second.filterDevice() },
+                    { "filterExpression", it.second.filterExpression() }
                 };
             }
         }
@@ -278,13 +278,13 @@ void tin::controllers::main::MainVisitor::visit(events::JSONRequestReceived &evt
                 {
                     temp["data"] = {
                         { "id", machineID },
-                        { "name", machine.name },
-                        { "ip", machine.ip },
-                        { "port", machine.port },
-                        { "status", machine.status },
-                        { "lastSync", machine.lastSynchronization },
-                        { "filterDevice", machine.filterDevice },
-                        { "filterExpression", machine.filterExpression }
+                        { "name", machine.name() },
+                        { "ip", machine.ip() },
+                        { "port", machine.port() },
+                        { "status", machine.status() },
+                        { "lastSync", machine.lastSynchronization() },
+                        { "filterDevice", machine.filterDevice() },
+                        { "filterExpression", machine.filterExpression() }
                     };
                 }
                 else if (action == "" && type == "PATCH")
@@ -346,7 +346,7 @@ void tin::controllers::main::MainVisitor::visit(events::JSONRequestReceived &evt
                             tmpExpression = temp["data"]["filterExpression"].get<std::string>();
                         }
 
-                        if (tmpDevice != machine.filterDevice || tmpExpression != machine.filterExpression)
+                        if (machine.filterDevice != tmpDevice || machine.filterExpression != tmpExpression)
                         {
                             filterChange = true;
 
@@ -441,7 +441,7 @@ void tin::controllers::main::MainVisitor::visit(events::JSONRequestReceived &evt
                     }
                     else
                     {
-                        temp["error"] = {{ "invalid", { {"status", machine.status} } }};
+                        temp["error"] = {{ "invalid", { {"status", machine.status() } } }};
                         this->resendEvent(evt);
                         return;
                     }

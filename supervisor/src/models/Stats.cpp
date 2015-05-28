@@ -151,8 +151,8 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
                 {
                     thisMStats.insert({ machine.id, nlohmann::json::object() });
                     thisMStats.at(machine.id) = {
-                        { "id", machine.id },
-                        { "name", machine.name },
+                        { "id", machine.id() },
+                        { "name", machine.name() },
                         { "traffic", {
                             { "in", 0 },
                             { "out", 0 }
@@ -170,8 +170,8 @@ const tin::utils::json::ptr Stats::computeStatsPerDay(const tin::utils::json::pt
                 {
                     thisMStats.insert({ machine.id, nlohmann::json::object() });
                     thisMStats.at(machine.id) = {
-                        { "id", machine.id },
-                        { "name", machine.name },
+                        { "id", machine.id() },
+                        { "name", machine.name() },
                         { "traffic", {
                             { "in", 0 },
                             { "out", 0 }
@@ -233,8 +233,8 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
                 {
                     mStats.insert({ machine.id, nlohmann::json::object() });
                     mStats.at(machine.id) = {
-                        { "id", machine.id },
-                        { "name", machine.name },
+                        { "id", machine.id() },
+                        { "name", machine.name() },
                         { "traffic", {
                             { "in", 0 },
                             { "out", 0 }
@@ -252,8 +252,8 @@ const tin::utils::json::ptr Stats::computeIndividualUsage(const tin::utils::json
                 {
                     mStats.insert({ machine.id, nlohmann::json::object() });
                     mStats.at(machine.id) = {
-                        { "id", machine.id },
-                        { "name", machine.name },
+                        { "id", machine.id() },
+                        { "name", machine.name() },
                         { "traffic", {
                             { "in", 0 },
                             { "out", 0 }
