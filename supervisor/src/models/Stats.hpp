@@ -16,19 +16,16 @@
 namespace tin { namespace supervisor { namespace models
 {
     class Stats: public tin::utils::QueueThread<
-        tin::supervisor::models::Event, 
+        tin::supervisor::models::Event,
         tin::supervisor::models::StatsVisitor
     >
     {
         friend class tin::supervisor::models::StatsVisitor;
-        
+
         tin::controllers::main::ControllerQueue& controllerQueue;
-        
+
         tin::models::MachinesStorage& machines;
         std::vector<tin::utils::Packet> packets;
-        std::map<int64_t, tin::utils::json::ptr> packetsByTimestamp;
-        std::map<u_int32_t, tin::utils::json::ptr> packetsBySourceIP;
-        std::map<u_int32_t, tin::utils::json::ptr> packetsByDestinationIP;
 
     public:
         const tin::utils::json::ptr computeStatsPerDay(const tin::utils::json::ptr& requestorData) const;
