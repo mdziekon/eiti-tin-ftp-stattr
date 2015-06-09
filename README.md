@@ -1,8 +1,6 @@
 # Techniki Internetowe - Projekt - System zbierania statystyk częstości zapytań do serwerów FTP (FTP Stattr)
 Projekt wykonany w ramach przedmiotu TIN (Techniki Internetowe) w semestrze 2015L (6 semestr) na Wydziale Elektroniki i Technik Informacyjnych (EiTI) Politechniki Warszawskiej.
 
-**Prowadzący projekt**: dr inż. Jacek Wytrębowicz
-
 ### Opis projektu
 Ideą projektu jest stworzenie systemu obserwującego predefiniowany zbiór maszyn. System pozwala na inicjację i zatrzymywanie pomiarów oraz zbieranie danych w dowolnym momencie. Na każdej obserwowanej maszynie instalowany
 jest agent, z którym komunikuje się serwer zarządzający.
