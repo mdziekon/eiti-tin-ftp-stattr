@@ -15,6 +15,8 @@ webapp.Collections.Stats = webapp.Collections.Stats || {};
             return response.stats;
         },
 
+        comparator: "day",
+
         forTemplate: function (options) {
             var json = this.map(function (model) {
                 return model.forTemplate(options);
